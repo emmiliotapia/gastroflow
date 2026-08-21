@@ -37,26 +37,26 @@ Para exponer la API y las interfaces PWA hacia internet de forma segura con TLS/
 ### Proxy Host 2: Comandero POS (`pos.smartopsia.com`)
 - **Domain Names:** `pos.smartopsia.com`
 - **Scheme:** `http`
-- **Forward Host / IP:** `172.17.0.1` o `localhost`
+- **Forward Host / IP:** `172.17.0.1`
 - **Forward Port:** `8001`
 - **Opciones Avanzadas (Custom Nginx Configuration):**
   ```nginx
   location / {
       rewrite ^/$ /frontend/pos.html break;
-      proxy_pass http://127.0.0.1:8001;
+      proxy_pass http://172.17.0.1:8001;
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
   }
   location /frontend/ {
-      proxy_pass http://127.0.0.1:8001/frontend/;
+      proxy_pass http://172.17.0.1:8001/frontend/;
   }
   location /api/ {
-      proxy_pass http://127.0.0.1:8001/api/;
+      proxy_pass http://172.17.0.1:8001/api/;
   }
   location /login {
-      proxy_pass http://127.0.0.1:8001/login;
+      proxy_pass http://172.17.0.1:8001/login;
   }
   ```
 - **SSL / Certificado:** Let's Encrypt + Force SSL habilitado.
@@ -64,29 +64,29 @@ Para exponer la API y las interfaces PWA hacia internet de forma segura con TLS/
 ### Proxy Host 3: Pantalla KDS (`kds.smartopsia.com`)
 - **Domain Names:** `kds.smartopsia.com`
 - **Scheme:** `http`
-- **Forward Host / IP:** `172.17.0.1` o `localhost`
+- **Forward Host / IP:** `172.17.0.1`
 - **Forward Port:** `8001`
 - **Opciones Avanzadas (Custom Nginx Configuration):**
   ```nginx
   location / {
       rewrite ^/$ /frontend/kds.html break;
-      proxy_pass http://127.0.0.1:8001;
+      proxy_pass http://172.17.0.1:8001;
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
   }
   location /frontend/ {
-      proxy_pass http://127.0.0.1:8001/frontend/;
+      proxy_pass http://172.17.0.1:8001/frontend/;
   }
   location /api/ {
-      proxy_pass http://127.0.0.1:8001/api/;
+      proxy_pass http://172.17.0.1:8001/api/;
   }
   location /login {
-      proxy_pass http://127.0.0.1:8001/login;
+      proxy_pass http://172.17.0.1:8001/login;
   }
   location /ws/ {
-      proxy_pass http://127.0.0.1:8001/ws/;
+      proxy_pass http://172.17.0.1:8001/ws/;
       proxy_http_version 1.1;
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection "Upgrade";
