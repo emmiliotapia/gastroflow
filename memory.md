@@ -17,10 +17,14 @@
 
 ## Implementación de Inventario, Seguridad y Despliegue en VPS - 2026-08-20
 - **Autenticación & RBAC:** Implementados JWT, hashing Bcrypt de contraseñas y NIP/PIN de Jefes de Sala (Poka-Yoke).
-- **Catálogos y Fichas Técnicas:** CRUD de Ingredientes, Productos y cálculo dinámico de costos/ganancias de Recetas.
-- **Inventarios y POS:** Módulo multicapa de stock (`StockLevel`), movimientos (`StockTransaction`), mermas valorizadas (`WasteLog`), porcionado de insumos y motor de descuento atómico del POS.
+- **Catálogos y Fichas Técnicas:** CRUD de Insumos, Productos y cálculo de ganancias de Recetas.
+- **Inventarios y POS:** Módulo de stock por bodegas, mermas valorizadas, porcionado y descuento atómico del POS.
 - **Despliegue en VPS (SmartOps) Completado:**
-  - Reducción de conflictos: PostgreSQL reubicado al puerto host **`5434`** (evitando colisión con puerto `5433`).
-  - FastAPI levantado y verificado en puerto **`8001`**.
-  - Corrección de bugs de dependencias: se agregaron `email-validator` y `bcrypt==4.0.1` (para compatibilidad de `passlib`).
-  - Seeder de base de datos cargó exitosamente los 7 roles, usuarios admin/supervisor, 36 insumos y 8 recetas completas con costeo real del casino.
+  - PostgreSQL levantado en puerto host **`5434`** y FastAPI en puerto **`8001`**.
+  - Seeder pobló roles, usuarios, 36 insumos y 8 recetas de AyB.
+
+## Desarrollo del Frontend PWA (POS & KDS) - 2026-08-20
+- **Infraestructura PWA:** Creados `manifest.json` y Service Worker `sw.js` para caché offline bajo estética premium Obsidian & Gold.
+- **pos.html:** Interfaz del comandero con carrito, panel de rejilla táctil dinámica y lectura de parámetro de URL `?machine_id=...` para slots.
+- **kds.html:** Pantalla táctil FIFO para cocina/barra con conexión persistente WebSocket y reconexión exponencial.
+- **Servicio Estático Integrado:** Los archivos estáticos se montaron a través de FastAPI en la ruta `/frontend/` y ya se encuentran desplegados y probados en el puerto `8001` del VPS.
