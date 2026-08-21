@@ -15,6 +15,7 @@ class UnitOfMeasure(str, Enum):
     """
     KG = "KG"              # Kilogramos
     G = "G"                # Gramos
+    GR = "GR"              # Gramos (alias Fichas Técnicas)
     L = "L"                # Litros
     ML = "ML"              # Mililitros
     PIECE = "PIECE"        # Pieza / Unidad entera

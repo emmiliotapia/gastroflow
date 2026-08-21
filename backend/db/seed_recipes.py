@@ -1,18 +1,13 @@
 """
-Script de Carga de Datos Iniciales (Seeding) - Catálogos de Insumos y Recetas Realistas
-======================================================================================
-Este script automatiza la inicialización de:
-1. Roles del sistema (`ADMIN`, `JEFE_DE_SALA`, `WAITER`, `BARMAN`, `KITCHEN_STAFF`, `TECHNICIAN`, `CUSTOMER`).
-2. Usuario Administrador (`admin` / `AdminPass2026!`) y Supervisor de Sala (`jefe_sala` / `PIN: 1234`).
-3. Catálogo de Insumos / Ingredientes reales con costos por unidad.
-4. Fichas técnicas de Recetas Clave:
-   - Hamburguesa BBQ (SKU: AYB-BBQ-01 | Costo total: ~$83.59 | Precio Venta: $240.00)
-   - Hamburguesa Prestige (SKU: AYB-PRES-01 | Costo total: ~$90.43 | Precio Venta: $290.00)
+Script de Carga de Datos Iniciales (Seeding) - Fichas Técnicas Reales del Casino
+==============================================================================
+Este script automatiza la inicialización de la base de datos con los datos reales
+de insumos, costos por unidad y recetas completas de Alimentos y Bebidas del Casino.
 """
 
 import sys
-import uuid
 from decimal import Decimal
+from typing import Dict, Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -28,21 +23,254 @@ from backend.models.product import Product, RecipeItem
 from backend.models.user import Role, User
 
 
+# ==============================================================================
+# DATOS REALES DE INSUMOS Y COSTOS UNITARIOS DEL CASINO
+# ==============================================================================
+INGREDIENTS_DATA = [
+    {"code": "ING-PAN-BARR", "name": "PAN DE BARRA", "unit": UnitOfMeasure.PIECE, "cost": Decimal("6.40")},
+    {"code": "ING-PAN-BRIO", "name": "PAN BRIOCHE", "unit": UnitOfMeasure.PIECE, "cost": Decimal("9.25")},
+    {"code": "ING-MOL-RES", "name": "MOLIDA DE RES", "unit": UnitOfMeasure.GR, "cost": Decimal("114.20")},
+    {"code": "ING-PECH-POL", "name": "PECHUGA DE POLLO", "unit": UnitOfMeasure.GR, "cost": Decimal("105.50")},
+    {"code": "ING-PIÑA-AMI", "name": "PIÑA EN AMIBAS", "unit": UnitOfMeasure.GR, "cost": Decimal("49.50")},
+    {"code": "ING-LECH-BOL", "name": "LECHUGA BOLA", "unit": UnitOfMeasure.GR, "cost": Decimal("19.80")},
+    {"code": "ING-TOM-SAL", "name": "TOMATE SALADES", "unit": UnitOfMeasure.GR, "cost": Decimal("24.92")},
+    {"code": "ING-QUES-AME", "name": "QUESO AMERICANO", "unit": UnitOfMeasure.PIECE, "cost": Decimal("110.00")},
+    {"code": "ING-CEB-MOR", "name": "CEBOLLA MORADA", "unit": UnitOfMeasure.GR, "cost": Decimal("15.90")},
+    {"code": "ING-JAM-PAV", "name": "JAMON DE PAVO", "unit": UnitOfMeasure.GR, "cost": Decimal("95.50")},
+    {"code": "ING-BBQ-SAU", "name": "BBQ 4.5 ML", "unit": UnitOfMeasure.GR, "cost": Decimal("190.00")},
+    {"code": "ING-PAP-GAJ", "name": "PAPAS GAJO", "unit": UnitOfMeasure.GR, "cost": Decimal("911.87")},
+    {"code": "ING-TOCINO", "name": "TOCINO", "unit": UnitOfMeasure.GR, "cost": Decimal("225.00")},
+    {"code": "ING-CHIL-VIN", "name": "CHILES EN VINAGRE", "unit": UnitOfMeasure.GR, "cost": Decimal("90.00")},
+    {"code": "ING-MAYONESA", "name": "ADEREZO MAYONESA", "unit": UnitOfMeasure.GR, "cost": Decimal("138.90")},
+    {"code": "ING-CATSUP", "name": "CAT SUP", "unit": UnitOfMeasure.GR, "cost": Decimal("106.90")},
+    {"code": "ING-PAP-ENC", "name": "PAPEL ENCERADO", "unit": UnitOfMeasure.PIECE, "cost": Decimal("245.00")},
+    {"code": "ING-SOUF-2OZ", "name": "SOUFLES 2 Oz", "unit": UnitOfMeasure.PIECE, "cost": Decimal("932.00")},
+    {"code": "ING-TAP-2OZ", "name": "TAPADERA 2 Oz", "unit": UnitOfMeasure.PIECE, "cost": Decimal("950.20")},
+    {"code": "ING-AC-VEG", "name": "ACEITE VEGETAL", "unit": UnitOfMeasure.ML, "cost": Decimal("800.00")},
+    {"code": "ING-APIO", "name": "APIO", "unit": UnitOfMeasure.GR, "cost": Decimal("18.00")},
+    {"code": "ING-ZANAH", "name": "ZANAHORIA", "unit": UnitOfMeasure.GR, "cost": Decimal("15.60")},
+    {"code": "ING-RANCH", "name": "RANCH", "unit": UnitOfMeasure.GR, "cost": Decimal("305.00")},
+    {"code": "ING-RED-HOT", "name": "SALSA RED HOT", "unit": UnitOfMeasure.PIECE, "cost": Decimal("219.50")},
+    {"code": "ING-HARINA", "name": "HARINA", "unit": UnitOfMeasure.GR, "cost": Decimal("23.80")},
+    {"code": "ING-PAPRIKA", "name": "PAPRIKA", "unit": UnitOfMeasure.GR, "cost": Decimal("160.00")},
+    {"code": "ING-CONS-POL", "name": "CONOSME DE POLLO", "unit": UnitOfMeasure.GR, "cost": Decimal("1410.00")},
+    {"code": "ING-PIM-NEG", "name": "PIMIENTA NEGRA", "unit": UnitOfMeasure.PIECE, "cost": Decimal("220.00")},
+    {"code": "ING-TORT-AMA", "name": "TORTILLA AMARILLA", "unit": UnitOfMeasure.PIECE, "cost": Decimal("22.00")},
+    {"code": "ING-CREM-ZUI", "name": "CREMA ZUISA", "unit": UnitOfMeasure.GR, "cost": Decimal("129.00")},
+    {"code": "ING-CREM-AGR", "name": "CREMA AGRIA", "unit": UnitOfMeasure.GR, "cost": Decimal("260.00")},
+    {"code": "ING-CILANTRO", "name": "CILANTRO", "unit": UnitOfMeasure.PIECE, "cost": Decimal("5.50")},
+    {"code": "ING-MOZZ", "name": "QUESO MOZZARRELLA", "unit": UnitOfMeasure.GR, "cost": Decimal("344.00")},
+    {"code": "ING-FRIJOLES", "name": "FRIJOLES", "unit": UnitOfMeasure.GR, "cost": Decimal("135.00")},
+    {"code": "ING-COTIJA", "name": "QUESO COTIJA", "unit": UnitOfMeasure.GR, "cost": Decimal("200.00")},
+    {"code": "ING-PICAD", "name": "PICADIENTES", "unit": UnitOfMeasure.PIECE, "cost": Decimal("0.00")},
+]
+
+
+# ==============================================================================
+# FICHAS TÉCNICAS COMPLETAS DE PRODUCTOS DE ALIMENTOS Y BEBIDAS
+# ==============================================================================
+PRODUCTS_RECIPES_DATA = [
+    {
+        "sku": "AYB-HAM-BBQ",
+        "name": "HAMBURGUESA BBQ",
+        "category": "Especialidades",
+        "price": Decimal("130.00"),
+        "destination_kds": KDSStation.KITCHEN,
+        "items": [
+            ("ING-PAN-BRIO", Decimal("1"), UnitOfMeasure.PIECE),
+            ("ING-MOL-RES", Decimal("0.15"), UnitOfMeasure.GR),
+            ("ING-PIÑA-AMI", Decimal("0.045"), UnitOfMeasure.GR),
+            ("ING-LECH-BOL", Decimal("0.07"), UnitOfMeasure.GR),
+            ("ING-QUES-AME", Decimal("0.017"), UnitOfMeasure.PIECE),
+            ("ING-CEB-MOR", Decimal("0.035"), UnitOfMeasure.GR),
+            ("ING-BBQ-SAU", Decimal("0.05"), UnitOfMeasure.GR),
+            ("ING-PAP-GAJ", Decimal("0.2"), UnitOfMeasure.GR),
+            ("ING-TOCINO", Decimal("0.08"), UnitOfMeasure.GR),
+            ("ING-CHIL-VIN", Decimal("0.055"), UnitOfMeasure.GR),
+            ("ING-MAYONESA", Decimal("0.08"), UnitOfMeasure.GR),
+            ("ING-CATSUP", Decimal("0.08"), UnitOfMeasure.GR),
+            ("ING-PAP-ENC", Decimal("1"), UnitOfMeasure.PIECE),
+            ("ING-SOUF-2OZ", Decimal("2"), UnitOfMeasure.PIECE),
+            ("ING-TAP-2OZ", Decimal("2"), UnitOfMeasure.PIECE),
+            ("ING-AC-VEG", Decimal("0.1"), UnitOfMeasure.ML),
+        ]
+    },
+    {
+        "sku": "AYB-HAM-PRES",
+        "name": "HAMBURGUESA PRESTIGE",
+        "category": "Especialidades",
+        "price": Decimal("145.00"),
+        "destination_kds": KDSStation.KITCHEN,
+        "items": [
+            ("ING-PAN-BRIO", Decimal("1"), UnitOfMeasure.PIECE),
+            ("ING-MOL-RES", Decimal("0.2"), UnitOfMeasure.GR),
+            ("ING-TOM-SAL", Decimal("0.05"), UnitOfMeasure.GR),
+            ("ING-LECH-BOL", Decimal("0.07"), UnitOfMeasure.GR),
+            ("ING-QUES-AME", Decimal("0.017"), UnitOfMeasure.PIECE),
+            ("ING-CEB-MOR", Decimal("0.035"), UnitOfMeasure.GR),
+            ("ING-JAM-PAV", Decimal("0.05"), UnitOfMeasure.GR),
+            ("ING-PAP-GAJ", Decimal("0.2"), UnitOfMeasure.GR),
+            ("ING-TOCINO", Decimal("0.08"), UnitOfMeasure.GR),
+            ("ING-CHIL-VIN", Decimal("0.055"), UnitOfMeasure.GR),
+            ("ING-MAYONESA", Decimal("0.08"), UnitOfMeasure.GR),
+            ("ING-CATSUP", Decimal("0.08"), UnitOfMeasure.GR),
+            ("ING-PAP-ENC", Decimal("1"), UnitOfMeasure.PIECE),
+            ("ING-SOUF-2OZ", Decimal("2"), UnitOfMeasure.PIECE),
+            ("ING-TAP-2OZ", Decimal("2"), UnitOfMeasure.PIECE),
+            ("ING-AC-VEG", Decimal("0.1"), UnitOfMeasure.ML),
+        ]
+    },
+    {
+        "sku": "AYB-HAM-CLAS",
+        "name": "HAMBURGUESA CLASICA",
+        "category": "Clásicos",
+        "price": Decimal("100.00"),
+        "destination_kds": KDSStation.KITCHEN,
+        "items": [
+            ("ING-PAN-BRIO", Decimal("1"), UnitOfMeasure.PIECE),
+            ("ING-MOL-RES", Decimal("0.1"), UnitOfMeasure.GR),
+            ("ING-CEB-MOR", Decimal("0.035"), UnitOfMeasure.GR),
+            ("ING-QUES-AME", Decimal("0.017"), UnitOfMeasure.PIECE),
+            ("ING-LECH-BOL", Decimal("0.07"), UnitOfMeasure.GR),
+            ("ING-TOM-SAL", Decimal("0.05"), UnitOfMeasure.GR),
+            ("ING-PAP-GAJ", Decimal("0.2"), UnitOfMeasure.GR),
+            ("ING-CHIL-VIN", Decimal("0.055"), UnitOfMeasure.GR),
+            ("ING-MAYONESA", Decimal("0.08"), UnitOfMeasure.GR),
+            ("ING-CATSUP", Decimal("0.08"), UnitOfMeasure.GR),
+            ("ING-PAP-ENC", Decimal("1"), UnitOfMeasure.PIECE),
+            ("ING-SOUF-2OZ", Decimal("2"), UnitOfMeasure.PIECE),
+            ("ING-TAP-2OZ", Decimal("2"), UnitOfMeasure.PIECE),
+            ("ING-AC-VEG", Decimal("0.1"), UnitOfMeasure.ML),
+        ]
+    },
+    {
+        "sku": "AYB-HAM-POL",
+        "name": "HAMBURGUESA DE POLLO",
+        "category": "Especialidades",
+        "price": Decimal("145.00"),
+        "destination_kds": KDSStation.KITCHEN,
+        "items": [
+            ("ING-PAN-BRIO", Decimal("1"), UnitOfMeasure.PIECE),
+            ("ING-PECH-POL", Decimal("0.15"), UnitOfMeasure.GR),
+            ("ING-TOM-SAL", Decimal("0.05"), UnitOfMeasure.GR),
+            ("ING-LECH-BOL", Decimal("0.07"), UnitOfMeasure.GR),
+            ("ING-QUES-AME", Decimal("0.017"), UnitOfMeasure.PIECE),
+            ("ING-CEB-MOR", Decimal("0.035"), UnitOfMeasure.GR),
+            ("ING-JAM-PAV", Decimal("0.05"), UnitOfMeasure.GR),
+            ("ING-PAP-GAJ", Decimal("0.2"), UnitOfMeasure.GR),
+            ("ING-TOCINO", Decimal("0.08"), UnitOfMeasure.GR),
+            ("ING-CHIL-VIN", Decimal("0.055"), UnitOfMeasure.GR),
+            ("ING-MAYONESA", Decimal("0.08"), UnitOfMeasure.GR),
+            ("ING-CATSUP", Decimal("0.08"), UnitOfMeasure.GR),
+            ("ING-PAP-ENC", Decimal("1"), UnitOfMeasure.PIECE),
+            ("ING-SOUF-2OZ", Decimal("2"), UnitOfMeasure.PIECE),
+            ("ING-TAP-2OZ", Decimal("2"), UnitOfMeasure.PIECE),
+            ("ING-AC-VEG", Decimal("0.1"), UnitOfMeasure.ML),
+        ]
+    },
+    {
+        "sku": "AYB-BON-BUF",
+        "name": "BONELESS BUFALO",
+        "category": "Botanas",
+        "price": Decimal("140.00"),
+        "destination_kds": KDSStation.KITCHEN,
+        "items": [
+            ("ING-PECH-POL", Decimal("0.3"), UnitOfMeasure.GR),
+            ("ING-APIO", Decimal("0.08"), UnitOfMeasure.GR),
+            ("ING-ZANAH", Decimal("0.08"), UnitOfMeasure.GR),
+            ("ING-RANCH", Decimal("0.08"), UnitOfMeasure.GR),
+            ("ING-RED-HOT", Decimal("0.22"), UnitOfMeasure.PIECE),
+            ("ING-PAP-ENC", Decimal("1"), UnitOfMeasure.PIECE),
+            ("ING-SOUF-2OZ", Decimal("2"), UnitOfMeasure.PIECE),
+            ("ING-TAP-2OZ", Decimal("2"), UnitOfMeasure.PIECE),
+            ("ING-AC-VEG", Decimal("0.1"), UnitOfMeasure.ML),
+            ("ING-HARINA", Decimal("0.22"), UnitOfMeasure.GR),
+            ("ING-PAPRIKA", Decimal("0.005"), UnitOfMeasure.GR),
+            ("ING-CONS-POL", Decimal("0.01"), UnitOfMeasure.GR),
+            ("ING-PIM-NEG", Decimal("0.002"), UnitOfMeasure.PIECE),
+        ]
+    },
+    {
+        "sku": "AYB-ENC-SUI",
+        "name": "ENCHILADAS SUIZAS",
+        "category": "Platillos",
+        "price": Decimal("130.00"),
+        "destination_kds": KDSStation.KITCHEN,
+        "items": [
+            ("ING-TORT-AMA", Decimal("4"), UnitOfMeasure.PIECE),
+            ("ING-PECH-POL", Decimal("0.1"), UnitOfMeasure.GR),
+            ("ING-CREM-ZUI", Decimal("0.14"), UnitOfMeasure.GR),
+            ("ING-CREM-AGR", Decimal("0.08"), UnitOfMeasure.GR),
+            ("ING-CILANTRO", Decimal("0.003"), UnitOfMeasure.PIECE),
+            ("ING-CEB-MOR", Decimal("0.05"), UnitOfMeasure.GR),
+            ("ING-MOZZ", Decimal("0.05"), UnitOfMeasure.GR),
+            ("ING-FRIJOLES", Decimal("0.12"), UnitOfMeasure.GR),
+            ("ING-COTIJA", Decimal("0.01"), UnitOfMeasure.GR),
+        ]
+    },
+    {
+        "sku": "AYB-BON-BBQ",
+        "name": "BONELESS BBQ",
+        "category": "Botanas",
+        "price": Decimal("140.00"),
+        "destination_kds": KDSStation.KITCHEN,
+        "items": [
+            ("ING-PECH-POL", Decimal("0.3"), UnitOfMeasure.GR),
+            ("ING-APIO", Decimal("0.1"), UnitOfMeasure.GR),
+            ("ING-ZANAH", Decimal("0.1"), UnitOfMeasure.GR),
+            ("ING-RANCH", Decimal("0.08"), UnitOfMeasure.GR),
+            ("ING-BBQ-SAU", Decimal("0.22"), UnitOfMeasure.GR),
+            ("ING-PAP-ENC", Decimal("1"), UnitOfMeasure.PIECE),
+            ("ING-SOUF-2OZ", Decimal("2"), UnitOfMeasure.PIECE),
+            ("ING-TAP-2OZ", Decimal("2"), UnitOfMeasure.PIECE),
+            ("ING-AC-VEG", Decimal("0.1"), UnitOfMeasure.ML),
+            ("ING-HARINA", Decimal("0.22"), UnitOfMeasure.GR),
+            ("ING-PAPRIKA", Decimal("0.005"), UnitOfMeasure.GR),
+            ("ING-CONS-POL", Decimal("0.01"), UnitOfMeasure.GR),
+            ("ING-PIM-NEG", Decimal("0.002"), UnitOfMeasure.PIECE),
+        ]
+    },
+    {
+        "sku": "AYB-CLU-SAN",
+        "name": "CLUB SANDWICH",
+        "category": "Sandwiches",
+        "price": Decimal("135.00"),
+        "destination_kds": KDSStation.KITCHEN,
+        "items": [
+            ("ING-PAN-BARR", Decimal("3"), UnitOfMeasure.PIECE),
+            ("ING-PECH-POL", Decimal("0.1"), UnitOfMeasure.GR),
+            ("ING-CEB-MOR", Decimal("0.035"), UnitOfMeasure.GR),
+            ("ING-QUES-AME", Decimal("0.017"), UnitOfMeasure.GR),
+            ("ING-LECH-BOL", Decimal("0.1"), UnitOfMeasure.GR),
+            ("ING-JAM-PAV", Decimal("0.05"), UnitOfMeasure.GR),
+            ("ING-PAP-GAJ", Decimal("0.2"), UnitOfMeasure.GR),
+            ("ING-CHIL-VIN", Decimal("0.055"), UnitOfMeasure.GR),
+            ("ING-MAYONESA", Decimal("0.1"), UnitOfMeasure.GR),
+            ("ING-CATSUP", Decimal("0.1"), UnitOfMeasure.GR),
+            ("ING-PAP-ENC", Decimal("1"), UnitOfMeasure.PIECE),
+            ("ING-SOUF-2OZ", Decimal("2"), UnitOfMeasure.PIECE),
+            ("ING-TAP-2OZ", Decimal("2"), UnitOfMeasure.PIECE),
+            ("ING-AC-VEG", Decimal("0.1"), UnitOfMeasure.ML),
+            ("ING-TOCINO", Decimal("0.08"), UnitOfMeasure.GR),
+            ("ING-PICAD", Decimal("0"), UnitOfMeasure.PIECE),
+            ("ING-TOM-SAL", Decimal("0.045"), UnitOfMeasure.GR),
+        ]
+    }
+]
+
+
 def seed_database():
     """
-    Puebla la base de datos con roles, usuarios por defecto, insumos y recetas de prueba.
+    Carga e inicializa todos los roles, usuarios por defecto, insumos reales
+    y fichas técnicas de producción de Alimentos y Bebidas en la base de datos.
     """
-    print("[INFO] Iniciando proceso de seeding en la base de datos...")
+    print("[INFO] Iniciando proceso de seeding con fichas técnicas reales del Casino...")
 
-    # Crear tablas si no existen en entorno local
     Base.metadata.create_all(bind=engine)
-
     db: Session = SessionLocal()
 
     try:
-        # ----------------------------------------------------------------------
-        # 1. Crear Roles del Sistema
-        # ----------------------------------------------------------------------
+        # 1. Creación de Roles
         roles_map = {}
         for role_enum in UserRole:
             stmt = select(Role).where(Role.name == role_enum)
@@ -58,10 +286,7 @@ def seed_database():
                 print(f"  + Rol creado: {role_enum.value}")
             roles_map[role_enum] = role_obj
 
-        # ----------------------------------------------------------------------
-        # 2. Crear Usuarios por Defecto
-        # ----------------------------------------------------------------------
-        # Usuario Admin
+        # 2. Usuarios Iniciales
         admin_user = db.execute(select(User).where(User.username == "admin")).scalar_one_or_none()
         if not admin_user:
             admin_user = User(
@@ -75,7 +300,6 @@ def seed_database():
             db.add(admin_user)
             print("  + Usuario creado: admin")
 
-        # Usuario Jefe de Sala (con PIN 1234 Poka-Yoke)
         jefe_user = db.execute(select(User).where(User.username == "jefe_sala")).scalar_one_or_none()
         if not jefe_user:
             jefe_user = User(
@@ -90,179 +314,84 @@ def seed_database():
             db.add(jefe_user)
             print("  + Usuario creado: jefe_sala (PIN NIP: 1234)")
 
-        # ----------------------------------------------------------------------
-        # 3. Crear Catálogo de Ingredientes / Insumos Base
-        # ----------------------------------------------------------------------
-        ingredients_data = [
-            {
-                "code": "ING-PAN-01",
-                "name": "Pan Brioche para Hamburguesa",
-                "unit_of_measure": UnitOfMeasure.PIECE,
-                "cost_per_unit": Decimal("8.5000"),
-                "current_stock": Decimal("200.0000"),
-                "minimum_stock": Decimal("50.0000")
-            },
-            {
-                "code": "ING-CAR-01",
-                "name": "Carne Molida de Res Sirloin",
-                "unit_of_measure": UnitOfMeasure.G,
-                "cost_per_unit": Decimal("0.2200"),  # $220/kg
-                "current_stock": Decimal("50000.0000"), # 50kg
-                "minimum_stock": Decimal("10000.0000")
-            },
-            {
-                "code": "ING-QUE-01",
-                "name": "Queso Cheddar rebanado",
-                "unit_of_measure": UnitOfMeasure.PIECE,
-                "cost_per_unit": Decimal("4.5000"),
-                "current_stock": Decimal("300.0000"),
-                "minimum_stock": Decimal("60.0000")
-            },
-            {
-                "code": "ING-TOC-01",
-                "name": "Tocino Ahumado de Cerdo",
-                "unit_of_measure": UnitOfMeasure.G,
-                "cost_per_unit": Decimal("0.3500"),  # $350/kg
-                "current_stock": Decimal("10000.0000"),
-                "minimum_stock": Decimal("2000.0000")
-            },
-            {
-                "code": "ING-SAL-BBQ",
-                "name": "Salsa BBQ Artesanal Especial",
-                "unit_of_measure": UnitOfMeasure.ML,
-                "cost_per_unit": Decimal("0.0800"),  # $80/L
-                "current_stock": Decimal("15000.0000"),
-                "minimum_stock": Decimal("3000.0000")
-            },
-            {
-                "code": "ING-CEB-CAR",
-                "name": "Cebolla Caramelizada",
-                "unit_of_measure": UnitOfMeasure.G,
-                "cost_per_unit": Decimal("0.0500"),
-                "current_stock": Decimal("5000.0000"),
-                "minimum_stock": Decimal("1000.0000")
-            },
-            {
-                "code": "ING-AGU-01",
-                "name": "Aguacate Hass Fresco",
-                "unit_of_measure": UnitOfMeasure.G,
-                "cost_per_unit": Decimal("0.1210"),  # $121/kg
-                "current_stock": Decimal("8000.0000"),
-                "minimum_stock": Decimal("1500.0000")
-            },
-            {
-                "code": "ING-MAN-01",
-                "name": "Mantequilla con Sal",
-                "unit_of_measure": UnitOfMeasure.G,
-                "cost_per_unit": Decimal("0.1500"),
-                "current_stock": Decimal("4000.0000"),
-                "minimum_stock": Decimal("1000.0000")
-            },
-            {
-                "code": "ING-PAP-01",
-                "name": "Papas a la Francesa Corte Delgado",
-                "unit_of_measure": UnitOfMeasure.G,
-                "cost_per_unit": Decimal("0.059857"),  # ~$60/kg
-                "current_stock": Decimal("40000.0000"),
-                "minimum_stock": Decimal("10000.0000")
-            }
-        ]
-
-        ingredients_dict = {}
-        for ing_item in ingredients_data:
+        # 3. Carga de Insumos Base Reales
+        ingredients_dict: Dict[str, Ingredient] = {}
+        for ing_item in INGREDIENTS_DATA:
             stmt = select(Ingredient).where(Ingredient.code == ing_item["code"])
             ing_obj = db.execute(stmt).scalar_one_or_none()
             if not ing_obj:
-                ing_obj = Ingredient(**ing_item, is_active=True)
+                ing_obj = Ingredient(
+                    code=ing_item["code"],
+                    name=ing_item["name"],
+                    unit_of_measure=ing_item["unit"],
+                    cost_per_unit=ing_item["cost"],
+                    current_stock=Decimal("1000.0000"),
+                    minimum_stock=Decimal("100.0000"),
+                    is_active=True
+                )
                 db.add(ing_obj)
                 db.flush()
-                print(f"  + Ingrediente creado: {ing_item['name']} ({ing_item['code']})")
+                print(f"  + Insumo insertado: {ing_item['name']} ({ing_item['code']}) - Costo: ${ing_item['cost']}")
+            else:
+                ing_obj.cost_per_unit = ing_item["cost"]
+                ing_obj.unit_of_measure = ing_item["unit"]
+                db.flush()
+
             ingredients_dict[ing_item["code"]] = ing_obj
 
-        # ----------------------------------------------------------------------
-        # 4. Crear Productos y Fichas Técnicas de Recetas
-        # ----------------------------------------------------------------------
+        # 4. Carga de Productos y Recetas Reales
+        for prod_data in PRODUCTS_RECIPES_DATA:
+            stmt = select(Product).where(Product.sku == prod_data["sku"])
+            product = db.execute(stmt).scalar_one_or_none()
 
-        # RECETA 1: Hamburguesa BBQ (AYB-BBQ-01)
-        prod_bbq = db.execute(select(Product).where(Product.sku == "AYB-BBQ-01")).scalar_one_or_none()
-        if not prod_bbq:
-            prod_bbq = Product(
-                sku="AYB-BBQ-01",
-                name="Hamburguesa BBQ Especial",
-                description="200g Sirloin, queso cheddar fundido, tocino crujiente, salsa BBQ especial y papas a la francesa.",
-                category="Hamburguesas Gourmet",
-                product_type=ProductType.PREPARED,
-                destination_kds=KDSStation.KITCHEN,
-                price=Decimal("240.00"),
-                courtesy_tier_min="GOLD",
-                is_active=True
+            if not product:
+                product = Product(
+                    sku=prod_data["sku"],
+                    name=prod_data["name"],
+                    description=f"Ficha técnica oficial de {prod_data['name']}",
+                    category=prod_data["category"],
+                    product_type=ProductType.PREPARED,
+                    destination_kds=prod_data["destination_kds"],
+                    price=prod_data["price"],
+                    courtesy_tier_min="GOLD",
+                    is_active=True
+                )
+                db.add(product)
+                db.flush()
+                print(f"\n  [PRODUCTO] {prod_data['name']} (SKU: {prod_data['sku']}) - Precio Venta: ${prod_data['price']}")
+
+            # Reemplazar / insertar ítems de la receta
+            db.execute(
+                RecipeItem.__table__.delete().where(RecipeItem.product_id == product.id)
             )
-            db.add(prod_bbq)
-            db.flush()
 
-            # Insumos de la Receta BBQ:
-            # 1. Pan Brioche: 1 pza ($8.50)
-            # 2. Carne Sirloin: 200g ($44.00)
-            # 3. Queso Cheddar: 2 pzas ($9.00)
-            # 4. Tocino: 40g ($14.00)
-            # 5. Salsa BBQ: 30ml ($2.40)
-            # 6. Mantequilla: 10g ($1.50)
-            # 7. Papas: 70g ($4.19)
-            # COSTO TOTAL ESTIMADO: $83.59
-            recipe_bbq = [
-                RecipeItem(product_id=prod_bbq.id, ingredient_id=ingredients_dict["ING-PAN-01"].id, quantity=Decimal("1.0000"), unit_of_measure=UnitOfMeasure.PIECE),
-                RecipeItem(product_id=prod_bbq.id, ingredient_id=ingredients_dict["ING-CAR-01"].id, quantity=Decimal("200.0000"), unit_of_measure=UnitOfMeasure.G),
-                RecipeItem(product_id=prod_bbq.id, ingredient_id=ingredients_dict["ING-QUE-01"].id, quantity=Decimal("2.0000"), unit_of_measure=UnitOfMeasure.PIECE),
-                RecipeItem(product_id=prod_bbq.id, ingredient_id=ingredients_dict["ING-TOC-01"].id, quantity=Decimal("40.0000"), unit_of_measure=UnitOfMeasure.G),
-                RecipeItem(product_id=prod_bbq.id, ingredient_id=ingredients_dict["ING-SAL-BBQ"].id, quantity=Decimal("30.0000"), unit_of_measure=UnitOfMeasure.ML),
-                RecipeItem(product_id=prod_bbq.id, ingredient_id=ingredients_dict["ING-MAN-01"].id, quantity=Decimal("10.0000"), unit_of_measure=UnitOfMeasure.G),
-                RecipeItem(product_id=prod_bbq.id, ingredient_id=ingredients_dict["ING-PAP-01"].id, quantity=Decimal("70.0000"), unit_of_measure=UnitOfMeasure.G),
-            ]
-            db.add_all(recipe_bbq)
-            print("  + Producto y Receta creada: Hamburguesa BBQ Especial (AYB-BBQ-01) - Costo: ~$83.59")
+            total_recipe_cost = Decimal("0.0000")
 
-        # RECETA 2: Hamburguesa Prestige (AYB-PRES-01)
-        prod_pres = db.execute(select(Product).where(Product.sku == "AYB-PRES-01")).scalar_one_or_none()
-        if not prod_pres:
-            prod_pres = Product(
-                sku="AYB-PRES-01",
-                name="Hamburguesa Prestige Signature",
-                description="220g Sirloin, queso cheddar doble, tocino, cebolla caramelizada, abanico de aguacate y papas.",
-                category="Hamburguesas Gourmet",
-                product_type=ProductType.PREPARED,
-                destination_kds=KDSStation.KITCHEN,
-                price=Decimal("290.00"),
-                courtesy_tier_min="PLATINUM",
-                is_active=True
-            )
-            db.add(prod_pres)
-            db.flush()
+            for ing_code, qty, unit in prod_data["items"]:
+                if ing_code not in ingredients_dict:
+                    print(f"  ! Advertencia: Insumo '{ing_code}' no encontrado.")
+                    continue
 
-            # Insumos de la Receta Prestige:
-            # 1. Pan Brioche: 1 pza ($8.50)
-            # 2. Carne Sirloin: 220g ($48.40)
-            # 3. Queso Cheddar: 2 pzas ($9.00)
-            # 4. Tocino: 40g ($14.00)
-            # 5. Cebolla Caramelizada: 30g ($1.50)
-            # 6. Aguacate: 40g ($4.84)
-            # 7. Mantequilla: 10g ($1.50)
-            # 8. Papas: 45g ($2.69)
-            # COSTO TOTAL ESTIMADO: $90.43
-            recipe_pres = [
-                RecipeItem(product_id=prod_pres.id, ingredient_id=ingredients_dict["ING-PAN-01"].id, quantity=Decimal("1.0000"), unit_of_measure=UnitOfMeasure.PIECE),
-                RecipeItem(product_id=prod_pres.id, ingredient_id=ingredients_dict["ING-CAR-01"].id, quantity=Decimal("220.0000"), unit_of_measure=UnitOfMeasure.G),
-                RecipeItem(product_id=prod_pres.id, ingredient_id=ingredients_dict["ING-QUE-01"].id, quantity=Decimal("2.0000"), unit_of_measure=UnitOfMeasure.PIECE),
-                RecipeItem(product_id=prod_pres.id, ingredient_id=ingredients_dict["ING-TOC-01"].id, quantity=Decimal("40.0000"), unit_of_measure=UnitOfMeasure.G),
-                RecipeItem(product_id=prod_pres.id, ingredient_id=ingredients_dict["ING-CEB-CAR"].id, quantity=Decimal("30.0000"), unit_of_measure=UnitOfMeasure.G),
-                RecipeItem(product_id=prod_pres.id, ingredient_id=ingredients_dict["ING-AGU-01"].id, quantity=Decimal("40.0000"), unit_of_measure=UnitOfMeasure.G),
-                RecipeItem(product_id=prod_pres.id, ingredient_id=ingredients_dict["ING-MAN-01"].id, quantity=Decimal("10.0000"), unit_of_measure=UnitOfMeasure.G),
-                RecipeItem(product_id=prod_pres.id, ingredient_id=ingredients_dict["ING-PAP-01"].id, quantity=Decimal("45.0000"), unit_of_measure=UnitOfMeasure.G),
-            ]
-            db.add_all(recipe_pres)
-            print("  + Producto y Receta creada: Hamburguesa Prestige Signature (AYB-PRES-01) - Costo: ~$90.43")
+                ing_entity = ingredients_dict[ing_code]
+                item_cost = qty * ing_entity.cost_per_unit
+                total_recipe_cost += item_cost
+
+                recipe_item = RecipeItem(
+                    product_id=product.id,
+                    ingredient_id=ing_entity.id,
+                    quantity=qty,
+                    unit_of_measure=unit
+                )
+                db.add(recipe_item)
+
+            margin_amount = prod_data["price"] - total_recipe_cost
+            margin_percent = ((margin_amount / prod_data["price"]) * Decimal("100")) if prod_data["price"] > 0 else Decimal("0.00")
+
+            print(f"    -> Insumos vinculados: {len(prod_data['items'])} ítems.")
+            print(f"    -> Costo Total Producción: ${round(total_recipe_cost, 2)} | Margen: ${round(margin_amount, 2)} ({round(margin_percent, 1)}%)")
 
         db.commit()
-        print("[SUCCESS] Seeding completado exitosamente con insumos y recetas de prueba.")
+        print("\n[SUCCESS] Seeding de fichas técnicas completado exitosamente.")
 
     except Exception as e:
         db.rollback()
