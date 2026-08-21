@@ -300,8 +300,6 @@ def seed_database():
             db.add(admin_user)
             print("  + Usuario creado: admin")
 
-        jefe_user = db.execute(select(User).where(User.username == "jefe_sala")).scalar_one_or_none()
-        if not jefe_user:
             jefe_user = User(
                 username="jefe_sala",
                 email="supervisor@casino.com",
@@ -313,6 +311,51 @@ def seed_database():
             )
             db.add(jefe_user)
             print("  + Usuario creado: jefe_sala (PIN NIP: 1234)")
+
+        # Usuarios Clientes de Prueba
+        from backend.models.enums import MembershipTier
+
+        classic_client = db.execute(select(User).where(User.username == "classic_client")).scalar_one_or_none()
+        if not classic_client:
+            classic_client = User(
+                username="classic_client",
+                email="classic@client.com",
+                full_name="Juan Pérez (Classic Client)",
+                hashed_password=get_password_hash("ClassicPass2026!"),
+                role_id=roles_map[UserRole.CUSTOMER].id,
+                membership_tier=MembershipTier.CLASSIC,
+                is_active=True
+            )
+            db.add(classic_client)
+            print("  + Cliente creado: classic_client (Membresía: CLASSIC)")
+
+        gold_client = db.execute(select(User).where(User.username == "gold_client")).scalar_one_or_none()
+        if not gold_client:
+            gold_client = User(
+                username="gold_client",
+                email="gold@client.com",
+                full_name="María López (Gold Client)",
+                hashed_password=get_password_hash("GoldPass2026!"),
+                role_id=roles_map[UserRole.CUSTOMER].id,
+                membership_tier=MembershipTier.GOLD,
+                is_active=True
+            )
+            db.add(gold_client)
+            print("  + Cliente creado: gold_client (Membresía: GOLD)")
+
+        vip_client = db.execute(select(User).where(User.username == "vip_client")).scalar_one_or_none()
+        if not vip_client:
+            vip_client = User(
+                username="vip_client",
+                email="vip@client.com",
+                full_name="Sofía Castro (VIP Client)",
+                hashed_password=get_password_hash("VipPass2026!"),
+                role_id=roles_map[UserRole.CUSTOMER].id,
+                membership_tier=MembershipTier.VIP,
+                is_active=True
+            )
+            db.add(vip_client)
+            print("  + Cliente creado: vip_client (Membresía: VIP)")
 
         # 3. Carga de Insumos Base Reales
         ingredients_dict: Dict[str, Ingredient] = {}

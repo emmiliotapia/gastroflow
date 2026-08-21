@@ -7,6 +7,7 @@ vía WebSockets.
 """
 
 import uuid
+from decimal import Decimal
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect, status
 from sqlalchemy import func, select
@@ -18,9 +19,10 @@ from backend.models.machine import Machine
 from backend.models.order import Order, OrderItem
 from backend.models.product import Product
 from backend.models.user import User
-from backend.schemas.order import KDSOrderUpdate, OrderCreate, OrderRead
+from backend.schemas.order import KDSOrderUpdate, OrderCreate, OrderRead, OrderItemRead
 from backend.services.inventory_service import InventoryService
 from backend.websockets.kds_manager import kds_manager
+from backend.utils.n8n import trigger_order_webhook
 
 router = APIRouter(tags=["Comandas y KDS (Kitchen Display System)"])
 
@@ -65,10 +67,19 @@ def create_order(
         db.add(order)
         db.flush()  # Obtener ID de la orden sin confirmar
 
-        total_accumulated = 0.0
+        total_accumulated = Decimal("0.00")
 
         # Mapeo de estaciones KDS afectadas para avisar a WebSockets
         stations_affected = set()
+
+        # Rangos de membresía para cortesía
+        TIER_RANKS = {
+            "CLASSIC": 0,
+            None: 0,
+            "GOLD": 1,
+            "PLATINUM": 2,
+            "VIP": 3
+        }
 
         for item in payload.items:
             product = db.get(Product, item.product_id)
@@ -78,16 +89,55 @@ def create_order(
                     detail=f"Producto con ID '{item.product_id}' no encontrado."
                 )
 
-            # Validar e incrementar totales
-            subtotal = product.price * item.quantity
-            total_accumulated += float(subtotal)
+            # Determinar precio cobrado basado en cortesías y PIN de supervisor
+            item_price = product.price
+            is_courtesy = False
+
+            if product.courtesy_tier_min:
+                user_tier = current_user.membership_tier.value if current_user.membership_tier else "CLASSIC"
+                required_tier = product.courtesy_tier_min
+                
+                # Si la membresía del cliente es suficiente, es cortesía automática ($0)
+                if TIER_RANKS.get(user_tier, 0) >= TIER_RANKS.get(required_tier, 0):
+                    is_courtesy = True
+                else:
+                    # Si no califica, validar si se suministró PIN de supervisor válido
+                    if payload.supervisor_pin:
+                        from backend.core.security import verify_pin
+                        # Buscar un supervisor activo cuyo PIN coincida
+                        stmt_sup = (
+                            select(User)
+                            .options(joinedload(User.role))
+                            .where(User.is_active == True)
+                        )
+                        users = db.execute(stmt_sup).unique().scalars().all()
+                        supervisor = None
+                        for u in users:
+                            if u.role.name in [UserRole.JEFE_DE_SALA, UserRole.ADMIN]:
+                                if u.hashed_pin and verify_pin(payload.supervisor_pin, u.hashed_pin):
+                                    supervisor = u
+                                    break
+                        
+                        if supervisor:
+                            is_courtesy = True
+                        else:
+                            raise HTTPException(
+                                status_code=status.HTTP_401_UNAUTHORIZED,
+                                detail="El PIN de supervisor ingresado no es válido para autorizar esta cortesía."
+                            )
+
+            if is_courtesy:
+                item_price = Decimal("0.00")
+
+            subtotal = item_price * item.quantity
+            total_accumulated += subtotal
 
             # Crear renglón
             order_item = OrderItem(
                 order_id=order.id,
                 product_id=product.id,
                 quantity=item.quantity,
-                unit_price=product.price,
+                unit_price=item_price,
                 subtotal=subtotal
             )
             db.add(order_item)
@@ -146,6 +196,9 @@ def create_order(
             ),
             asyncio.get_event_loop()
         )
+
+    # Disparar webhook n8n de nueva orden
+    trigger_order_webhook(dto.model_dump(mode="json"))
 
     return dto
 

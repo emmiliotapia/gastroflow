@@ -26,12 +26,14 @@ app.add_middleware(
 )
 
 # Registrar Routers de la API
-from backend.routers import auth, catalog, inventory, pos, kds
+from backend.routers import auth, catalog, inventory, pos, kds, machines, tickets
 app.include_router(auth.router)
 app.include_router(catalog.router)
 app.include_router(inventory.router)
 app.include_router(pos.router)
 app.include_router(kds.router)
+app.include_router(machines.router)
+app.include_router(tickets.router)
 
 # Servir PWA Estática
 from fastapi.staticfiles import StaticFiles

@@ -34,6 +34,7 @@ class OrderCreate(BaseModel):
     machine_id: Optional[uuid.UUID] = Field(None, description="UUID de la máquina/slot si el pedido viene de escaneo QR")
     notes: Optional[str] = Field(None, example="Sin cebolla, aderezo extra", description="Notas de preparación")
     items: List[OrderItemCreate] = Field(..., min_length=1, description="Detalle de productos ordenados")
+    supervisor_pin: Optional[str] = Field(None, description="PIN opcional de supervisor para autorizar cortesía si excede el nivel")
 
 
 class OrderRead(BaseModel):

@@ -16,7 +16,7 @@
   - [x] Endpoints FastAPI para gestión completa (Crear, Leer, Actualizar, Desactivar) de Ingredientes y Unidades de Medida.
   - [x] Endpoints FastAPI para gestión completa de Productos de AyB (Preparados vs Directos).
   - [x] Endpoints FastAPI para gestión de Recetas y vinculación de insumos.
-  - [ ] Endpoints FastAPI para gestión de Máquinas / Slots y generación de tokens de QR.
+  - [x] Endpoints FastAPI para gestión de Máquinas / Slots y generación de tokens de QR.
 - [x] **Módulo de Lógica de Inventario y Operación:**
   - [x] Implementar modelos de datos y endpoints para gestión de stock por bodegas (`WAREHOUSE`, `KITCHEN`, `BAR`).
   - [x] Implementar módulo de porcionado y conversión de insumos macro a micro.
@@ -27,11 +27,11 @@
   - [x] Implementar modelos y endpoints para cobro/comanda de pedidos (`Order` / `OrderItem`), integrados de forma transaccional y atómica al descuento de inventario.
   - [x] Implementar endpoints KDS para listar comandas FIFO por estación y actualizar estados.
   - [x] Implementar gestor de WebSockets (`kds_manager`) para notificaciones en tiempo real a pantallas de Cocina y Barra.
-  - [ ] Implementar validación de niveles de clientes y sistema de cortesías con NIP.
-  - [ ] Crear endpoints de tickets de sistemas con los 4 estados (`PENDIENTE`, `EN_PROCESO`, `HOLD`, `FINALIZADO`).
+  - [x] Implementar validación de niveles de clientes y sistema de cortesías con NIP.
+  - [x] Crear endpoints de tickets de sistemas con los 4 estados (`PENDIENTE`, `EN_PROCESO`, `HOLD`, `FINALIZADO`).
 
 ## Fase 3: Automatizaciones y Sistema Nervioso (n8n)
-- [ ] Configurar webhooks en FastAPI hacia n8n.
+- [x] Configurar webhooks en FastAPI hacia n8n.
 - [ ] Integrar canales de `notify.sh` segregados (Meseros, Runners, Sistemas).
 - [ ] Configurar cron job de escalamiento para minutas y tickets vencidos.
 
@@ -39,7 +39,7 @@
 - [x] Desarrollar PWA Cliente / Comandero POS (Rejilla de categorías, lectura de QR de máquina, carrito y cobro).
 - [x] Desarrollar PWA KDS (Pantalla táctil de cocina/barra, conexión WebSocket con reconexión exponencial y cambio de estados).
 - [x] Implementar infraestructura PWA (`manifest.json` y Service Worker `sw.js` para modo offline/standalone).
-- [ ] Desarrollar PWA Staff (Tickets de sistemas y autorización por PIN).
+- [x] Desarrollar PWA Staff (Tickets de sistemas y autorización por PIN).
 
 ## Fase 5: Inteligencia Artificial, RAG y Servidor MCP SmartOpsia
 - [ ] Diseñar modelos ORM para almacenamiento de Embeddings Vectoriales (Manuales, Tickets, Minutas) usando `pgvector`.

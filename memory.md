@@ -28,3 +28,13 @@
 - **pos.html:** Interfaz del comandero con carrito, panel de rejilla táctil dinámica y lectura de parámetro de URL `?machine_id=...` para slots.
 - **kds.html:** Pantalla táctil FIFO para cocina/barra con conexión persistente WebSocket y reconexión exponencial.
 - **Servicio Estático Integrado:** Los archivos estáticos se montaron a través de FastAPI en la ruta `/frontend/` y ya se encuentran desplegados y probados en el puerto `8001` del VPS.
+
+## Implementación de Máquinas, Tickets, Cortesías y PWA Staff - 2026-08-21
+- **Modelo de Datos y Seguridad:** Añadida la columna `membership_tier` a `User`, e implementado el modelo `Ticket` para seguimiento de incidencias técnicas en sala.
+- **Validación de Cortesías y PIN Poka-Yoke:**
+  - El endpoint de creación de comandas (`/api/v1/orders/`) ahora comprueba automáticamente los niveles de membresía (`CLASSIC` < `GOLD` < `PLATINUM` < `VIP`) contra el `courtesy_tier_min` de cada producto.
+  - Se añadió la capacidad de sobreescribir cobros de cortesías insuficientes suministrando un `supervisor_pin` en el payload de creación de comanda.
+- **CRUD y Routers REST:** Creados los routers para Máquinas (`/api/v1/machines`) y Tickets (`/api/v1/tickets`), implementando el flujo de estados (`PENDIENTE` -> `EN_PROCESO` -> `HOLD` -> `FINALIZADO`) y cierre estricto mediante PIN.
+- **PWA Staff y Control Técnico:** Diseñada la interfaz `staff.html` con estética premium Obsidian & Gold, incluyendo listado interactivo de tragamonedas con generación de etiquetas QR, gestor de tickets FIFO y teclado numérico virtual para validación de PIN de supervisores en el cierre.
+- **Integraciones n8n:** Añadido despachador de webhooks asíncrono no bloqueante en `backend/utils/n8n.py`.
+

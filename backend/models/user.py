@@ -14,7 +14,7 @@ from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, JSON, Strin
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.models.base import Base, TimestampMixin
-from backend.models.enums import UserRole
+from backend.models.enums import UserRole, MembershipTier
 
 
 class Role(Base, TimestampMixin):
@@ -109,6 +109,13 @@ class User(Base, TimestampMixin):
         String(255),
         nullable=True,
         comment="Hash seguro del NIP/PIN numérico de 4 a 6 dígitos (Exclusivo Poka-Yoke para Jefes de Sala)"
+    )
+
+    membership_tier: Mapped[Optional[MembershipTier]] = mapped_column(
+        Enum(MembershipTier, name="membership_tier_enum", create_type=True),
+        default=MembershipTier.CLASSIC,
+        nullable=True,
+        comment="Nivel de membresía del cliente para cortesías (CLASSIC, GOLD, PLATINUM, VIP)"
     )
 
     role_id: Mapped[int] = mapped_column(

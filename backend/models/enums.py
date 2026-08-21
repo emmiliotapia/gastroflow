@@ -108,3 +108,14 @@ class OrderStatus(str, Enum):
     READY = "READY"            # Preparado y listo para entrega por mesero
     DELIVERED = "DELIVERED"    # Entregado al cliente en mesa/máquina
     CANCELLED = "CANCELLED"    # Cancelado con reversa opcional o merma
+
+
+class MembershipTier(str, Enum):
+    """
+    Niveles de membresía del cliente para determinar elegibilidad de cortesías.
+    """
+    CLASSIC = "CLASSIC"
+    GOLD = "GOLD"
+    PLATINUM = "PLATINUM"
+    VIP = "VIP"
+
