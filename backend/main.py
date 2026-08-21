@@ -33,6 +33,13 @@ app.include_router(inventory.router)
 app.include_router(pos.router)
 app.include_router(kds.router)
 
+# Servir PWA Estática
+from fastapi.staticfiles import StaticFiles
+import os
+
+if os.path.exists("frontend"):
+    app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
+
 
 @app.get("/", tags=["Root"])
 def read_root():
