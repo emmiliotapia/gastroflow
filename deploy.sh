@@ -28,10 +28,10 @@ fi
 
 # 3. Construir imágenes e iniciar contenedores
 echo "[INFO] Reconstruyendo contenedores Docker sin caché..."
-docker compose build --no-cache
+docker-compose build --no-cache
 
 echo "[INFO] Levantando servicios en segundo plano..."
-docker compose up -d
+docker-compose up -d
 
 # 4. Esperar a que la base de datos PostgreSQL esté lista
 echo "[INFO] Esperando inicialización de base de datos..."
@@ -39,8 +39,8 @@ sleep 5
 
 # 5. Ejecutar seeder automático con las fichas técnicas reales
 echo "[INFO] Poblando catálogo de insumos, roles y recetas de AyB reales..."
-docker compose exec -T backend python -m backend.db.seed_recipes || echo "[WARN] Seeder ejecutado previamente o pendiente."
+docker-compose exec -T backend python -m backend.db.seed_recipes || echo "[WARN] Seeder ejecutado previamente o pendiente."
 
 # 6. Estado final de los contenedores
 echo "[SUCCESS] Despliegue completado exitosamente. Estado de los contenedores:"
-docker compose ps
+docker-compose ps
