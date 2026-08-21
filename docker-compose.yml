@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # Servidor de Base de Datos PostgreSQL con soporte nativo de pgvector
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: casino_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-casino_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-casino_secure_pass_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-casino_erp_db}
+    volumes:
+      - pgdata_casino:/var/lib/postgresql/data
+      - ./docker/init-pgvector.sql:/docker-entrypoint-initdb.d/01-init-pgvector.sql
+    ports:
+      # Puerto 5433 en el VPS host mapeado al 5432 interno para evitar colisiones con otras DBs
+      - "${POSTGRES_PORT_HOST:-5433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-casino_admin} -d ${POSTGRES_DB:-casino_erp_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - casino_net
+
+  # API Principal FastAPI - Core Backend
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: casino_backend
+    restart: always
+    env_file:
+      - .env
+    ports:
+      # Puerto 8001 en el VPS host mapeado al 8000 interno del contenedor
+      - "${BACKEND_PORT_HOST:-8001}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - casino_net
+
+volumes:
+  pgdata_casino:
+    driver: local
+
+networks:
+  casino_net:
+    driver: bridge

@@ -1,0 +1,77 @@
+"""
+Módulo de Enumeraciones del Dominio
+==================================
+Este módulo contiene todas las enumeraciones utilizadas por los modelos ORM
+para garantizar la integridad de datos en PostgreSQL y mantener un tipado estricto
+en la lógica de negocio.
+"""
+
+from enum import Enum
+
+
+class UnitOfMeasure(str, Enum):
+    """
+    Unidades de medida estandarizadas para inventario, insumos y recetas.
+    """
+    KG = "KG"              # Kilogramos
+    G = "G"                # Gramos
+    L = "L"                # Litros
+    ML = "ML"              # Mililitros
+    PIECE = "PIECE"        # Pieza / Unidad entera
+    OZ = "OZ"              # Onzas líquidas o sólidas
+    BOTTLE = "BOTTLE"      # Botella
+    CAN = "CAN"            # Lata
+    PACK = "PACK"          # Paquete / Caja
+
+
+class ProductType(str, Enum):
+    """
+    Clasificación del tipo de producto final de AyB.
+    Determina cómo se descuenta el inventario al realizar una venta o comanda.
+    """
+    PREPARED = "PREPARED"  # Producto preparado que deduce insumos según receta (ej. Hamburguesa, Coctel)
+    DIRECT = "DIRECT"      # Producto directo de venta sin receta (ej. Botella de agua, Lata de refresco)
+
+
+class KDSStation(str, Enum):
+    """
+    Estaciones de despliegue en pantalla KDS (Kitchen Display System).
+    Define hacia qué pantalla táctil u operativa se enruta el pedido.
+    """
+    KITCHEN = "KITCHEN"    # Cocina principal
+    BAR = "BAR"            # Barra de bebidas / Barman
+    SNACK_BAR = "SNACK_BAR"# Estación de snacks y postres
+
+
+class MachineStatus(str, Enum):
+    """
+    Estados operativos de las máquinas / slots en la sala de juego.
+    """
+    OPERATIONAL = "OPERATIONAL"        # Operativa y en servicio
+    MAINTENANCE = "MAINTENANCE"        # En mantenimiento técnico preventivo/correctivo
+    OUT_OF_SERVICE = "OUT_OF_SERVICE"  # Fuera de servicio por falla grave o retiro
+
+
+class UserRole(str, Enum):
+    """
+    Roles del sistema para control de acceso basado en roles (RBAC)
+    y flujo de autorizaciones Poka-Yoke.
+    """
+    ADMIN = "ADMIN"                    # Administrador general del sistema
+    JEFE_DE_SALA = "JEFE_DE_SALA"      # Supervisor / Jefe de Sala (Autoriza con PIN NIP)
+    WAITER = "WAITER"                  # Mesero / Runner de atención a máquinas
+    KITCHEN_STAFF = "KITCHEN_STAFF"    # Personal de Cocina (Operador KDS)
+    BARMAN = "BARMAN"                  # Personal de Barra (Operador KDS Barra)
+    TECHNICIAN = "TECHNICIAN"          # Técnico de Sistemas / Mantenimiento de slots
+    CUSTOMER = "CUSTOMER"              # Cliente final (Acceso a PWA vía QR)
+
+
+class TicketStatus(str, Enum):
+    """
+    Estados del ciclo de vida de los tickets de soporte / sistemas.
+    Flujo estricto: PENDIENTE -> EN_PROCESO -> (HOLD) -> FINALIZADO.
+    """
+    PENDIENTE = "PENDIENTE"    # Ticket creado, en espera de asignación
+    EN_PROCESO = "EN_PROCESO"  # Técnico trabajando en la resolución
+    HOLD = "HOLD"              # En pausa esperando refacción o aprobación
+    FINALIZADO = "FINALIZADO"  # Ticket resuelto y cerrado con validación PIN de Jefe de Sala
