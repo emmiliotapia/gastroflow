@@ -25,6 +25,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Registrar Routers de la API
+from backend.routers import auth
+app.include_router(auth.router)
+
 
 @app.get("/", tags=["Root"])
 def read_root():

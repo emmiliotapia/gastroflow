@@ -8,10 +8,10 @@
 - [x] Levantar configuración de Docker Compose aislado, `.env.example`, `deploy.sh` e infraestructura VPS.
 
 ## Fase 2: Módulos Core, Lógica de Negocio y Reglas
-- [ ] **Módulo de Autenticación y RBAC (ACLs):**
-  - [ ] Implementar autenticación JWT y hashing de contraseñas con Passlib/Bcrypt.
-  - [ ] Implementar middleware y dependencias de autorización de roles (`ADMIN`, `JEFE_DE_SALA`, `WAITER`, `SISTEMAS`, etc.).
-  - [ ] Implementar middleware de validación del NIP/PIN numérico (`hashed_pin`) para supervisores (Poka-Yoke).
+- [x] **Módulo de Autenticación y RBAC (ACLs):**
+  - [x] Implementar autenticación JWT y hashing de contraseñas con Passlib/Bcrypt.
+  - [x] Implementar middleware y dependencias de autorización de roles (`ADMIN`, `JEFE_DE_SALA`, `WAITER`, `SISTEMAS`, etc.).
+  - [x] Implementar middleware de validación del NIP/PIN numérico (`hashed_pin`) para supervisores (Poka-Yoke).
 - [ ] **Módulo CRUD de Catálogos:**
   - [ ] Endpoints FastAPI para gestión completa (Crear, Leer, Actualizar, Desactivar) de Ingredientes y Unidades de Medida.
   - [ ] Endpoints FastAPI para gestión completa de Productos de AyB (Preparados vs Directos).
