@@ -26,8 +26,9 @@ app.add_middleware(
 )
 
 # Registrar Routers de la API
-from backend.routers import auth
+from backend.routers import auth, catalog
 app.include_router(auth.router)
+app.include_router(catalog.router)
 
 
 @app.get("/", tags=["Root"])

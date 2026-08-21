@@ -12,10 +12,10 @@
   - [x] Implementar autenticación JWT y hashing de contraseñas con Passlib/Bcrypt.
   - [x] Implementar middleware y dependencias de autorización de roles (`ADMIN`, `JEFE_DE_SALA`, `WAITER`, `SISTEMAS`, etc.).
   - [x] Implementar middleware de validación del NIP/PIN numérico (`hashed_pin`) para supervisores (Poka-Yoke).
-- [ ] **Módulo CRUD de Catálogos:**
-  - [ ] Endpoints FastAPI para gestión completa (Crear, Leer, Actualizar, Desactivar) de Ingredientes y Unidades de Medida.
-  - [ ] Endpoints FastAPI para gestión completa de Productos de AyB (Preparados vs Directos).
-  - [ ] Endpoints FastAPI para gestión de Recetas y vinculación de insumos.
+- [x] **Módulo CRUD de Catálogos:**
+  - [x] Endpoints FastAPI para gestión completa (Crear, Leer, Actualizar, Desactivar) de Ingredientes y Unidades de Medida.
+  - [x] Endpoints FastAPI para gestión completa de Productos de AyB (Preparados vs Directos).
+  - [x] Endpoints FastAPI para gestión de Recetas y vinculación de insumos.
   - [ ] Endpoints FastAPI para gestión de Máquinas / Slots y generación de tokens de QR.
 - [ ] **Módulo de Lógica de Invenciario y Operación:**
   - [ ] Implementar motor de descuento automático de inventario al crear comanda (Cocina vs Barra).
