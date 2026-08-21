@@ -49,7 +49,7 @@ El Agente **SmartOpsia** interactúa con el Core Backend a través de un **Servi
                ▼                           ▼
 ┌─────────────────────────────────────────────────────────┐
 │             PostgreSQL (Relacional + pgvector)          │
-└────────────────────────────┬────────────────────────────┘
+└─────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -75,3 +75,23 @@ El módulo de inventario (`/backend/services/inventory_service.py`) gestiona las
 
 5. **Alertas de Reabastecimiento Automático**:
    - Insumos por debajo de `minimum_stock` generan automáticamente registros estructurados de compras sugeridas para su enrutamiento mediante n8n / `notify.sh`.
+
+---
+
+## 7. Módulo POS, Comandas, KDS y WebSockets en Tiempo Real
+
+Para dar soporte a la operación ágil y sin fricciones en sala, el sistema integra la siguiente arquitectura de comandas y despliegue:
+
+1. **Botonera Dinámica del POS (`POSCategory` / `POSButton`)**:
+   - Permite configurar categorías temáticas (pestañas) y botones físicos (con colores de aviso, orden e icono) asociados a productos. Facilita la carga rápida en tablets de meseros o el autoservicio desde códigos QR.
+
+2. **Flujo y Ciclo de Vida de Comandas (`Order` / `OrderItem`)**:
+   - Asocia pedidos a máquinas (`machine_id`) y empleados creadores.
+   - Estados: `PENDING` -> `PREPARING` -> `READY` -> `DELIVERED`.
+   - **Garantía Transaccional**: La creación de una orden abre un bloque atómico de base de datos. Si falla el descuento de stock de algún ingrediente de la receta en `deduct_product_stock`, se aborta la transacción (`rollback`) y no se crea la orden, garantizando la consistencia del inventario.
+
+3. **Kitchen Display System (KDS)**:
+   - Filtra órdenes en base a la estación de producción (`KITCHEN` o `BAR`) ordenándolas cronológicamente (FIFO) en tarjetas táctiles para optimizar los tiempos de despacho.
+
+4. **Notificaciones Push en Tiempo Real (WebSockets KDS)**:
+   - Administrado por `KDSConnectionManager`. Al crearse un pedido o cambiar de estado, se propaga un broadcast instantáneo a través de `/ws/kds` para actualizar de inmediato las pantallas activas de cocina o barra.

@@ -23,6 +23,10 @@
   - [x] Implementar módulo de registro y valorización monetaria de mermas y desperdicios.
   - [x] Implementar motor de descuento automático y atómico de inventario por comanda POS (Cocina vs Barra).
   - [x] Implementar servicio de alertas de stock mínimo con sugerencia de compras para n8n/notify.sh.
+  - [x] Implementar modelos de datos y endpoints para configuración visual de botonera del POS (`POSCategory` / `POSButton`).
+  - [x] Implementar modelos y endpoints para cobro/comanda de pedidos (`Order` / `OrderItem`), integrados de forma transaccional y atómica al descuento de inventario.
+  - [x] Implementar endpoints KDS para listar comandas FIFO por estación y actualizar estados.
+  - [x] Implementar gestor de WebSockets (`kds_manager`) para notificaciones en tiempo real a pantallas de Cocina y Barra.
   - [ ] Implementar validación de niveles de clientes y sistema de cortesías con NIP.
   - [ ] Crear endpoints de tickets de sistemas con los 4 estados (`PENDIENTE`, `EN_PROCESO`, `HOLD`, `FINALIZADO`).
 

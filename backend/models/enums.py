@@ -97,3 +97,14 @@ class StockTransactionType(str, Enum):
     WASTE = "WASTE"                   # Salida por merma / desperdicio / expiración
     SALE_DEDUCTION = "SALE_DEDUCTION" # Descuento automático por comanda POS
     TRANSFER = "TRANSFER"             # Traspaso entre bodegas / estaciones
+
+
+class OrderStatus(str, Enum):
+    """
+    Estados operativos del ciclo de vida de una comanda o ticket POS de AyB.
+    """
+    PENDING = "PENDING"        # Recibida, en espera de asignación/producción
+    PREPARING = "PREPARING"    # En preparación en cocina/barra (KDS)
+    READY = "READY"            # Preparado y listo para entrega por mesero
+    DELIVERED = "DELIVERED"    # Entregado al cliente en mesa/máquina
+    CANCELLED = "CANCELLED"    # Cancelado con reversa opcional o merma

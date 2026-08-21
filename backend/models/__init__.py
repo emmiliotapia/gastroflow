@@ -10,6 +10,7 @@ from backend.models.base import Base, TimestampMixin
 from backend.models.enums import (
     KDSStation,
     MachineStatus,
+    OrderStatus,
     ProductType,
     StockLocation,
     StockTransactionType,
@@ -19,6 +20,8 @@ from backend.models.enums import (
 )
 from backend.models.ingredient import Ingredient
 from backend.models.machine import Machine
+from backend.models.order import Order, OrderItem
+from backend.models.pos import POSButton, POSCategory
 from backend.models.product import Product, RecipeItem
 from backend.models.stock import StockLevel, StockTransaction
 from backend.models.user import Role, User
@@ -37,6 +40,7 @@ __all__ = [
     "TicketStatus",
     "StockLocation",
     "StockTransactionType",
+    "OrderStatus",
     # Models
     "Ingredient",
     "Product",
@@ -47,4 +51,8 @@ __all__ = [
     "StockLevel",
     "StockTransaction",
     "WasteLog",
+    "Order",
+    "OrderItem",
+    "POSCategory",
+    "POSButton",
 ]
