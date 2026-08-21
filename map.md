@@ -11,7 +11,7 @@
 | Servicio | Puerto Host VPS | Puerto Contenedor | Descripción / Endpoints |
 |---|---|---|---|
 | **FastAPI Core Backend** | `8001` | `8000` | API REST (`http://localhost:8001/docs`, `/health`) |
-| **PostgreSQL + pgvector** | `5433` | `5432` | BD Híbrida Vectorial/Relacional (`casino_erp_db`) |
+| **PostgreSQL + pgvector** | `5434` | `5432` | BD Híbrida Vectorial/Relacional (`casino_erp_db`) |
 | **PWA Frontend** | `3000` | `80` | Interfaces cliente/KDS (Nginx estático) |
 | **n8n Webhooks** | `5678` | `5678` | Sistema de Automatizaciones Externas |
 
