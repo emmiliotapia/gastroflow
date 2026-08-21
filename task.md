@@ -36,8 +36,9 @@
 - [ ] Configurar cron job de escalamiento para minutas y tickets vencidos.
 
 ## Fase 4: Interfaces y PWAs (Capas Visibles)
-- [ ] Desarrollar PWA Cliente (Escaneo QR + Mini catálogo POS).
-- [ ] Desarrollar PWA KDS (Pantalla táctil de cocina/barra con cambio de estados).
+- [x] Desarrollar PWA Cliente / Comandero POS (Rejilla de categorías, lectura de QR de máquina, carrito y cobro).
+- [x] Desarrollar PWA KDS (Pantalla táctil de cocina/barra, conexión WebSocket con reconexión exponencial y cambio de estados).
+- [x] Implementar infraestructura PWA (`manifest.json` y Service Worker `sw.js` para modo offline/standalone).
 - [ ] Desarrollar PWA Staff (Tickets de sistemas y autorización por PIN).
 
 ## Fase 5: Inteligencia Artificial, RAG y Servidor MCP SmartOpsia

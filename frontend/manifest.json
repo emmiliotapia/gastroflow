@@ -1,0 +1,22 @@
+{
+  "short_name": "Prestige POS",
+  "name": "Casino Prestige POS & KDS Hub",
+  "description": "Progressive Web App para comandas y KDS del ecosistema Casino Prestige",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/color/192/000000/luxury.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://img.icons8.com/color/512/000000/luxury.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/frontend/pos.html",
+  "background_color": "#0f0f0f",
+  "theme_color": "#d4af37",
+  "display": "standalone",
+  "orientation": "portrait"
+}

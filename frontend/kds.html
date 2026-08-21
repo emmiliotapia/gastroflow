@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Casino Prestige - Kitchen Display System (KDS)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background-color: #090909;
+      font-family: 'Inter', sans-serif;
+    }
+    .gold-accent {
+      color: #d4af37;
+    }
+    .border-gold {
+      border-color: #d4af37;
+    }
+    .bg-gold {
+      background-color: #d4af37;
+    }
+    .bg-obsidian-light {
+      background-color: #121212;
+    }
+  </style>
+</head>
+<body class="text-gray-200 min-h-screen flex flex-col">
+
+  <!-- HEADER -->
+  <header class="bg-obsidian-light border-b border-zinc-800 px-6 py-4 flex justify-between items-center">
+    <div class="flex items-center gap-3">
+      <i class="fa-solid fa-utensils gold-accent text-2xl animate-bounce"></i>
+      <h1 class="text-xl font-bold tracking-wider text-white">CASINO <span class="gold-accent">PRESTIGE</span> KDS</h1>
+    </div>
+    <div class="flex items-center gap-4">
+      <div id="station-indicator" class="bg-zinc-900 border border-gold px-4 py-1.5 rounded-full text-xs font-mono gold-accent">
+        Estación: ...
+      </div>
+      <div id="ws-indicator" class="flex items-center gap-2 text-xs bg-red-950/40 text-red-400 border border-red-900/50 px-3 py-1.5 rounded-lg transition font-mono">
+        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>Desconectado
+      </div>
+    </div>
+  </header>
+
+  <!-- KDS FIFO PANELS -->
+  <main class="flex-1 p-6 overflow-x-auto flex gap-6 items-start" id="kds-columns">
+    <!-- Las columnas FIFO se cargan de forma dinámica -->
+    <div class="text-zinc-500 text-center m-auto flex flex-col gap-2">
+      <i class="fa-solid fa-spinner text-4xl text-zinc-700 animate-spin"></i>
+      <span>Cargando comandas activas...</span>
+    </div>
+  </main>
+
+  <!-- STATION SELECTOR MODAL -->
+  <div id="station-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center">
+    <div class="bg-obsidian-light border border-zinc-800 p-8 rounded-2xl w-full max-w-md flex flex-col gap-6 shadow-2xl">
+      <div class="text-center flex flex-col gap-2">
+        <i class="fa-solid fa-building-circle-check gold-accent text-4xl"></i>
+        <h3 class="text-xl font-bold text-white tracking-wider">Selección de Pantalla KDS</h3>
+        <p class="text-xs text-zinc-400">Selecciona el módulo o estación de producción de este monitor</p>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <button onclick="setStation('KITCHEN')" class="bg-zinc-900/80 border border-zinc-800 hover:border-gold hover:bg-zinc-950 p-6 rounded-xl flex flex-col items-center gap-3 active:scale-[0.98] transition">
+          <i class="fa-solid fa-fire text-3xl gold-accent"></i>
+          <span class="font-bold text-sm text-white">COCINA</span>
+        </button>
+        <button onclick="setStation('BAR')" class="bg-zinc-900/80 border border-zinc-800 hover:border-gold hover:bg-zinc-950 p-6 rounded-xl flex flex-col items-center gap-3 active:scale-[0.98] transition">
+          <i class="fa-solid fa-martini-glass-citrus text-3xl gold-accent"></i>
+          <span class="font-bold text-sm text-white">BARRA</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // Configuración API y WebSocket URL
+    const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8001' : '';
+    const WS_BASE = window.location.hostname === 'localhost' ? 'ws://localhost:8001' : `ws://${window.location.host}`;
+
+    let currentStation = null;
+    let ordersList = [];
+    let ws = null;
+    let reconnectDelay = 1000; // Delay inicial de 1s
+
+    // Selección de Estación
+    function setStation(station) {
+      currentStation = station;
+      document.getElementById('station-modal').classList.add('hidden');
+      document.getElementById('station-indicator').innerText = `Estación: ${station}`;
+      
+      // 1. Cargar órdenes iniciales
+      loadKDSOrders();
+      // 2. Conectar WebSocket
+      connectWS();
+    }
+
+    // Cargar órdenes activas por REST (HTTP GET)
+    async function loadKDSOrders() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert('Debe iniciar sesión en el comandero primero.');
+          window.location.href = 'pos.html';
+          return;
+        }
+
+        const res = await fetch(`${API_BASE}/api/v1/kds/orders?station=${currentStation}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (!res.ok) throw new Error('Error al consultar KDS');
+        ordersList = await res.json();
+        renderOrders();
+      } catch (err) {
+        console.error('Falla en REST:', err);
+      }
+    }
+
+    // Pintar tarjetas de Comandas
+    function renderOrders() {
+      const columns = document.getElementById('kds-columns');
+      columns.innerHTML = '';
+
+      if (ordersList.length === 0) {
+        columns.innerHTML = `
+          <div class="text-zinc-500 text-center m-auto flex flex-col gap-2 py-20">
+            <i class="fa-solid fa-circle-check text-5xl text-zinc-800"></i>
+            <span>¡Sin comandas pendientes! Buen trabajo.</span>
+          </div>
+        `;
+        return;
+      }
+
+      ordersList.forEach(order => {
+        // Formatear botones de acción según estado
+        let actionBtn = '';
+        let headerColor = 'bg-zinc-900 border-zinc-800';
+        let statusBadge = '';
+
+        if (order.status === 'PENDING') {
+          headerColor = 'bg-red-950/40 border-red-900/30';
+          statusBadge = '<span class="text-xs bg-red-950 text-red-400 border border-red-900/50 px-2 py-0.5 rounded">En Cola</span>';
+          actionBtn = `
+            <button onclick="changeStatus('${order.id}', 'PREPARING')" class="w-full bg-gold hover:bg-yellow-600 text-black font-extrabold py-2.5 rounded-lg text-xs uppercase tracking-wider transition">
+              <i class="fa-solid fa-play mr-2"></i>Preparar
+            </button>
+          `;
+        } else if (order.status === 'PREPARING') {
+          headerColor = 'bg-amber-950/40 border-amber-900/30';
+          statusBadge = '<span class="text-xs bg-amber-950 text-amber-400 border border-amber-900/50 px-2 py-0.5 rounded">Preparando</span>';
+          actionBtn = `
+            <button onclick="changeStatus('${order.id}', 'READY')" class="w-full bg-green-600 hover:bg-green-700 text-white font-extrabold py-2.5 rounded-lg text-xs uppercase tracking-wider transition">
+              <i class="fa-solid fa-check-double mr-2"></i>Terminar
+            </button>
+          `;
+        } else if (order.status === 'READY') {
+          headerColor = 'bg-green-950/20 border-green-900/30';
+          statusBadge = '<span class="text-xs bg-green-950 text-green-400 border border-green-900/50 px-2 py-0.5 rounded">Listo</span>';
+          actionBtn = `
+            <button onclick="changeStatus('${order.id}', 'DELIVERED')" class="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-extrabold py-2.5 rounded-lg text-xs uppercase tracking-wider transition">
+              <i class="fa-solid fa-box mr-2"></i>Entregar
+            </button>
+          `;
+        }
+
+        // Renderizar items
+        let itemsHtml = '';
+        order.items.forEach(it => {
+          itemsHtml += `
+            <div class="flex justify-between items-start border-b border-zinc-800/50 pb-2">
+              <div class="flex flex-col">
+                <span class="text-sm font-bold text-white">${it.product_name || 'Insumo'}</span>
+              </div>
+              <span class="font-mono font-extrabold text-gold text-sm bg-zinc-900/80 px-2 py-0.5 rounded border border-zinc-800">x${parseInt(it.quantity)}</span>
+            </div>
+          `;
+        });
+
+        columns.innerHTML += `
+          <div class="flex-shrink-0 w-80 bg-obsidian-light border border-zinc-800 rounded-2xl flex flex-col shadow-xl">
+            <!-- Header Tarjeta -->
+            <div class="p-4 border-b border-zinc-800 flex justify-between items-center rounded-t-2xl ${headerColor}">
+              <div class="flex flex-col gap-0.5">
+                <span class="text-xs font-mono text-zinc-400">${order.order_number}</span>
+                <span class="text-xs text-zinc-500 font-bold uppercase"><i class="fa-solid fa-microchip mr-1.5"></i>Slot ID</span>
+              </div>
+              ${statusBadge}
+            </div>
+
+            <!-- Detalle Items -->
+            <div class="p-4 flex-1 flex flex-col gap-3 max-h-72 overflow-y-auto">
+              ${itemsHtml}
+              
+              <!-- Notas -->
+              ${order.notes ? `
+                <div class="mt-2 bg-zinc-900/80 border border-zinc-800 p-2.5 rounded-lg text-[10px] text-zinc-400 italic">
+                  <i class="fa-solid fa-comment-dots mr-1.5 gold-accent"></i>"${order.notes}"
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Acciones -->
+            <div class="p-4 border-t border-zinc-800">
+              ${actionBtn}
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // Cambiar estado por REST
+    async function changeStatus(orderId, newStatus) {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/api/v1/kds/orders/${orderId}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+        
+        if (!res.ok) throw new Error('Error al actualizar comanda');
+        
+        // Actualización local
+        ordersList = ordersList.filter(o => o.id !== orderId);
+        
+        // Si el estado no es DELIVERED, podríamos querer mantenerlo, 
+        // pero la lista `/api/v1/kds/orders?station=...` solo retorna activos.
+        // Volvemos a consultar para refrescar
+        loadKDSOrders();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // Conectar WebSocket con reconexión exponencial
+    function connectWS() {
+      const wsIndicator = document.getElementById('ws-indicator');
+      
+      console.log(`[WS] Conectando a ${WS_BASE}/ws/kds?station=${currentStation}`);
+      ws = new WebSocket(`${WS_BASE}/ws/kds?station=${currentStation}`);
+
+      ws.onopen = () => {
+        console.log('[WS] Conectado exitosamente.');
+        wsIndicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>Conectado`;
+        wsIndicator.classList.remove('bg-red-950/40', 'text-red-400', 'border-red-900/50');
+        wsIndicator.classList.add('bg-green-950/40', 'text-green-400', 'border-green-900/50');
+        reconnectDelay = 1000; // Reset delay de reconexión
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('[WS] Mensaje recibido:', data);
+
+          if (data.event === 'NEW_ORDER') {
+            // Filtrar si alguno de los items del pedido pertenece a la estación del KDS
+            const hasMatch = data.order.items.some(it => it.product_name); // ya filtrado en backend
+            if (hasMatch) {
+              ordersList.push(data.order);
+              renderOrders();
+            }
+          } else if (data.event === 'STATUS_UPDATE') {
+            // Si el estado cambió a entregado o ajeno, quitarlo de pantalla
+            if (data.status === 'DELIVERED') {
+              ordersList = ordersList.filter(o => o.id !== data.order_id);
+            } else {
+              // Actualizar estado del elemento en la lista local
+              const idx = ordersList.findIndex(o => o.id === data.order_id);
+              if (idx !== -1) {
+                ordersList[idx].status = data.status;
+              }
+            }
+            renderOrders();
+          }
+        } catch (err) {
+          console.error('[WS] Error interpretando payload:', err);
+        }
+      };
+
+      ws.onclose = () => {
+        console.log('[WS] Conexión cerrada.');
+        wsIndicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>Desconectado`;
+        wsIndicator.classList.remove('bg-green-950/40', 'text-green-400', 'border-green-900/50');
+        wsIndicator.classList.add('bg-red-950/40', 'text-red-400', 'border-red-900/50');
+        
+        // Intentar reconectar
+        setTimeout(connectWS, reconnectDelay);
+        reconnectDelay = Math.min(reconnectDelay * 2, 30000); // Exponencial hasta 30s
+      };
+
+      ws.onerror = (err) => {
+        console.error('[WS] Falla técnica:', err);
+        ws.close();
+      };
+    }
+  </script>
+</body>
+</html>

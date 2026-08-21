@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Casino Prestige - Comandero POS</title>
+  <link rel="manifest" href="manifest.json">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background-color: #090909;
+      font-family: 'Inter', sans-serif;
+    }
+    .gold-accent {
+      color: #d4af37;
+    }
+    .border-gold {
+      border-color: #d4af37;
+    }
+    .bg-gold {
+      background-color: #d4af37;
+    }
+    .bg-obsidian-light {
+      background-color: #121212;
+    }
+  </style>
+</head>
+<body class="text-gray-200 min-h-screen flex flex-col">
+
+  <!-- HEADER -->
+  <header class="bg-obsidian-light border-b border-zinc-800 px-6 py-4 flex justify-between items-center">
+    <div class="flex items-center gap-3">
+      <i class="fa-solid fa-crown gold-accent text-2xl animate-pulse"></i>
+      <h1 class="text-xl font-bold tracking-wider text-white">CASINO <span class="gold-accent">PRESTIGE</span> POS</h1>
+    </div>
+    <div class="flex items-center gap-4">
+      <div id="machine-indicator" class="bg-zinc-900 border border-zinc-700 px-4 py-1.5 rounded-full text-xs font-mono text-zinc-400">
+        <i class="fa-solid fa-microchip mr-2 text-zinc-500"></i>Terminal: Gral.
+      </div>
+      <button onclick="logout()" class="text-xs bg-red-950/40 hover:bg-red-900/60 text-red-400 border border-red-900/50 px-3 py-1.5 rounded-lg transition">
+        <i class="fa-solid fa-right-from-bracket mr-2"></i>Salir
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN BODY -->
+  <main class="flex-1 flex overflow-hidden">
+    
+    <!-- LEFT PANEL: POS BUTTONS GRID -->
+    <section class="w-2/3 p-6 flex flex-col gap-6 overflow-y-auto">
+      
+      <!-- CATEGORIES TAB CONTAINER -->
+      <div id="categories-container" class="flex gap-3 overflow-x-auto pb-2 border-b border-zinc-800">
+        <!-- Cargar dinámicamente -->
+        <div class="text-zinc-500 py-2">Cargando categorías...</div>
+      </div>
+
+      <!-- PRODUCTS REJILLA -->
+      <div id="products-grid" class="grid grid-cols-3 gap-4">
+        <!-- Cargar dinámicamente -->
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL: CART & CHECKOUT -->
+    <section class="w-1/3 bg-obsidian-light border-l border-zinc-800 p-6 flex flex-col">
+      <h2 class="text-lg font-bold text-white border-b border-zinc-800 pb-3 flex justify-between items-center">
+        <span><i class="fa-solid fa-receipt mr-2 gold-accent"></i>Detalle de Comanda</span>
+        <span id="cart-counter" class="text-xs bg-gold text-black font-extrabold px-2.5 py-0.5 rounded-full">0</span>
+      </h2>
+
+      <!-- CART ITEMS LIST -->
+      <div id="cart-items" class="flex-1 overflow-y-auto py-4 flex flex-col gap-3">
+        <div class="text-zinc-500 text-center my-auto flex flex-col gap-2">
+          <i class="fa-solid fa-shopping-basket text-4xl text-zinc-700"></i>
+          <span>El carrito está vacío</span>
+        </div>
+      </div>
+
+      <!-- NOTES & TOTALS -->
+      <div class="border-t border-zinc-800 pt-4 flex flex-col gap-4">
+        <div>
+          <label class="block text-xs text-zinc-400 font-bold mb-1 uppercase tracking-wider">Notas de Preparación</label>
+          <textarea id="order-notes" rows="2" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-yellow-600 transition" placeholder="Ej: Término medio, sin cebolla..."></textarea>
+        </div>
+
+        <div class="flex justify-between items-center text-sm font-bold text-zinc-300">
+          <span>Subtotal:</span>
+          <span id="order-subtotal">$0.00</span>
+        </div>
+        <div class="flex justify-between items-center text-lg font-extrabold text-white border-t border-zinc-800/50 pt-2">
+          <span>Total:</span>
+          <span id="order-total" class="gold-accent">$0.00</span>
+        </div>
+
+        <button onclick="submitOrder()" class="w-full bg-gold hover:bg-yellow-600 text-black font-extrabold py-3.5 rounded-xl flex justify-center items-center gap-2 shadow-lg shadow-yellow-600/10 active:scale-[0.98] transition">
+          <i class="fa-solid fa-paper-plane"></i>Enviar Comanda a Cocina
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- AUTH / LOGIN MODAL -->
+  <div id="login-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="bg-obsidian-light border border-zinc-800 p-8 rounded-2xl w-full max-w-sm flex flex-col gap-6 shadow-2xl">
+      <div class="text-center flex flex-col gap-2">
+        <i class="fa-solid fa-shield-halved gold-accent text-4xl"></i>
+        <h3 class="text-xl font-bold text-white tracking-wider">Control de Acceso</h3>
+        <p class="text-xs text-zinc-400">Inicia sesión con tus credenciales de operador</p>
+      </div>
+      <div class="flex flex-col gap-4">
+        <div>
+          <label class="block text-xs text-zinc-400 font-bold uppercase mb-1">Nombre de usuario</label>
+          <input type="text" id="username" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-yellow-600 transition" placeholder="admin">
+        </div>
+        <div>
+          <label class="block text-xs text-zinc-400 font-bold uppercase mb-1">Contraseña</label>
+          <input type="password" id="password" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-yellow-600 transition" placeholder="••••••••">
+        </div>
+      </div>
+      <button onclick="login()" class="w-full bg-gold text-black font-extrabold py-3.5 rounded-xl hover:bg-yellow-600 transition">
+        Iniciar Sesión
+      </button>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // Configuración API URL
+    const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8001' : '';
+
+    let categoriesData = [];
+    let activeCategoryIndex = 0;
+    let cart = [];
+    let currentMachineId = null;
+
+    // Detectar Machine ID por URL
+    function detectMachine() {
+      const params = new URLSearchParams(window.location.search);
+      currentMachineId = params.get('machine_id');
+      const indicator = document.getElementById('machine-indicator');
+      if (currentMachineId) {
+        indicator.innerHTML = `<i class="fa-solid fa-microchip mr-2 gold-accent"></i>Terminal QR: Slot ID`;
+        indicator.classList.add('border-gold');
+      } else {
+        indicator.innerHTML = `<i class="fa-solid fa-desktop mr-2 text-zinc-500"></i>Terminal: Principal`;
+      }
+    }
+
+    // Verificar Token JWT
+    function checkAuth() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        document.getElementById('login-modal').classList.remove('hidden');
+      } else {
+        document.getElementById('login-modal').classList.add('hidden');
+        loadPOSGrid();
+      }
+    }
+
+    // Login API
+    async function login() {
+      const u = document.getElementById('username').value;
+      const p = document.getElementById('password').value;
+      
+      const formData = new FormData();
+      formData.append('username', u);
+      formData.append('password', p);
+
+      try {
+        const res = await fetch(`${API_BASE}/login`, {
+          method: 'POST',
+          body: formData
+        });
+        if (!res.ok) throw new Error('Credenciales incorrectas');
+        const data = await res.json();
+        localStorage.setItem('token', data.access_token);
+        checkAuth();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // Logout
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.reload();
+    }
+
+    // Cargar Rejilla del POS
+    async function loadPOSGrid() {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/pos/categories`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        if (res.status === 401) {
+          logout();
+          return;
+        }
+        categoriesData = await res.json();
+        renderCategories();
+        renderProducts();
+      } catch (err) {
+        console.error('Error cargando la botonera POS:', err);
+      }
+    }
+
+    // Pintar pestañas de categorías
+    function renderCategories() {
+      const container = document.getElementById('categories-container');
+      container.innerHTML = '';
+      categoriesData.forEach((cat, idx) => {
+        const activeClass = idx === activeCategoryIndex 
+          ? 'border-gold gold-accent font-extrabold bg-zinc-900' 
+          : 'border-transparent text-zinc-500 hover:text-zinc-300';
+        
+        container.innerHTML += `
+          <button onclick="switchCategory(${idx})" class="px-5 py-3 border-b-2 ${activeClass} transition whitespace-nowrap text-sm uppercase tracking-wider rounded-t-lg">
+            ${cat.name}
+          </button>
+        `;
+      });
+    }
+
+    // Cambiar categoría activa
+    function switchCategory(idx) {
+      activeCategoryIndex = idx;
+      renderCategories();
+      renderProducts();
+    }
+
+    // Pintar productos de la categoría activa
+    function renderProducts() {
+      const grid = document.getElementById('products-grid');
+      grid.innerHTML = '';
+      
+      const category = categoriesData[activeCategoryIndex];
+      if (!category || !category.buttons || category.buttons.length === 0) {
+        grid.innerHTML = `<div class="col-span-3 text-zinc-500 text-center py-10">No hay productos en esta categoría</div>`;
+        return;
+      }
+
+      category.buttons.forEach(btn => {
+        grid.innerHTML += `
+          <button onclick="addToCart('${btn.product_id}', '${btn.label}', ${btn.product.price})" 
+            class="bg-zinc-900/60 border border-zinc-800 hover:border-gold/40 p-5 rounded-xl flex flex-col justify-between items-start gap-4 h-36 text-left active:scale-[0.98] transition">
+            <span class="text-sm font-bold text-white leading-snug">${btn.label}</span>
+            <span class="gold-accent font-mono font-bold">$${parseFloat(btn.product.price).toFixed(2)}</span>
+          </button>
+        `;
+      });
+    }
+
+    // Añadir al Carrito
+    function addToCart(productId, label, price) {
+      const existing = cart.find(item => item.product_id === productId);
+      if (existing) {
+        existing.quantity++;
+      } else {
+        cart.push({ product_id: productId, label, price, quantity: 1 });
+      }
+      renderCart();
+    }
+
+    // Quitar / Incrementar del Carrito
+    function updateQty(productId, delta) {
+      const item = cart.find(i => i.product_id === productId);
+      if (item) {
+        item.quantity += delta;
+        if (item.quantity <= 0) {
+          cart = cart.filter(i => i.product_id !== productId);
+        }
+      }
+      renderCart();
+    }
+
+    // Pintar Carrito
+    function renderCart() {
+      const container = document.getElementById('cart-items');
+      const counter = document.getElementById('cart-counter');
+      const subtotalEl = document.getElementById('order-subtotal');
+      const totalEl = document.getElementById('order-total');
+
+      if (cart.length === 0) {
+        container.innerHTML = `
+          <div class="text-zinc-500 text-center my-auto flex flex-col gap-2">
+            <i class="fa-solid fa-shopping-basket text-4xl text-zinc-700"></i>
+            <span>El carrito está vacío</span>
+          </div>
+        `;
+        counter.innerText = '0';
+        subtotalEl.innerText = '$0.00';
+        totalEl.innerText = '$0.00';
+        return;
+      }
+
+      container.innerHTML = '';
+      let accum = 0;
+      let countItems = 0;
+
+      cart.forEach(item => {
+        const sub = item.price * item.quantity;
+        accum += sub;
+        countItems += item.quantity;
+
+        container.innerHTML += `
+          <div class="flex justify-between items-center bg-zinc-900 border border-zinc-800/80 p-3.5 rounded-xl">
+            <div class="flex flex-col gap-0.5">
+              <span class="text-xs font-bold text-white">${item.label}</span>
+              <span class="text-[10px] text-zinc-500 font-mono">$${parseFloat(item.price).toFixed(2)} c/u</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <button onclick="updateQty('${item.product_id}', -1)" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 w-6 h-6 rounded flex items-center justify-center text-xs">-</button>
+              <span class="text-xs font-mono font-extrabold text-white">${item.quantity}</span>
+              <button onclick="updateQty('${item.product_id}', 1)" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 w-6 h-6 rounded flex items-center justify-center text-xs">+</button>
+            </div>
+          </div>
+        `;
+      });
+
+      counter.innerText = countItems;
+      subtotalEl.innerText = `$${accum.toFixed(2)}`;
+      totalEl.innerText = `$${accum.toFixed(2)}`;
+    }
+
+    // Enviar Orden / Comanda
+    async function submitOrder() {
+      if (cart.length === 0) {
+        alert('Agrega productos al carrito antes de enviar la comanda.');
+        return;
+      }
+
+      const notes = document.getElementById('order-notes').value;
+      const orderItems = cart.map(i => ({
+        product_id: i.product_id,
+        quantity: i.quantity
+      }));
+
+      const payload = {
+        machine_id: currentMachineId, // Puede ser null
+        notes: notes,
+        items: orderItems
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/orders/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.detail || 'Error procesando la comanda');
+        }
+
+        alert('¡Comanda enviada a cocina de forma exitosa!');
+        cart = [];
+        document.getElementById('order-notes').value = '';
+        renderCart();
+      } catch (err) {
+        alert(`Falla de stock o error: ${err.message}`);
+      }
+    }
+
+    // Boot
+    detectMachine();
+    checkAuth();
+  </script>
+</body>
+</html>
