@@ -17,8 +17,12 @@
   - [x] Endpoints FastAPI para gestión completa de Productos de AyB (Preparados vs Directos).
   - [x] Endpoints FastAPI para gestión de Recetas y vinculación de insumos.
   - [ ] Endpoints FastAPI para gestión de Máquinas / Slots y generación de tokens de QR.
-- [ ] **Módulo de Lógica de Invenciario y Operación:**
-  - [ ] Implementar motor de descuento automático de inventario al crear comanda (Cocina vs Barra).
+- [x] **Módulo de Lógica de Inventario y Operación:**
+  - [x] Implementar modelos de datos y endpoints para gestión de stock por bodegas (`WAREHOUSE`, `KITCHEN`, `BAR`).
+  - [x] Implementar módulo de porcionado y conversión de insumos macro a micro.
+  - [x] Implementar módulo de registro y valorización monetaria de mermas y desperdicios.
+  - [x] Implementar motor de descuento automático y atómico de inventario por comanda POS (Cocina vs Barra).
+  - [x] Implementar servicio de alertas de stock mínimo con sugerencia de compras para n8n/notify.sh.
   - [ ] Implementar validación de niveles de clientes y sistema de cortesías con NIP.
   - [ ] Crear endpoints de tickets de sistemas con los 4 estados (`PENDIENTE`, `EN_PROCESO`, `HOLD`, `FINALIZADO`).
 

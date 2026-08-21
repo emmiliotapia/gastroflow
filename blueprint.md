@@ -49,11 +49,29 @@ El Agente **SmartOpsia** interactúa con el Core Backend a través de un **Servi
                ▼                           ▼
 ┌─────────────────────────────────────────────────────────┐
 │             PostgreSQL (Relacional + pgvector)          │
-└─────────────────────────────────────────────────────────┘
+└────────────────────────────┬────────────────────────────┘
 ```
 
-### Funcionalidades Clave del Servidor MCP:
-- **Interpretación de Intención y NL-to-SQL:** Traduce preguntas en lenguaje natural ("¿Cuál fue la bebida más solicitada en la Zona VIP el fin de semana?") a consultas SQL optimizadas.
-- **Control Estricto de Seguridad y ACLs:** Garantiza que el agente solo consulte tablas y métricas autorizadas según el rol del usuario que realiza la petición (`ADMIN`, `JEFE_DE_SALA`, `TECHNICIAN`), impidiendo inyecciones o escalación de privilegios.
-- **Búsqueda Híbrida (Hybrid Search):** Combina agregaciones SQL tradicionales (`SUM`, `COUNT`, `AVG`) con similitud de coseno vectorial (`<->`) para correlacionar datos numéricos con contexto no estructurado.
-- **Generación Automatizada de Reportes:** Genera informes ejecutivos en formato Markdown y JSON con análisis predictivo de mermas de AyB y tiempos promedio de resolución de tickets.
+---
+
+## 6. Motor de Inventarios, Porcionado, Mermas y Descuento Atómico POS
+
+El módulo de inventario (`/backend/services/inventory_service.py`) gestiona las existencias físicas en tiempo real segmentando bodegas y estaciones de consumo:
+
+1. **Segmentación Multibodega (`StockLocation`)**:
+   - `WAREHOUSE`: Almacén central de compras a proveedores.
+   - `KITCHEN`: Estación de producción de platillos calientes y fríos.
+   - `BAR`: Estación de bebidas y coctelería.
+
+2. **Motor Atómico de Descuento POS (`deduct_product_stock`)**:
+   - Para productos de venta directa (`DIRECT`): Descuenta la cantidad consumida directamente en la barra/estación.
+   - Para productos preparados (`PREPARED`): Consulta la ficha técnica (`RecipeItem`) y descuenta de manera atómica la cantidad proporcional de cada insumo en la cocina o barra.
+
+3. **Porcionado e Insumos Macro/Micro**:
+   - Permite registrar la conversión de materia prima mayorista (ej. 1 KG de Carne Sirloin) en unidades dosificadas para la línea de cocina (ej. 5 porciones de 200g).
+
+4. **Gestión y Valorización de Mermas (`WasteLog`)**:
+   - Registra desperdicios con justificación explícita y deduce automáticamente el costo monetario perdido multiplicando la cantidad mermada por el costo unitario vigente del insumo.
+
+5. **Alertas de Reabastecimiento Automático**:
+   - Insumos por debajo de `minimum_stock` generan automáticamente registros estructurados de compras sugeridas para su enrutamiento mediante n8n / `notify.sh`.

@@ -11,6 +11,8 @@ from backend.models.enums import (
     KDSStation,
     MachineStatus,
     ProductType,
+    StockLocation,
+    StockTransactionType,
     TicketStatus,
     UnitOfMeasure,
     UserRole,
@@ -18,7 +20,9 @@ from backend.models.enums import (
 from backend.models.ingredient import Ingredient
 from backend.models.machine import Machine
 from backend.models.product import Product, RecipeItem
+from backend.models.stock import StockLevel, StockTransaction
 from backend.models.user import Role, User
+from backend.models.waste import WasteLog
 
 __all__ = [
     # Base
@@ -31,6 +35,8 @@ __all__ = [
     "MachineStatus",
     "UserRole",
     "TicketStatus",
+    "StockLocation",
+    "StockTransactionType",
     # Models
     "Ingredient",
     "Product",
@@ -38,4 +44,7 @@ __all__ = [
     "Machine",
     "Role",
     "User",
+    "StockLevel",
+    "StockTransaction",
+    "WasteLog",
 ]

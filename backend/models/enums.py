@@ -76,3 +76,24 @@ class TicketStatus(str, Enum):
     EN_PROCESO = "EN_PROCESO"  # Técnico trabajando en la resolución
     HOLD = "HOLD"              # En pausa esperando refacción o aprobación
     FINALIZADO = "FINALIZADO"  # Ticket resuelto y cerrado con validación PIN de Jefe de Sala
+
+
+class StockLocation(str, Enum):
+    """
+    Ubicaciones físicas / bodegas de almacenamiento e inventario en la sala.
+    """
+    WAREHOUSE = "WAREHOUSE"  # Almacén Central / Bodega Principal
+    KITCHEN = "KITCHEN"      # Cocina / Estación de Platillos
+    BAR = "BAR"              # Barra / Estación de Coctelería y Bebidas
+
+
+class StockTransactionType(str, Enum):
+    """
+    Tipos de movimiento o transacción de inventario.
+    """
+    PURCHASE = "PURCHASE"             # Entrada por compra / factura a proveedor
+    ADJUSTMENT = "ADJUSTMENT"         # Ajuste manual por inventario físico / conteo
+    PORTIONING = "PORTIONING"         # Conversión / porcionado de insumo macro a micro
+    WASTE = "WASTE"                   # Salida por merma / desperdicio / expiración
+    SALE_DEDUCTION = "SALE_DEDUCTION" # Descuento automático por comanda POS
+    TRANSFER = "TRANSFER"             # Traspaso entre bodegas / estaciones
