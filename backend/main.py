@@ -60,16 +60,42 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 
+from fastapi.responses import FileResponse, RedirectResponse
+
 @app.get("/", tags=["Root"])
 def read_root():
-    """
-    Endpoint raíz de bienvenida.
-    """
-    return {
-        "system": "Casino Intelligent Hub ERP",
-        "status": "online",
-        "version": "1.0.0"
-    }
+    """Sirve el Launchpad principal de módulos."""
+    if os.path.exists("frontend/index.html"):
+        return FileResponse("frontend/index.html")
+    return RedirectResponse(url="/frontend/index.html")
+
+@app.get("/pos", tags=["Frontend Layouts"])
+def get_pos_page():
+    """Redirige directamente al Comandero Móvil POS."""
+    return FileResponse("frontend/pos.html") if os.path.exists("frontend/pos.html") else RedirectResponse("/frontend/pos.html")
+
+@app.get("/kds", tags=["Frontend Layouts"])
+def get_kds_page():
+    """Redirige directamente a la pantalla KDS de Cocina y Barra."""
+    return FileResponse("frontend/kds.html") if os.path.exists("frontend/kds.html") else RedirectResponse("/frontend/kds.html")
+
+@app.get("/cashier", tags=["Frontend Layouts"])
+@app.get("/caja", tags=["Frontend Layouts"])
+def get_cashier_page():
+    """Redirige directamente al POS de Caja y Barra."""
+    return FileResponse("frontend/cashier.html") if os.path.exists("frontend/cashier.html") else RedirectResponse("/frontend/cashier.html")
+
+@app.get("/catalogo", tags=["Frontend Layouts"])
+@app.get("/cocina", tags=["Frontend Layouts"])
+def get_catalogo_page():
+    """Redirige directamente al Centro de Catálogo y Fichas Técnicas de Cocina."""
+    return FileResponse("frontend/catalogo.html") if os.path.exists("frontend/catalogo.html") else RedirectResponse("/frontend/catalogo.html")
+
+@app.get("/staff", tags=["Frontend Layouts"])
+def get_staff_page():
+    """Redirige directamente al Panel de Staff y Supervisión."""
+    return FileResponse("frontend/staff.html") if os.path.exists("frontend/staff.html") else RedirectResponse("/frontend/staff.html")
+
 
 
 @app.get("/health", tags=["Healthcheck"])

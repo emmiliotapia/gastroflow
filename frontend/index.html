@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Casino Prestige - Hub de Control Modular</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#060608">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            obsidian: {
+              DEFAULT: '#0e0e11',
+              deep: '#060608',
+              card: '#16161b',
+              light: '#22222b',
+              border: '#2a2a36'
+            },
+            gold: {
+              400: '#e1b77c',
+              500: '#d49b4b',
+              600: '#c5843a',
+              goldish: '#d4af37'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            outfit: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #060608;
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(212, 175, 55, 0.06) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(197, 132, 58, 0.05) 0%, transparent 45%);
+      background-attachment: fixed;
+    }
+
+    .glass-card {
+      background: rgba(22, 22, 27, 0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(212, 175, 55, 0.4);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.15);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between select-none p-4 md:p-8">
+
+  <!-- HEADER -->
+  <header class="max-w-6xl w-full mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 py-4 border-b border-obsidian-border/70">
+    <div class="flex items-center gap-3.5">
+      <div class="w-12 h-12 rounded-2xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center shadow-lg shadow-gold-500/10">
+        <i data-lucide="crown" class="w-6 h-6 text-gold-400"></i>
+      </div>
+      <div>
+        <h1 class="font-outfit text-2xl font-extrabold text-white tracking-wide">
+          CASINO <span class="text-gold-400">PRESTIGE</span>
+        </h1>
+        <p class="text-xs text-gray-400 font-mono flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          Intelligent Hub • ERP Modular v1.0
+        </p>
+      </div>
+    </div>
+
+    <!-- API Status & Docs -->
+    <div class="flex items-center gap-2">
+      <a href="/docs" target="_blank" class="px-3.5 py-2 rounded-xl bg-obsidian border border-obsidian-border hover:border-gold-500/40 text-xs font-mono text-gray-300 hover:text-gold-400 flex items-center gap-2 transition">
+        <i data-lucide="file-code-2" class="w-4 h-4 text-gold-400"></i>
+        <span>Swagger API Docs</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- MAIN MODULES GRID -->
+  <main class="max-w-6xl w-full mx-auto my-8 flex-1 flex flex-col justify-center">
+    <div class="mb-8 text-center sm:text-left">
+      <h2 class="font-outfit text-xl font-bold text-white">Lanzador de Módulos Operativos</h2>
+      <p class="text-xs text-gray-400 mt-1">Selecciona el módulo correspondiente a tu estación de trabajo o dispositivo</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <!-- 1. PWA MESEROS & PISO -->
+      <a href="/pos" class="glass-card rounded-3xl p-6 flex flex-col justify-between group">
+        <div>
+          <div class="flex justify-between items-start mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-black text-amber-400 transition-all duration-300">
+              <i data-lucide="smartphone" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-obsidian text-amber-300 border border-amber-500/30">MÓVIL / PWA</span>
+          </div>
+          <h3 class="font-outfit text-lg font-bold text-white group-hover:text-gold-400 transition">Comandero Meseros (POS)</h3>
+          <p class="text-xs text-gray-400 mt-2 leading-relaxed">Toma de pedidos en sala por QR o slot, selector lateral de Venta vs Cortesía VIP, botones de pánico (recarga/falla) y alertas sonoras de orden lista.</p>
+        </div>
+        <div class="mt-6 pt-4 border-t border-obsidian-border/50 flex justify-between items-center text-xs font-mono text-gold-400 font-bold">
+          <span>Abrir Comandero</span>
+          <i data-lucide="arrow-right" class="w-4 h-4 transform group-hover:translate-x-1 transition"></i>
+        </div>
+      </a>
+
+      <!-- 2. KDS PANTALLA DE PRODUCCIÓN -->
+      <a href="/kds" class="glass-card rounded-3xl p-6 flex flex-col justify-between group">
+        <div>
+          <div class="flex justify-between items-start mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-black text-emerald-400 transition-all duration-300">
+              <i data-lucide="monitor" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-obsidian text-emerald-300 border border-emerald-500/30">TIEMPO REAL</span>
+          </div>
+          <h3 class="font-outfit text-lg font-bold text-white group-hover:text-gold-400 transition">KDS Cocina & Barra</h3>
+          <p class="text-xs text-gray-400 mt-2 leading-relaxed">Pantalla de comandas en tiempo real vía WebSockets. Cola FIFO, semáforo visual de tiempos de preparación y timbre acústico Web Audio API.</p>
+        </div>
+        <div class="mt-6 pt-4 border-t border-obsidian-border/50 flex justify-between items-center text-xs font-mono text-gold-400 font-bold">
+          <span>Abrir KDS Screen</span>
+          <i data-lucide="arrow-right" class="w-4 h-4 transform group-hover:translate-x-1 transition"></i>
+        </div>
+      </a>
+
+      <!-- 3. CAJA & BARRA POS -->
+      <a href="/caja" class="glass-card rounded-3xl p-6 flex flex-col justify-between group">
+        <div>
+          <div class="flex justify-between items-start mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center group-hover:bg-blue-500 group-hover:text-black text-blue-400 transition-all duration-300">
+              <i data-lucide="credit-card" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-obsidian text-blue-300 border border-blue-500/30">TERMINAL</span>
+          </div>
+          <h3 class="font-outfit text-lg font-bold text-white group-hover:text-gold-400 transition">POS Caja & Barra</h3>
+          <p class="text-xs text-gray-400 mt-2 leading-relaxed">Liquidación de cuentas pendientes (Efectivo/Tarjeta), control Poka-Yoke de PIN para cortesías VIP, venta directa y arqueo de stock de barra.</p>
+        </div>
+        <div class="mt-6 pt-4 border-t border-obsidian-border/50 flex justify-between items-center text-xs font-mono text-gold-400 font-bold">
+          <span>Abrir Terminal Caja</span>
+          <i data-lucide="arrow-right" class="w-4 h-4 transform group-hover:translate-x-1 transition"></i>
+        </div>
+      </a>
+
+      <!-- 4. CATÁLOGO & FICHAS TÉCNICAS -->
+      <a href="/catalogo" class="glass-card rounded-3xl p-6 flex flex-col justify-between group">
+        <div>
+          <div class="flex justify-between items-start mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center group-hover:bg-purple-500 group-hover:text-black text-purple-400 transition-all duration-300">
+              <i data-lucide="chef-hat" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-obsidian text-purple-300 border border-purple-500/30">ADMINISTRACIÓN</span>
+          </div>
+          <h3 class="font-outfit text-lg font-bold text-white group-hover:text-gold-400 transition">Catálogo & Cocina</h3>
+          <p class="text-xs text-gray-400 mt-2 leading-relaxed">Fichas técnicas con costeo y margen en tiempo real, subida de fotos, catálogo de insumos, stock de cocina, mermas y tabulador VIP.</p>
+        </div>
+        <div class="mt-6 pt-4 border-t border-obsidian-border/50 flex justify-between items-center text-xs font-mono text-gold-400 font-bold">
+          <span>Abrir Catálogo y Recetas</span>
+          <i data-lucide="arrow-right" class="w-4 h-4 transform group-hover:translate-x-1 transition"></i>
+        </div>
+      </a>
+
+      <!-- 5. PANEL DE STAFF & OPERACIONES -->
+      <a href="/staff" class="glass-card rounded-3xl p-6 flex flex-col justify-between group">
+        <div>
+          <div class="flex justify-between items-start mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center group-hover:bg-red-500 group-hover:text-black text-red-400 transition-all duration-300">
+              <i data-lucide="users" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-obsidian text-red-300 border border-red-500/30">SUPERVISIÓN</span>
+          </div>
+          <h3 class="font-outfit text-lg font-bold text-white group-hover:text-gold-400 transition">Staff & Soporte Técnico</h3>
+          <p class="text-xs text-gray-400 mt-2 leading-relaxed">Gestión de usuarios y PINs de supervisores, inventario general, tickets de fallas técnicas y bitácora de auditoría.</p>
+        </div>
+        <div class="mt-6 pt-4 border-t border-obsidian-border/50 flex justify-between items-center text-xs font-mono text-gold-400 font-bold">
+          <span>Abrir Panel Staff</span>
+          <i data-lucide="arrow-right" class="w-4 h-4 transform group-hover:translate-x-1 transition"></i>
+        </div>
+      </a>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="max-w-6xl w-full mx-auto pt-6 border-t border-obsidian-border/50 flex flex-col sm:flex-row justify-between items-center text-xs text-gray-500 font-mono gap-2">
+    <span>Casino Intelligent Hub &copy; 2026 • High Availability Architecture</span>
+    <span>PostgreSQL • FastAPI • WebSockets • Obsidian & Gold</span>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
