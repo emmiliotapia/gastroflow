@@ -19,90 +19,58 @@
 
 ## Enrutamiento Nginx Proxy Manager (NPM)
 
-Para exponer la API y las interfaces PWA hacia internet de forma segura con TLS/SSL:
+Todos los subdominios apuntan al contenedor backend en el puerto **`8001`**. FastAPI detecta automáticamente el subdominio y sirve el layout correspondiente directamente en la raíz `/`:
 
-### Proxy Host 1: Core API & Backend (`erp.smartopsia.com`)
-- **Domain Names:** `erp.smartopsia.com`
-- **Scheme:** `http`
-- **Forward Host / IP:** `172.17.0.1` *(IP del docker0 bridge en host)* o `localhost`
-- **Forward Port:** `8001`
-- **Opciones Avanzadas:**
-  - ✅ **Websockets Support:** Habilitado (requerido para KDS y notificaciones en tiempo real).
-  - ✅ **Block Common Exploits:** Habilitado.
-- **SSL / Certificado:**
-  - SSL Certificate: Request a new Let's Encrypt Certificate.
-  - ✅ **Force SSL:** Habilitado.
-  - ✅ **HTTP/2 Support:** Habilitado.
+---
 
-### Proxy Host 2: Comandero POS (`pos.smartopsia.com`)
-- **Domain Names:** `pos.smartopsia.com`
-- **Scheme:** `http`
-- **Forward Host / IP:** `172.17.0.1`
-- **Forward Port:** `8001`
-- **Opciones Avanzadas (Custom Nginx Configuration):**
-  ```nginx
-  location / {
-      # Mapea la raíz al catálogo sin fricciones de clientes
-      rewrite ^/$ /frontend/catalogo.html break;
-      proxy_pass http://172.17.0.1:8001;
-      proxy_set_header Host $host;
-      proxy_set_header X-Real-IP $remote_addr;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header X-Forwarded-Proto $scheme;
-  }
-  location /frontend/ {
-      proxy_pass http://172.17.0.1:8001/frontend/;
-  }
-  location /api/ {
-      proxy_pass http://172.17.0.1:8001/api/;
-  }
-  location /login {
-      proxy_pass http://172.17.0.1:8001/login;
-  }
-  ```
-- **Rutas de Acceso en Producción:**
-  - **Catálogo de Clientes:** `https://pos.smartopsia.com/` (Redirección automática)
-  - **Comandero Meseros:** `https://pos.smartopsia.com/frontend/pos.html`
-  - **Portal de Caja:** `https://pos.smartopsia.com/frontend/cashier.html`
-  - **Portal Staff y Técnicos:** `https://pos.smartopsia.com/frontend/staff.html`
-  - **Cocina KDS:** `https://pos.smartopsia.com/frontend/kds.html`
-- **SSL / Certificado:** Let's Encrypt + Force SSL habilitado.
+### 1. Hub Central / Launchpad (`erp.smartopsia.com` o `casino.smartopsia.com`)
+* **Dominio:** `erp.smartopsia.com` *(o `smartopsia.com`)*
+* **Forward Host / IP:** `172.17.0.1` *(o IP del host)*
+* **Forward Port:** `8001`
+* **SSL:** Let's Encrypt + Force SSL + HTTP/2 Support.
+* **Websockets Support:** ✅ Habilitado.
+* **Comportamiento:** Carga el **Launchpad Principal (`index.html`)** con accesos directos a todos los módulos y la documentación Swagger `/docs`.
 
+---
 
+### 2. Comandero Móvil Meseros (`pos.smartopsia.com`)
+* **Dominio:** `pos.smartopsia.com`
+* **Forward Host / IP:** `172.17.0.1`
+* **Forward Port:** `8001`
+* **SSL:** Let's Encrypt + Force SSL.
+* **Websockets Support:** ✅ Habilitado *(para alertas `ORDER_READY`)*.
+* **Comportamiento:** Al entrar a `https://pos.smartopsia.com/` abre directamente la **PWA de Meseros (`pos.html`)** con el selector de socios VIP, menú lateral y botones de asistencia.
 
-### Proxy Host 3: Pantalla KDS (`kds.smartopsia.com`)
-- **Domain Names:** `kds.smartopsia.com`
-- **Scheme:** `http`
-- **Forward Host / IP:** `172.17.0.1`
-- **Forward Port:** `8001`
-- **Opciones Avanzadas (Custom Nginx Configuration):**
-  ```nginx
-  location / {
-      rewrite ^/$ /frontend/kds.html break;
-      proxy_pass http://172.17.0.1:8001;
-      proxy_set_header Host $host;
-      proxy_set_header X-Real-IP $remote_addr;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header X-Forwarded-Proto $scheme;
-  }
-  location /frontend/ {
-      proxy_pass http://172.17.0.1:8001/frontend/;
-  }
-  location /api/ {
-      proxy_pass http://172.17.0.1:8001/api/;
-  }
-  location /login {
-      proxy_pass http://172.17.0.1:8001/login;
-  }
-  location /ws/ {
-      proxy_pass http://172.17.0.1:8001/ws/;
-      proxy_http_version 1.1;
-      proxy_set_header Upgrade $http_upgrade;
-      proxy_set_header Connection "Upgrade";
-      proxy_set_header Host $host;
-  }
-  ```
-- **SSL / Certificado:** Let's Encrypt + Force SSL + Websockets Support habilitado.
+---
+
+### 3. Pantalla de Cocina y Barra (`kds.smartopsia.com`)
+* **Dominio:** `kds.smartopsia.com`
+* **Forward Host / IP:** `172.17.0.1`
+* **Forward Port:** `8001`
+* **SSL:** Let's Encrypt + Force SSL.
+* **Websockets Support:** ✅ Habilitado *(indispensable para la cola FIFO en vivo)*.
+* **Comportamiento:** Al entrar a `https://kds.smartopsia.com/` abre la **Pantalla KDS (`kds.html`)** con selector de estación y timbres sonoros.
+
+---
+
+### 4. Terminal de Caja y Barra (`caja.smartopsia.com` o `cashier.smartopsia.com`)
+* **Dominio:** `caja.smartopsia.com` *(y alias `cashier.smartopsia.com`)*
+* **Forward Host / IP:** `172.17.0.1`
+* **Forward Port:** `8001`
+* **SSL:** Let's Encrypt + Force SSL.
+* **Websockets Support:** ✅ Habilitado.
+* **Comportamiento:** Al entrar a `https://caja.smartopsia.com/` abre el **POS de Caja (`cashier.html`)** con cuentas abiertas en FIFO y cobro con PIN.
+
+---
+
+### 5. Catálogo & Fichas Técnicas (`cocina.smartopsia.com` o `catalogo.smartopsia.com`)
+* **Dominio:** `cocina.smartopsia.com` *(o `catalogo.smartopsia.com`)*
+* **Forward Host / IP:** `172.17.0.1`
+* **Forward Port:** `8001`
+* **SSL:** Let's Encrypt + Force SSL.
+* **Websockets Support:** ✅ Habilitado.
+* **Comportamiento:** Al entrar a `https://cocina.smartopsia.com/` abre el **Gestor de Fichas Técnicas, Mermas y Costeo (`catalogo.html`)**.
+
 
 ---
 

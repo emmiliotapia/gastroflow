@@ -63,11 +63,32 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 from fastapi.responses import FileResponse, RedirectResponse
 
 @app.get("/", tags=["Root"])
-def read_root():
-    """Sirve el Launchpad principal de módulos."""
+def read_root(request: Request):
+    """
+    Sirve la interfaz adecuada según el subdominio o el Launchpad principal.
+    - pos.smartopsia.com -> pos.html
+    - kds.smartopsia.com -> kds.html
+    - caja.smartopsia.com / cashier.smartopsia.com -> cashier.html
+    - cocina.smartopsia.com / catalogo.smartopsia.com -> catalogo.html
+    - Cualquier otro host / raíz general -> index.html (Launchpad)
+    """
+    host = request.headers.get("host", "").lower().split(":")[0]
+    
+    if host.startswith("pos.") and os.path.exists("frontend/pos.html"):
+        return FileResponse("frontend/pos.html")
+    if host.startswith("kds.") and os.path.exists("frontend/kds.html"):
+        return FileResponse("frontend/kds.html")
+    if (host.startswith("caja.") or host.startswith("cashier.")) and os.path.exists("frontend/cashier.html"):
+        return FileResponse("frontend/cashier.html")
+    if (host.startswith("cocina.") or host.startswith("catalogo.")) and os.path.exists("frontend/catalogo.html"):
+        return FileResponse("frontend/catalogo.html")
+    if host.startswith("staff.") and os.path.exists("frontend/staff.html"):
+        return FileResponse("frontend/staff.html")
+
     if os.path.exists("frontend/index.html"):
         return FileResponse("frontend/index.html")
     return RedirectResponse(url="/frontend/index.html")
+
 
 @app.get("/pos", tags=["Frontend Layouts"])
 def get_pos_page():
