@@ -93,12 +93,12 @@ def _build_product_read_schema(product: Product) -> ProductRead:
     response_model=IngredientRead,
     status_code=status.HTTP_201_CREATED,
     summary="Crear un nuevo ingrediente / insumo",
-    description="Crea un nuevo insumo en la base de datos (requiere rol ADMIN o JEFE_DE_SALA)."
+    description="Crea un nuevo insumo en la base de datos."
 )
 def create_ingredient(
     payload: IngredientCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.JEFE_DE_SALA]))
+    current_user: Optional[User] = Depends(get_optional_current_user)
 ) -> IngredientRead:
     # Validar que el código no exista previamente
     existing = db.execute(
@@ -114,6 +114,7 @@ def create_ingredient(
     ingredient = Ingredient(
         code=payload.code,
         name=payload.name,
+        category=payload.category or "ABARROTES",
         unit_of_measure=payload.unit_of_measure,
         cost_per_unit=payload.cost_per_unit,
         current_stock=payload.current_stock,
@@ -129,14 +130,14 @@ def create_ingredient(
 @router.get(
     "/ingredients",
     response_model=List[IngredientRead],
-    summary="Listar catálogo de ingredientes",
-    description="Retorna la lista de ingredientes almacenados con opción de filtrado."
+    summary="Listar catálogo de ingredientes e insumos",
+    description="Retorna el catálogo maestro de ingredientes con su costo y existencias vigentes."
 )
 def list_ingredients(
+    search: Optional[str] = Query(None, description="Filtrar por nombre o código"),
     is_active: Optional[bool] = Query(None, description="Filtrar por estado activo/inactivo"),
-    search: Optional[str] = Query(None, description="Búsqueda por nombre o código"),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_optional_current_user)
 ) -> List[IngredientRead]:
     stmt = select(Ingredient)
     if is_active is not None:
@@ -159,7 +160,7 @@ def list_ingredients(
 def get_ingredient(
     ingredient_id: uuid.UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_optional_current_user)
 ) -> IngredientRead:
     ingredient = db.get(Ingredient, ingredient_id)
     if not ingredient:
@@ -179,7 +180,7 @@ def update_ingredient(
     ingredient_id: uuid.UUID,
     payload: IngredientUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.JEFE_DE_SALA]))
+    current_user: Optional[User] = Depends(get_optional_current_user)
 ) -> IngredientRead:
     ingredient = db.get(Ingredient, ingredient_id)
     if not ingredient:
@@ -204,7 +205,7 @@ def update_ingredient(
 def delete_ingredient(
     ingredient_id: uuid.UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.JEFE_DE_SALA]))
+    current_user: Optional[User] = Depends(get_optional_current_user)
 ):
     ingredient = db.get(Ingredient, ingredient_id)
     if not ingredient:
@@ -232,7 +233,7 @@ def delete_ingredient(
 def create_product(
     payload: ProductCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.JEFE_DE_SALA]))
+    current_user: Optional[User] = Depends(get_optional_current_user)
 ) -> ProductRead:
     # Verificar SKU único
     existing = db.execute(
@@ -393,7 +394,6 @@ async def upload_product_image(
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado.")
 
-    # Guardar en uploads/products/
     upload_dir = os.path.join("uploads", "products")
     os.makedirs(upload_dir, exist_ok=True)
 
@@ -410,6 +410,22 @@ async def upload_product_image(
     return _build_product_read_schema(product)
 
 
+@router.delete(
+    "/products/{product_id}",
+    summary="Desactivar / eliminar producto de AyB"
+)
+def delete_product(
+    product_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user)
+):
+    product = db.get(Product, product_id)
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado.")
+    
+    product.is_active = False
+    db.commit()
+    return {"message": f"Producto '{product.name}' desactivado exitosamente."}
 
 
 @router.post(
@@ -422,7 +438,7 @@ def set_product_recipe(
     product_id: uuid.UUID,
     recipe_items: List[RecipeItemCreate],
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.JEFE_DE_SALA]))
+    current_user: Optional[User] = Depends(get_optional_current_user)
 ) -> ProductRead:
     product = db.get(Product, product_id)
     if not product:

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Casino Prestige - Centro de Control de Cocina y Catálogos</title>
+    <title>Casino Prestige - Centro de Control de Cocina, Recetas y Stock</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -63,7 +63,7 @@
         }
 
         .glass-card:hover {
-            border-color: rgba(212, 175, 55, 0.2);
+            border-color: rgba(212, 175, 55, 0.25);
         }
 
         .btn-gold {
@@ -95,18 +95,18 @@
         }
     </style>
 </head>
-<body class="min-h-screen pb-12 flex flex-col">
+<body class="min-h-screen pb-12 flex flex-col select-none">
 
     <!-- HEADER -->
     <header class="bg-obsidian-deep/95 border-b border-obsidian-border px-6 py-4 sticky top-0 z-30 backdrop-blur-md">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3.5">
                 <div class="w-11 h-11 rounded-2xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center">
                     <i data-lucide="utensils-crossed" class="w-6 h-6 text-gold-400"></i>
                 </div>
                 <div>
                     <h1 class="font-outfit text-xl font-bold text-white tracking-wider">CASINO <span class="text-gold-400">PRESTIGE</span></h1>
-                    <p class="text-xs text-gray-400 font-mono">Centro de Control de Cocina, Fichas Técnicas y Stock</p>
+                    <p class="text-xs text-gray-400 font-mono">Centro de Fichas Técnicas, Insumos y Control de Stock</p>
                 </div>
             </div>
 
@@ -140,22 +140,21 @@
                     <h2 class="font-outfit text-xl font-bold text-white flex items-center gap-2">
                         <i data-lucide="clipboard-list" class="w-5 h-5 text-gold-400"></i> Fichas Técnicas de Platillos y Bebidas
                     </h2>
-                    <p class="text-xs text-gray-400">Estructuración de recetas con costeo de insumos y cálculo de margen bruto</p>
+                    <p class="text-xs text-gray-400">Estructuración completa de recetas con costeo de insumos, margen y edición en vivo</p>
                 </div>
                 <div class="flex items-center gap-3 w-full sm:w-auto">
                     <div class="relative flex-1 sm:w-64">
                         <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-gray-500"></i>
                         <input type="text" id="search-recipes" oninput="filterRecipes()" placeholder="Buscar platillo o SKU..." class="w-full bg-obsidian border border-obsidian-border rounded-xl py-2 pl-9 pr-3 text-xs text-white focus:outline-none focus:border-gold-500">
                     </div>
-                    <button onclick="openProductModal()" class="btn-gold px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap">
-                        <i data-lucide="plus" class="w-4 h-4"></i> Nuevo Platillo
+                    <button onclick="openProductModal()" class="btn-gold px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shadow-md">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Nuevo Platillo / Receta
                     </button>
                 </div>
             </div>
 
             <!-- Products / Recipes Grid -->
             <div id="recipes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                <!-- Loaded dynamically -->
                 <div class="col-span-3 text-center py-20 text-gray-500">
                     <i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-2 text-gold-500"></i>
                     Cargando fichas técnicas...
@@ -172,21 +171,21 @@
                     <h2 class="font-outfit text-xl font-bold text-white flex items-center gap-2">
                         <i data-lucide="boxes" class="w-5 h-5 text-gold-400"></i> Catálogo Maestro de Insumos
                     </h2>
-                    <p class="text-xs text-gray-400">Materias primas homologadas para costeo y descuento automático</p>
+                    <p class="text-xs text-gray-400">Materias primas homologadas para costeo, edición de costos y entrada de compras</p>
                 </div>
                 <div class="flex items-center gap-3 w-full sm:w-auto">
                     <div class="relative flex-1 sm:w-64">
                         <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-gray-500"></i>
                         <input type="text" id="search-ingredients" oninput="filterIngredients()" placeholder="Buscar por nombre o código..." class="w-full bg-obsidian border border-obsidian-border rounded-xl py-2 pl-9 pr-3 text-xs text-white focus:outline-none focus:border-gold-500">
                     </div>
-                    <button onclick="openIngredientModal()" class="btn-gold px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap">
+                    <button onclick="openIngredientModal()" class="btn-gold px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shadow-md">
                         <i data-lucide="plus" class="w-4 h-4"></i> Nuevo Insumo
                     </button>
                 </div>
             </div>
 
             <!-- Ingredients Table -->
-            <div class="glass-card rounded-2xl overflow-hidden">
+            <div class="glass-card rounded-2xl overflow-hidden shadow-xl">
                 <table class="w-full text-left text-xs">
                     <thead class="bg-obsidian border-b border-obsidian-border text-gray-400 uppercase font-mono">
                         <tr>
@@ -219,8 +218,11 @@
                     <p class="text-xs text-gray-400">Existencias físicas dedicadas al área de producción de alimentos</p>
                 </div>
                 <div class="flex items-center gap-3">
+                    <button onclick="openStockEntryModal('KITCHEN')" class="px-4 py-2 rounded-xl bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-800 text-xs font-bold flex items-center gap-1.5 transition">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i> Entrada / Ajuste de Stock
+                    </button>
                     <button onclick="openWasteModal('KITCHEN')" class="px-4 py-2 rounded-xl bg-red-950/60 hover:bg-red-900/80 text-red-300 border border-red-800 text-xs font-bold flex items-center gap-1.5 transition">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i> Registrar Merma de Cocina
+                        <i data-lucide="trash-2" class="w-4 h-4"></i> Registrar Merma
                     </button>
                     <button onclick="loadKitchenStock()" class="btn-gold px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5">
                         <i data-lucide="refresh-cw" class="w-4 h-4"></i> Actualizar
@@ -251,7 +253,11 @@
         </section>
     </main>
 
-    <!-- PRODUCT / RECIPE MODAL -->
+    <!-- ======================================================================= -->
+    <!-- MODALS SECTION -->
+    <!-- ======================================================================= -->
+
+    <!-- PRODUCT / RECIPE MODAL (CREATE & EDIT) -->
     <div id="product-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="glass-card bg-obsidian-card p-6 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col gap-5 border border-obsidian-border shadow-2xl">
             <div class="flex justify-between items-center border-b border-obsidian-border pb-3">
@@ -260,6 +266,8 @@
             </div>
 
             <form id="product-form" onsubmit="saveProduct(event)" class="space-y-4 text-xs">
+                <input type="hidden" id="p-id">
+
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-gray-400 font-semibold mb-1">SKU *</label>
@@ -295,7 +303,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-gray-400 font-semibold mb-1">Precio Público ($) *</label>
-                        <input type="number" step="0.01" id="p-price" required placeholder="150.00" class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-500">
+                        <input type="number" step="0.01" id="p-price" required placeholder="150.00" class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-500 font-mono">
                     </div>
                     <div>
                         <label class="block text-gray-400 font-semibold mb-1">Nivel Mínimo Cortesía</label>
@@ -321,7 +329,6 @@
                     <span id="p-image-name" class="text-[10px] text-gray-500 mt-1 block"></span>
                 </div>
 
-
                 <!-- Receta / Insumos Builder -->
                 <div id="recipe-builder-container" class="border-t border-obsidian-border pt-4 space-y-3">
                     <div class="flex justify-between items-center">
@@ -344,58 +351,59 @@
         </div>
     </div>
 
-    <!-- INGREDIENT MODAL -->
+    <!-- INGREDIENT MODAL (CREATE & EDIT) -->
     <div id="ingredient-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="glass-card bg-obsidian-card p-6 rounded-3xl w-full max-w-md flex flex-col gap-5 border border-obsidian-border shadow-2xl">
             <div class="flex justify-between items-center border-b border-obsidian-border pb-3">
-                <h3 class="font-outfit text-lg font-bold text-white">Nuevo Insumo Maestro</h3>
+                <h3 class="font-outfit text-lg font-bold text-white" id="modal-ingredient-title">Nuevo Insumo Maestro</h3>
                 <button onclick="closeIngredientModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
 
             <form id="ingredient-form" onsubmit="saveIngredient(event)" class="space-y-4 text-xs">
+                <input type="hidden" id="ing-id">
+
                 <div>
-                    <label class="block text-gray-400 font-semibold mb-1">Código Único *</label>
-                    <input type="text" id="ing-code" required placeholder="ING-CARNE-01" class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-500">
+                    <label class="block text-gray-400 font-semibold mb-1">Código de Insumo *</label>
+                    <input type="text" id="ing-code" required placeholder="ING-CAR-RES" class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-500 font-mono">
                 </div>
+
                 <div>
                     <label class="block text-gray-400 font-semibold mb-1">Nombre del Insumo *</label>
-                    <input type="text" id="ing-name" required placeholder="Molida de Res 150g" class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-500">
+                    <input type="text" id="ing-name" required placeholder="Carne de Res Molida" class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-500">
                 </div>
+
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-gray-400 font-semibold mb-1">Categoría</label>
                         <select id="ing-category" class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-500">
-                            <option value="PROTEINAS">Proteínas</option>
-                            <option value="VEGETALES">Vegetales</option>
-                            <option value="LACTEOS">Lácteos</option>
-                            <option value="PANADERIA">Panadería</option>
-                            <option value="ABARROTES" selected>Abarrotes</option>
-                            <option value="LICORES">Licores</option>
-                            <option value="DESECHABLES">Desechables</option>
+                            <option value="PROTEINAS">PROTEINAS</option>
+                            <option value="VEGETALES">VEGETALES</option>
+                            <option value="LACTEOS">LACTEOS</option>
+                            <option value="PANADERIA">PANADERIA</option>
+                            <option value="ABARROTES">ABARROTES</option>
+                            <option value="LICORES">LICORES</option>
+                            <option value="DESECHABLES">DESECHABLES</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-gray-400 font-semibold mb-1">Unidad de Medida *</label>
-                        <select id="ing-unit" class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-500">
+                        <select id="ing-unit" class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-500 font-mono">
                             <option value="GR">Gramos (GR)</option>
-                            <option value="KG">Kilogramos (KG)</option>
                             <option value="ML">Mililitros (ML)</option>
-                            <option value="L">Litros (L)</option>
                             <option value="PIECE">Pieza (PIECE)</option>
-                            <option value="OZ">Onzas (OZ)</option>
-                            <option value="CAN">Lata (CAN)</option>
-                            <option value="BOTTLE">Botella (BOTTLE)</option>
+                            <option value="PORTION">Porción (PORTION)</option>
                         </select>
                     </div>
                 </div>
+
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-gray-400 font-semibold mb-1">Costo Unitario ($) *</label>
-                        <input type="number" step="0.0001" id="ing-cost" required placeholder="12.50" class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-500">
+                        <input type="number" step="0.0001" id="ing-cost" required placeholder="0.1142" class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-500 font-mono">
                     </div>
                     <div>
-                        <label class="block text-gray-400 font-semibold mb-1">Stock Mínimo</label>
-                        <input type="number" step="0.01" id="ing-min" placeholder="5.00" class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-500">
+                        <label class="block text-gray-400 font-semibold mb-1">Stock Mínimo Alerta</label>
+                        <input type="number" step="0.01" id="ing-min" placeholder="50.00" class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-500 font-mono">
                     </div>
                 </div>
 
@@ -407,39 +415,87 @@
         </div>
     </div>
 
-    <!-- WASTE LOG MODAL -->
+    <!-- STOCK ENTRY / PURCHASE ADJUSTMENT MODAL -->
+    <div id="stock-entry-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-card bg-obsidian-card p-6 rounded-3xl w-full max-w-md flex flex-col gap-5 border border-obsidian-border shadow-2xl">
+            <div class="flex justify-between items-center border-b border-obsidian-border pb-3">
+                <h3 class="font-outfit text-lg font-bold text-white flex items-center gap-2">
+                    <i data-lucide="package-plus" class="w-5 h-5 text-emerald-400"></i> Entrada de Stock / Compra
+                </h3>
+                <button onclick="closeStockEntryModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <form id="stock-entry-form" onsubmit="submitStockEntry(event)" class="space-y-4 text-xs">
+                <div>
+                    <label class="block text-gray-400 font-semibold mb-1">Insumo a Recibir *</label>
+                    <select id="se-ingredient" required class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"></select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-gray-400 font-semibold mb-1">Bodega Destino *</label>
+                        <select id="se-location" required class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500 font-mono">
+                            <option value="KITCHEN">Cocina (KITCHEN)</option>
+                            <option value="WAREHOUSE">Almacén Central (WAREHOUSE)</option>
+                            <option value="BAR">Barra (BAR)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 font-semibold mb-1">Cantidad a Ingresar *</label>
+                        <input type="number" step="0.01" id="se-quantity" required placeholder="100.00" class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500 font-mono font-bold">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-gray-400 font-semibold mb-1">Notas / Folio de Compra:</label>
+                    <input type="text" id="se-notes" placeholder="Ej. Compra proveedor San Juan / Factura 9012" class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div class="flex justify-end gap-3 pt-3 border-t border-obsidian-border">
+                    <button type="button" onclick="closeStockEntryModal()" class="px-4 py-2.5 rounded-xl bg-obsidian text-gray-400 hover:text-white font-bold">Cancelar</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition shadow-lg">Registrar Entrada</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- WASTE / MERMA MODAL -->
     <div id="waste-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="glass-card bg-obsidian-card p-6 rounded-3xl w-full max-w-md flex flex-col gap-5 border border-obsidian-border shadow-2xl">
             <div class="flex justify-between items-center border-b border-obsidian-border pb-3">
-                <h3 class="font-outfit text-lg font-bold text-red-400">Registrar Merma / Desperdicio</h3>
+                <h3 class="font-outfit text-lg font-bold text-red-400 flex items-center gap-2">
+                    <i data-lucide="trash-2" class="w-5 h-5"></i> Registrar Merma de Insumo
+                </h3>
                 <button onclick="closeWasteModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
 
             <form id="waste-form" onsubmit="submitWaste(event)" class="space-y-4 text-xs">
                 <div>
                     <label class="block text-gray-400 font-semibold mb-1">Insumo Mermado *</label>
-                    <select id="w-ingredient" required class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-500">
-                        <!-- Loaded dynamically -->
-                    </select>
+                    <select id="w-ingredient" required class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-red-500"></select>
                 </div>
+
                 <div>
-                    <label class="block text-gray-400 font-semibold mb-1">Cantidad a Descontar *</label>
-                    <input type="number" step="0.0001" id="w-quantity" required placeholder="0.50" class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-500">
+                    <label class="block text-gray-400 font-semibold mb-1">Cantidad Mermada *</label>
+                    <input type="number" step="0.0001" id="w-quantity" required placeholder="0.50" class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-red-500 font-mono">
                 </div>
+
                 <div>
-                    <label class="block text-gray-400 font-semibold mb-1">Motivo / Justificación *</label>
-                    <input type="text" id="w-reason" required placeholder="Expiración, error de preparación, merma por corte..." class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-500">
+                    <label class="block text-gray-400 font-semibold mb-1">Justificación / Motivo *</label>
+                    <input type="text" id="w-reason" required placeholder="Caducidad, quemado en cocción, contaminación..." class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white focus:outline-none focus:border-red-500">
                 </div>
 
                 <div class="flex justify-end gap-3 pt-3 border-t border-obsidian-border">
                     <button type="button" onclick="closeWasteModal()" class="px-4 py-2.5 rounded-xl bg-obsidian text-gray-400 hover:text-white font-bold">Cancelar</button>
-                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold">Registrar Merma</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold transition shadow-lg">Confirmar Merma</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- ======================================================================= -->
     <!-- JAVASCRIPT LOGIC -->
+    <!-- ======================================================================= -->
     <script>
         const proto = window.location.protocol === 'https:' ? 'https:' : 'http:';
         const API_BASE = window.location.port === '8001' || window.location.port === '8000' ? '' : `${proto}//${window.location.host}`;
@@ -447,21 +503,30 @@
         let productsList = [];
         let ingredientsList = [];
         let kitchenStockList = [];
+        let selectedProductFile = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
-            loadProducts();
-            loadIngredients();
-            loadKitchenStock();
-            loadVIPRules();
+            loadAllData();
         });
 
-        function switchTab(tab) {
-            ['recipes', 'ingredients', 'kitchen-stock', 'vip-rules'].forEach(t => {
+        async function loadAllData() {
+            await Promise.all([
+                loadIngredients(),
+                loadProducts(),
+                loadKitchenStock(),
+                loadVIPRules()
+            ]);
+        }
+
+        // Navegación de Pestañas
+        function switchTab(tabId) {
+            const tabs = ['recipes', 'ingredients', 'kitchen-stock', 'vip-rules'];
+            tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 const sec = document.getElementById(`section-${t}`);
-                if (t === tab) {
-                    btn.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-gold-500 text-black transition flex items-center gap-2';
+                if (t === tabId) {
+                    btn.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-gold-500 text-black transition flex items-center gap-2 shadow-md';
                     sec.classList.remove('hidden');
                 } else {
                     btn.className = 'px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition flex items-center gap-2';
@@ -471,19 +536,7 @@
             lucide.createIcons();
         }
 
-        // Cargar Productos / Fichas
-        async function loadProducts() {
-            try {
-                const res = await fetch(`${API_BASE}/api/v1/products`);
-                if (!res.ok) throw new Error('Error al cargar productos');
-                productsList = await res.json();
-                renderRecipes();
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        // Cargar Insumos
+        // Cargar Catálogo de Insumos
         async function loadIngredients() {
             try {
                 const res = await fetch(`${API_BASE}/api/v1/ingredients`);
@@ -496,7 +549,19 @@
             }
         }
 
-        // Cargar Stock Cocina
+        // Cargar Fichas Técnicas & Productos
+        async function loadProducts() {
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/products`);
+                if (!res.ok) throw new Error('Error al cargar productos');
+                productsList = await res.json();
+                renderRecipes();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Cargar Stock de Cocina
         async function loadKitchenStock() {
             try {
                 const res = await fetch(`${API_BASE}/api/v1/kitchen/stock`);
@@ -520,16 +585,20 @@
             }
         }
 
-        function renderRecipes() {
+        // =====================================================================
+        // RENDER: FICHAS TÉCNICAS (CON EDITAR Y ELIMINAR)
+        // =====================================================================
+
+        function renderRecipes(itemsToRender = productsList) {
             const container = document.getElementById('recipes-grid');
             container.innerHTML = '';
 
-            if (productsList.length === 0) {
-                container.innerHTML = '<div class="col-span-3 text-center py-10 text-gray-500">No hay productos registrados</div>';
+            if (itemsToRender.length === 0) {
+                container.innerHTML = '<div class="col-span-3 text-center py-10 text-gray-500 italic">No hay productos ni recetas registradas</div>';
                 return;
             }
 
-            productsList.forEach(p => {
+            itemsToRender.forEach(p => {
                 const cost = parseFloat(p.total_production_cost || 0);
                 const price = parseFloat(p.price || 0);
                 const margin = price - cost;
@@ -546,7 +615,7 @@
                 });
 
                 const imgHtml = p.image_url 
-                    ? `<img src="${p.image_url}" alt="${p.name}" class="w-full h-36 object-cover rounded-xl mb-3 border border-obsidian-border">`
+                    ? `<img src="${p.image_url}" alt="${p.name}" class="w-full h-36 object-cover rounded-xl mb-3 border border-obsidian-border shadow-inner">`
                     : `<div class="w-full h-24 bg-obsidian-deep rounded-xl mb-3 flex items-center justify-center border border-obsidian-border text-gray-600"><i data-lucide="${p.destination_kds === 'BAR' ? 'wine' : 'utensils'}" class="w-8 h-8"></i></div>`;
 
                 container.innerHTML += `
@@ -578,29 +647,53 @@
                             </div>
                         </div>
 
-                        <!-- Costeo & Margen -->
-                        <div class="mt-4 pt-3 border-t border-obsidian-border flex justify-between items-center text-xs font-mono">
-                            <div class="flex flex-col">
-                                <span class="text-[10px] text-gray-500">Costo Producción</span>
-                                <span class="font-bold text-gray-300">$${cost.toFixed(2)}</span>
+                        <!-- Costeo & Margen & Acciones CRUD -->
+                        <div class="mt-4 pt-3 border-t border-obsidian-border">
+                            <div class="flex justify-between items-center text-xs font-mono mb-3">
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] text-gray-500">Costo Producción</span>
+                                    <span class="font-bold text-gray-300">$${cost.toFixed(2)}</span>
+                                </div>
+                                <div class="flex flex-col text-right">
+                                    <span class="text-[10px] text-gray-500">Margen Bruto</span>
+                                    <span class="font-bold ${margin > 0 ? 'text-emerald-400' : 'text-red-400'}">+$${margin.toFixed(2)} (${marginPct}%)</span>
+                                </div>
                             </div>
-                            <div class="flex flex-col text-right">
-                                <span class="text-[10px] text-gray-500">Margen Bruto</span>
-                                <span class="font-bold ${margin > 0 ? 'text-emerald-400' : 'text-red-400'}">+$${margin.toFixed(2)} (${marginPct}%)</span>
+
+                            <div class="flex justify-end gap-2 border-t border-obsidian-border/50 pt-2.5">
+                                <button onclick="editProduct('${p.id}')" class="px-3 py-1.5 rounded-lg bg-obsidian hover:bg-obsidian-light border border-obsidian-border text-gold-400 font-bold text-xs flex items-center gap-1 transition">
+                                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Editar
+                                </button>
+                                <button onclick="deleteProduct('${p.id}', '${p.name}')" class="px-3 py-1.5 rounded-lg bg-red-950/40 hover:bg-red-900/60 border border-red-500/40 text-red-300 font-bold text-xs flex items-center gap-1 transition">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Eliminar
+                                </button>
                             </div>
                         </div>
                     </div>
                 `;
             });
             lucide.createIcons();
-
         }
 
-        function renderIngredients() {
+        function filterRecipes() {
+            const query = document.getElementById('search-recipes').value.toLowerCase().trim();
+            const filtered = productsList.filter(p => 
+                p.name.toLowerCase().includes(query) || 
+                p.sku.toLowerCase().includes(query) || 
+                p.category.toLowerCase().includes(query)
+            );
+            renderRecipes(filtered);
+        }
+
+        // =====================================================================
+        // RENDER: CATÁLOGO DE INSUMOS (CON EDITAR, ELIMINAR Y +STOCK)
+        // =====================================================================
+
+        function renderIngredients(itemsToRender = ingredientsList) {
             const tbody = document.getElementById('ingredients-table-body');
             tbody.innerHTML = '';
 
-            ingredientsList.forEach(ing => {
+            itemsToRender.forEach(ing => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-obsidian-light/50 transition">
                         <td class="p-4 font-mono font-bold text-gold-400">${ing.code}</td>
@@ -608,12 +701,23 @@
                         <td class="p-4 text-gray-400 font-mono"><span class="px-2 py-0.5 rounded bg-obsidian border border-obsidian-border text-[10px]">${ing.category || 'ABARROTES'}</span></td>
                         <td class="p-4 font-mono text-gray-300">${ing.unit_of_measure}</td>
                         <td class="p-4 text-right font-mono font-bold text-emerald-400">$${parseFloat(ing.cost_per_unit).toFixed(4)}</td>
-                        <td class="p-4 text-right font-mono text-white">${parseFloat(ing.current_stock).toFixed(2)}</td>
+                        <td class="p-4 text-right font-mono text-white font-bold">${parseFloat(ing.current_stock).toFixed(2)}</td>
                         <td class="p-4 text-right font-mono text-amber-400">${parseFloat(ing.minimum_stock).toFixed(2)}</td>
                         <td class="p-4 text-center">
-                            <button onclick="openWasteModal('KITCHEN', '${ing.id}')" class="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-950/40 transition" title="Registrar Merma">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
+                            <div class="flex items-center justify-center gap-1.5">
+                                <button onclick="openStockEntryModal('KITCHEN', '${ing.id}')" class="px-2 py-1 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-800 text-emerald-300 text-[11px] font-bold flex items-center gap-1" title="Agregar Entrada de Stock">
+                                    <i data-lucide="plus" class="w-3.5 h-3.5"></i> Stock
+                                </button>
+                                <button onclick="editIngredient('${ing.id}')" class="p-1.5 rounded-lg bg-obsidian hover:bg-obsidian-light text-gold-400 border border-obsidian-border" title="Editar Insumo">
+                                    <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button onclick="openWasteModal('KITCHEN', '${ing.id}')" class="p-1.5 rounded-lg bg-red-950/40 hover:bg-red-900/60 text-red-400 border border-red-500/40" title="Registrar Merma">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button onclick="deleteIngredient('${ing.id}', '${ing.name}')" class="p-1.5 rounded-lg bg-obsidian hover:bg-red-950 text-gray-500 hover:text-red-400" title="Desactivar Insumo">
+                                    <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -621,12 +725,26 @@
             lucide.createIcons();
         }
 
+        function filterIngredients() {
+            const query = document.getElementById('search-ingredients').value.toLowerCase().trim();
+            const filtered = ingredientsList.filter(i => 
+                i.name.toLowerCase().includes(query) || 
+                i.code.toLowerCase().includes(query) ||
+                (i.category && i.category.toLowerCase().includes(query))
+            );
+            renderIngredients(filtered);
+        }
+
+        // =====================================================================
+        // RENDER: STOCK DE COCINA
+        // =====================================================================
+
         function renderKitchenStock() {
             const container = document.getElementById('kitchen-stock-grid');
             container.innerHTML = '';
 
             if (kitchenStockList.length === 0) {
-                container.innerHTML = '<div class="col-span-4 text-center py-10 text-gray-500">Sin existencias registradas en la bodega de cocina</div>';
+                container.innerHTML = '<div class="col-span-4 text-center py-10 text-gray-500 italic">Sin existencias registradas en la bodega de cocina</div>';
                 return;
             }
 
@@ -655,6 +773,10 @@
             });
             lucide.createIcons();
         }
+
+        // =====================================================================
+        // RENDER: TABULADOR VIP
+        // =====================================================================
 
         function renderVIPRules(rules) {
             const container = document.getElementById('vip-rules-grid');
@@ -688,48 +810,93 @@
         }
 
         function populateIngredientSelects() {
-            const select = document.getElementById('w-ingredient');
-            if (!select) return;
-            select.innerHTML = '<option value="">Seleccione un insumo...</option>';
-            ingredientsList.forEach(i => {
-                select.innerHTML += `<option value="${i.id}">${i.code} - ${i.name} (${i.unit_of_measure})</option>`;
-            });
+            const wSelect = document.getElementById('w-ingredient');
+            const seSelect = document.getElementById('se-ingredient');
+
+            if (wSelect) {
+                wSelect.innerHTML = '<option value="">Seleccione un insumo...</option>';
+                ingredientsList.forEach(i => {
+                    wSelect.innerHTML += `<option value="${i.id}">${i.code} - ${i.name} (${i.unit_of_measure})</option>`;
+                });
+            }
+
+            if (seSelect) {
+                seSelect.innerHTML = '<option value="">Seleccione un insumo...</option>';
+                ingredientsList.forEach(i => {
+                    seSelect.innerHTML += `<option value="${i.id}">${i.code} - ${i.name} (${i.unit_of_measure})</option>`;
+                });
+            }
         }
 
-        // Modals
+        // =====================================================================
+        // MODALS & CRUD ACTIONS: PRODUCTOS / RECETAS
+        // =====================================================================
+
         function openProductModal() {
-            document.getElementById('product-modal').classList.remove('hidden');
+            document.getElementById('modal-product-title').innerText = 'Nuevo Platillo / Receta';
+            document.getElementById('p-id').value = '';
+            document.getElementById('p-sku').value = '';
+            document.getElementById('p-sku').readOnly = false;
+            document.getElementById('p-name').value = '';
+            document.getElementById('p-category').value = '';
+            document.getElementById('p-price').value = '';
+            document.getElementById('p-courtesy').value = '';
+            document.getElementById('p-image-url').value = '';
+            document.getElementById('p-image-name').innerText = '';
+            document.getElementById('p-type').value = 'PREPARED';
+            toggleRecipeBuilder();
+
             document.getElementById('recipe-items-rows').innerHTML = '';
             addRecipeRow();
+
+            document.getElementById('product-modal').classList.remove('hidden');
         }
+
+        function editProduct(productId) {
+            const prod = productsList.find(p => p.id === productId);
+            if (!prod) return;
+
+            document.getElementById('modal-product-title').innerText = `Editar Ficha Técnica: ${prod.name}`;
+            document.getElementById('p-id').value = prod.id;
+            document.getElementById('p-sku').value = prod.sku;
+            document.getElementById('p-sku').readOnly = true;
+            document.getElementById('p-name').value = prod.name;
+            document.getElementById('p-category').value = prod.category;
+            document.getElementById('p-kds').value = prod.destination_kds || 'KITCHEN';
+            document.getElementById('p-type').value = prod.product_type || 'PREPARED';
+            document.getElementById('p-price').value = prod.price;
+            document.getElementById('p-courtesy').value = prod.courtesy_tier_min || '';
+            document.getElementById('p-image-url').value = prod.image_url || '';
+            document.getElementById('p-image-name').innerText = '';
+            toggleRecipeBuilder();
+
+            // Populate recipe items
+            const container = document.getElementById('recipe-items-rows');
+            container.innerHTML = '';
+
+            if (prod.recipe_items && prod.recipe_items.length > 0) {
+                prod.recipe_items.forEach(it => {
+                    addRecipeRow(it.ingredient_id, it.quantity, it.unit_of_measure);
+                });
+            } else {
+                addRecipeRow();
+            }
+
+            document.getElementById('product-modal').classList.remove('hidden');
+        }
+
         function closeProductModal() {
             document.getElementById('product-modal').classList.add('hidden');
         }
 
-        function openIngredientModal() {
-            document.getElementById('ingredient-modal').classList.remove('hidden');
-        }
-        function closeIngredientModal() {
-            document.getElementById('ingredient-modal').classList.add('hidden');
-        }
-
-        function openWasteModal(loc, ingId) {
-            document.getElementById('waste-modal').classList.remove('hidden');
-            if (ingId) {
-                document.getElementById('w-ingredient').value = ingId;
-            }
-        }
-        function closeWasteModal() {
-            document.getElementById('waste-modal').classList.add('hidden');
-        }
-
-        function addRecipeRow() {
+        function addRecipeRow(selectedIngId = '', qty = '', unit = '') {
             const container = document.getElementById('recipe-items-rows');
-            const rowId = `row-${Date.now()}`;
+            const rowId = `row-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
             
             let ingOptions = '<option value="">Seleccionar insumo...</option>';
             ingredientsList.forEach(i => {
-                ingOptions += `<option value="${i.id}" data-unit="${i.unit_of_measure}">${i.name} (${i.unit_of_measure})</option>`;
+                const isSel = i.id === selectedIngId ? 'selected' : '';
+                ingOptions += `<option value="${i.id}" data-unit="${i.unit_of_measure}" ${isSel}>${i.name} (${i.unit_of_measure})</option>`;
             });
 
             const row = document.createElement('div');
@@ -737,32 +904,36 @@
             row.className = 'grid grid-cols-12 gap-2 items-center';
             row.innerHTML = `
                 <div class="col-span-6">
-                    <select class="recipe-ing-select w-full bg-obsidian border border-obsidian-border rounded-lg p-2 text-white text-xs" required onchange="updateRowUnit('${rowId}')">
+                    <select class="recipe-ing-select w-full bg-obsidian border border-obsidian-border rounded-lg p-2 text-white text-xs focus:outline-none focus:border-gold-500" required onchange="updateRowUnit('${rowId}')">
                         ${ingOptions}
                     </select>
                 </div>
                 <div class="col-span-3">
-                    <input type="number" step="0.0001" placeholder="Cant." class="recipe-qty-input w-full bg-obsidian border border-obsidian-border rounded-lg p-2 text-white text-xs" required>
+                    <input type="number" step="0.0001" placeholder="Cant." value="${qty}" class="recipe-qty-input w-full bg-obsidian border border-obsidian-border rounded-lg p-2 text-white text-xs font-mono focus:outline-none focus:border-gold-500" required>
                 </div>
                 <div class="col-span-2 text-center text-gray-400 font-mono text-[10px] recipe-unit-label">
-                    -
+                    ${unit || '-'}
                 </div>
                 <div class="col-span-1 text-center">
-                    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="text-red-400 hover:text-red-300">
+                    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="text-red-400 hover:text-red-300 p-1">
                         <i data-lucide="trash" class="w-4 h-4"></i>
                     </button>
                 </div>
             `;
             container.appendChild(row);
+            updateRowUnit(rowId);
             lucide.createIcons();
         }
 
         function updateRowUnit(rowId) {
             const row = document.getElementById(rowId);
+            if (!row) return;
             const select = row.querySelector('.recipe-ing-select');
             const unitLabel = row.querySelector('.recipe-unit-label');
-            const selectedOpt = select.options[select.selectedIndex];
-            unitLabel.innerText = selectedOpt.getAttribute('data-unit') || '-';
+            if (select.selectedIndex >= 0) {
+                const selectedOpt = select.options[select.selectedIndex];
+                unitLabel.innerText = selectedOpt.getAttribute('data-unit') || '-';
+            }
         }
 
         function toggleRecipeBuilder() {
@@ -775,8 +946,6 @@
             }
         }
 
-        let selectedProductFile = null;
-
         function previewImageUpload(input) {
             if (input.files && input.files[0]) {
                 selectedProductFile = input.files[0];
@@ -784,9 +953,11 @@
             }
         }
 
-        // Guardar Producto
         async function saveProduct(e) {
             e.preventDefault();
+            const prodId = document.getElementById('p-id').value;
+            const isEditing = !!prodId;
+
             const sku = document.getElementById('p-sku').value.trim();
             const name = document.getElementById('p-name').value.trim();
             const category = document.getElementById('p-category').value.trim();
@@ -814,24 +985,46 @@
                 });
             }
 
-            const payload = {
-                sku, name, category, destination_kds, product_type, price,
-                courtesy_tier_min, image_url, recipe_items
-            };
-
             try {
-                const res = await fetch(`${API_BASE}/api/v1/products`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (!res.ok) {
-                    const err = await res.json();
-                    throw new Error(err.detail || 'Error guardando platillo');
-                }
-                const savedProduct = await res.json();
+                let savedProduct = null;
 
-                // Si se subió un archivo físico de fotografía
+                if (isEditing) {
+                    // 1. Actualizar producto general
+                    const res = await fetch(`${API_BASE}/api/v1/products/${prodId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, category, destination_kds, product_type, price, courtesy_tier_min, image_url })
+                    });
+                    if (!res.ok) throw new Error('Error al actualizar datos del producto');
+                    savedProduct = await res.json();
+
+                    // 2. Actualizar receta
+                    if (product_type === 'PREPARED') {
+                        await fetch(`${API_BASE}/api/v1/products/${prodId}/recipe`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(recipe_items)
+                        });
+                    }
+                } else {
+                    // Crear nuevo producto
+                    const payload = {
+                        sku, name, category, destination_kds, product_type, price,
+                        courtesy_tier_min, image_url, recipe_items
+                    };
+                    const res = await fetch(`${API_BASE}/api/v1/products`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!res.ok) {
+                        const err = await res.json();
+                        throw new Error(err.detail || 'Error creando platillo');
+                    }
+                    savedProduct = await res.json();
+                }
+
+                // 3. Subir archivo de fotografía si existe
                 if (selectedProductFile && savedProduct.id) {
                     const formData = new FormData();
                     formData.append('file', selectedProductFile);
@@ -841,9 +1034,8 @@
                     });
                 }
 
-                alert('¡Ficha técnica y fotografía registradas exitosamente!');
+                alert(isEditing ? '¡Ficha técnica actualizada exitosamente!' : '¡Nuevo platillo y receta registrados exitosamente!');
                 selectedProductFile = null;
-                document.getElementById('p-image-name').innerText = '';
                 closeProductModal();
                 loadProducts();
             } catch (err) {
@@ -851,10 +1043,61 @@
             }
         }
 
+        async function deleteProduct(productId, productName) {
+            if (!confirm(`¿Estás seguro de eliminar el platillo '${productName}'?`)) return;
 
-        // Guardar Insumo
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/products/${productId}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Error al eliminar producto');
+                alert(`Platillo '${productName}' desactivado exitosamente.`);
+                loadProducts();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        // =====================================================================
+        // MODALS & CRUD ACTIONS: INSUMOS
+        // =====================================================================
+
+        function openIngredientModal() {
+            document.getElementById('modal-ingredient-title').innerText = 'Nuevo Insumo Maestro';
+            document.getElementById('ing-id').value = '';
+            document.getElementById('ing-code').value = '';
+            document.getElementById('ing-code').readOnly = false;
+            document.getElementById('ing-name').value = '';
+            document.getElementById('ing-category').value = 'PROTEINAS';
+            document.getElementById('ing-unit').value = 'GR';
+            document.getElementById('ing-cost').value = '';
+            document.getElementById('ing-min').value = '50';
+            document.getElementById('ingredient-modal').classList.remove('hidden');
+        }
+
+        function editIngredient(ingId) {
+            const ing = ingredientsList.find(i => i.id === ingId);
+            if (!ing) return;
+
+            document.getElementById('modal-ingredient-title').innerText = `Editar Insumo: ${ing.name}`;
+            document.getElementById('ing-id').value = ing.id;
+            document.getElementById('ing-code').value = ing.code;
+            document.getElementById('ing-code').readOnly = true;
+            document.getElementById('ing-name').value = ing.name;
+            document.getElementById('ing-category').value = ing.category || 'ABARROTES';
+            document.getElementById('ing-unit').value = ing.unit_of_measure;
+            document.getElementById('ing-cost').value = ing.cost_per_unit;
+            document.getElementById('ing-min').value = ing.minimum_stock;
+            document.getElementById('ingredient-modal').classList.remove('hidden');
+        }
+
+        function closeIngredientModal() {
+            document.getElementById('ingredient-modal').classList.add('hidden');
+        }
+
         async function saveIngredient(e) {
             e.preventDefault();
+            const ingId = document.getElementById('ing-id').value;
+            const isEditing = !!ingId;
+
             const payload = {
                 code: document.getElementById('ing-code').value.trim(),
                 name: document.getElementById('ing-name').value.trim(),
@@ -865,8 +1108,11 @@
             };
 
             try {
-                const res = await fetch(`${API_BASE}/api/v1/ingredients`, {
-                    method: 'POST',
+                const url = isEditing ? `${API_BASE}/api/v1/ingredients/${ingId}` : `${API_BASE}/api/v1/ingredients`;
+                const method = isEditing ? 'PUT' : 'POST';
+
+                const res = await fetch(url, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
@@ -874,15 +1120,85 @@
                     const err = await res.json();
                     throw new Error(err.detail || 'Error guardando insumo');
                 }
-                alert('¡Insumo registrado exitosamente!');
+                alert(isEditing ? '¡Insumo y costo actualizados!' : '¡Insumo registrado exitosamente!');
                 closeIngredientModal();
+                loadIngredients();
+                loadKitchenStock();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        async function deleteIngredient(ingId, ingName) {
+            if (!confirm(`¿Desactivar el insumo '${ingName}'?`)) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/ingredients/${ingId}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Error al desactivar insumo');
+                alert(`Insumo '${ingName}' desactivado.`);
                 loadIngredients();
             } catch (err) {
                 alert(err.message);
             }
         }
 
-        // Registrar Merma
+        // =====================================================================
+        // MODALS & CRUD ACTIONS: STOCK ENTRY & MERMAS
+        // =====================================================================
+
+        function openStockEntryModal(location = 'KITCHEN', ingId = '') {
+            document.getElementById('se-location').value = location;
+            if (ingId) {
+                document.getElementById('se-ingredient').value = ingId;
+            }
+            document.getElementById('se-quantity').value = '';
+            document.getElementById('se-notes').value = '';
+            document.getElementById('stock-entry-modal').classList.remove('hidden');
+        }
+
+        function closeStockEntryModal() {
+            document.getElementById('stock-entry-modal').classList.add('hidden');
+        }
+
+        async function submitStockEntry(e) {
+            e.preventDefault();
+            const payload = {
+                ingredient_id: document.getElementById('se-ingredient').value,
+                location: document.getElementById('se-location').value,
+                quantity: parseFloat(document.getElementById('se-quantity').value),
+                transaction_type: 'PURCHASE',
+                notes: document.getElementById('se-notes').value.trim() || 'Entrada directa de inventario'
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/inventory/adjust`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error('Error registrando entrada de stock');
+                alert('¡Stock registrado exitosamente!');
+                closeStockEntryModal();
+                loadKitchenStock();
+                loadIngredients();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        function openWasteModal(loc = 'KITCHEN', ingId = '') {
+            if (ingId) {
+                document.getElementById('w-ingredient').value = ingId;
+            }
+            document.getElementById('w-quantity').value = '';
+            document.getElementById('w-reason').value = '';
+            document.getElementById('waste-modal').classList.remove('hidden');
+        }
+
+        function closeWasteModal() {
+            document.getElementById('waste-modal').classList.add('hidden');
+        }
+
         async function submitWaste(e) {
             e.preventDefault();
             const payload = {

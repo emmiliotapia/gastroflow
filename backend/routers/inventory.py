@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
-from backend.core.deps import get_current_user, get_db, require_role
+from backend.core.deps import get_current_user, get_db, require_role, get_optional_current_user
 from backend.models.enums import StockLocation, UserRole
 from backend.models.stock import StockLevel
 from backend.models.user import User
@@ -41,7 +41,7 @@ router = APIRouter(prefix="/api/v1/inventory", tags=["Gestión de Inventario y M
 def get_stock_levels(
     location: Optional[StockLocation] = Query(None, description="Filtrar por bodega (WAREHOUSE, KITCHEN, BAR)"),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_optional_current_user)
 ) -> List[StockLevelRead]:
     stmt = select(StockLevel).options(joinedload(StockLevel.ingredient), joinedload(StockLevel.product))
     if location:
@@ -62,12 +62,12 @@ def get_stock_levels(
     response_model=StockLevelRead,
     status_code=status.HTTP_201_CREATED,
     summary="Registrar compras o ajustes de inventario",
-    description="Registra una compra o ajuste físico de stock. (Requiere rol ADMIN o JEFE_DE_SALA)."
+    description="Registra una compra o ajuste físico de stock."
 )
 def adjust_inventory_stock(
     payload: StockTransactionCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.JEFE_DE_SALA]))
+    current_user: Optional[User] = Depends(get_optional_current_user)
 ) -> StockLevelRead:
     stock_level = InventoryService.adjust_stock(
         db=db,
@@ -78,9 +78,33 @@ def adjust_inventory_stock(
         product_id=payload.product_id,
         unit_cost=payload.unit_cost,
         notes=payload.notes,
-        user_id=current_user.id
+        user_id=current_user.id if current_user else None
     )
     return StockLevelRead.model_validate(stock_level)
+
+
+@router.post(
+    "/waste",
+    response_model=WasteLogRead,
+    status_code=status.HTTP_201_CREATED,
+    summary="Registrar merma valorizada de insumos",
+    description="Registra un desperdicio físico y calcula el impacto monetario total."
+)
+def record_waste_log(
+    payload: WasteLogCreate,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user)
+) -> WasteLogRead:
+    waste_entry = InventoryService.register_waste(
+        db=db,
+        ingredient_id=payload.ingredient_id,
+        location=payload.location,
+        quantity=payload.quantity,
+        reason=payload.reason,
+        user_id=current_user.id if current_user else None
+    )
+    return WasteLogRead.model_validate(waste_entry)
+
 
 
 @router.post(
