@@ -16,13 +16,13 @@ sys.path.insert(0, ".")
 
 from backend.core.database import SessionLocal, engine
 from backend.core.security import get_password_hash, get_pin_hash
-from backend.models.base import Base
-from backend.models.enums import KDSStation, ProductType, UnitOfMeasure, UserRole, MachineStatus
+from backend.models.enums import KDSStation, ProductType, UnitOfMeasure, UserRole, MachineStatus, StockLocation
 from backend.models.ingredient import Ingredient
 from backend.models.product import Product, RecipeItem
 from backend.models.user import Role, User
 from backend.models.pos import POSCategory, POSButton
 from backend.models.machine import Machine
+from backend.models.stock import StockLevel
 
 
 # ==============================================================================
@@ -400,7 +400,24 @@ def seed_database():
                 ing_obj.unit_of_measure = ing_item["unit"]
                 db.flush()
 
+            # Asegurar niveles de stock por bodega (KITCHEN y WAREHOUSE)
+            for loc in [StockLocation.KITCHEN, StockLocation.WAREHOUSE]:
+                stk_stmt = select(StockLevel).where(
+                    StockLevel.ingredient_id == ing_obj.id,
+                    StockLevel.location == loc
+                )
+                stk = db.execute(stk_stmt).scalar_one_or_none()
+                if not stk:
+                    stk = StockLevel(
+                        ingredient_id=ing_obj.id,
+                        location=loc,
+                        current_stock=Decimal("500.0000"),
+                        minimum_stock=Decimal("50.0000")
+                    )
+                    db.add(stk)
+
             ingredients_dict[ing_item["code"]] = ing_obj
+
 
         # 4. Carga de Productos y Recetas Reales
         for prod_data in PRODUCTS_RECIPES_DATA:
