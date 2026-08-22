@@ -62,6 +62,19 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 from fastapi.responses import FileResponse, RedirectResponse
 
+def _get_html_file(filename: str):
+    """Localiza el archivo HTML de forma robusta en local o dentro del contenedor Docker."""
+    candidates = [
+        os.path.join("frontend", filename),
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend", filename),
+        os.path.join("/app", "frontend", filename)
+    ]
+    for p in candidates:
+        if os.path.exists(p):
+            return FileResponse(p)
+    return RedirectResponse(url=f"/frontend/{filename}")
+
+
 @app.get("/", tags=["Root"])
 def read_root(request: Request):
     """
@@ -71,61 +84,59 @@ def read_root(request: Request):
     - kds.smartopsia.com -> kds.html (Cocina / Barra)
     - caja.smartopsia.com / cashier.smartopsia.com -> cashier.html
     - cocina.smartopsia.com / catalogo.smartopsia.com -> catalogo.html
-    - Cualquier otro host / raíz general -> index.html (Launchpad)
+    - Cualquier otro host (ej. prestige.smartopsia.com) -> index.html (Launchpad)
     """
     host = request.headers.get("host", "").lower().split(":")[0]
     
-    if (host.startswith("menu.") or host.startswith("cliente.")) and os.path.exists("frontend/cliente.html"):
-        return FileResponse("frontend/cliente.html")
-    if host.startswith("pos.") and os.path.exists("frontend/pos.html"):
-        return FileResponse("frontend/pos.html")
-    if host.startswith("kds.") and os.path.exists("frontend/kds.html"):
-        return FileResponse("frontend/kds.html")
-    if (host.startswith("caja.") or host.startswith("cashier.")) and os.path.exists("frontend/cashier.html"):
-        return FileResponse("frontend/cashier.html")
-    if (host.startswith("cocina.") or host.startswith("catalogo.")) and os.path.exists("frontend/catalogo.html"):
-        return FileResponse("frontend/catalogo.html")
-    if host.startswith("staff.") and os.path.exists("frontend/staff.html"):
-        return FileResponse("frontend/staff.html")
+    if host.startswith("menu.") or host.startswith("cliente."):
+        return _get_html_file("cliente.html")
+    if host.startswith("pos."):
+        return _get_html_file("pos.html")
+    if host.startswith("kds."):
+        return _get_html_file("kds.html")
+    if host.startswith("caja.") or host.startswith("cashier."):
+        return _get_html_file("cashier.html")
+    if host.startswith("cocina.") or host.startswith("catalogo."):
+        return _get_html_file("catalogo.html")
+    if host.startswith("staff."):
+        return _get_html_file("staff.html")
 
-    if os.path.exists("frontend/index.html"):
-        return FileResponse("frontend/index.html")
-    return RedirectResponse(url="/frontend/index.html")
+    return _get_html_file("index.html")
 
 
 @app.get("/cliente", tags=["Frontend Layouts"])
 @app.get("/menu", tags=["Frontend Layouts"])
 def get_client_menu_page():
     """Sirve el Menú Digital y Portal de Pedidos para Clientes en Sala."""
-    return FileResponse("frontend/cliente.html") if os.path.exists("frontend/cliente.html") else RedirectResponse("/frontend/cliente.html")
+    return _get_html_file("cliente.html")
 
 @app.get("/pos", tags=["Frontend Layouts"])
 def get_pos_page():
     """Redirige directamente al Comandero Móvil POS."""
-    return FileResponse("frontend/pos.html") if os.path.exists("frontend/pos.html") else RedirectResponse("/frontend/pos.html")
+    return _get_html_file("pos.html")
 
 @app.get("/kds", tags=["Frontend Layouts"])
 def get_kds_page():
     """Redirige directamente a la pantalla KDS de Cocina y Barra."""
-    return FileResponse("frontend/kds.html") if os.path.exists("frontend/kds.html") else RedirectResponse("/frontend/kds.html")
+    return _get_html_file("kds.html")
 
 @app.get("/cashier", tags=["Frontend Layouts"])
 @app.get("/caja", tags=["Frontend Layouts"])
 def get_cashier_page():
     """Redirige directamente al POS de Caja y Barra."""
-    return FileResponse("frontend/cashier.html") if os.path.exists("frontend/cashier.html") else RedirectResponse("/frontend/cashier.html")
+    return _get_html_file("cashier.html")
 
 @app.get("/catalogo", tags=["Frontend Layouts"])
 @app.get("/cocina", tags=["Frontend Layouts"])
 def get_catalogo_page():
     """Redirige directamente al Centro de Catálogo y Fichas Técnicas de Cocina."""
-    return FileResponse("frontend/catalogo.html") if os.path.exists("frontend/catalogo.html") else RedirectResponse("/frontend/catalogo.html")
-
+    return _get_html_file("catalogo.html")
 
 @app.get("/staff", tags=["Frontend Layouts"])
 def get_staff_page():
     """Redirige directamente al Panel de Staff y Supervisión."""
-    return FileResponse("frontend/staff.html") if os.path.exists("frontend/staff.html") else RedirectResponse("/frontend/staff.html")
+    return _get_html_file("staff.html")
+
 
 
 
