@@ -39,9 +39,18 @@
 - **Integraciones n8n:** Añadido despachador de webhooks asíncrono no bloqueante en `backend/utils/n8n.py`.
 
 ## Implementación de Portal de Caja y Cuentas Pendientes - 2026-08-21
-- **Modelo de Cuentas y Cobros:** Añadida la enumeración `PaymentStatus` y los campos `payment_status` y `payment_method` a la cabecera del pedido [`Order`](file:///c:/Users/Administrador/Desktop/PROGRAMACION/ERP%20Casino/Codigo/backend/models/order.py) para dar trazabilidad al cobro.
+- **Modelo de Cuentas y Cobros:** Añadida la enumeración `PaymentStatus` y los campos `payment_status` y `payment_method` a la cabecera del pedido `Order` para dar trazabilidad al cobro.
 - **Automatización de Pago:** Las comandas creadas a $0.00 (100% cortesías por nivel o PIN) se registran automáticamente como `COMPLIMENTARY` con método de pago `COURTESY`. El resto inician en `PENDING` para su cobro definitivo en caja.
-- **Router y API de Caja:** Creado [`routers/cashier.py`](file:///c:/Users/Administrador/Desktop/PROGRAMACION/ERP%20Casino/Codigo/backend/routers/cashier.py) para el listado FIFO de comandas pendientes de cobro y registro seguro de cobro (`CASH`/`CARD`/`COURTESY` con PIN de supervisor).
-- **Portal de Caja / Barra:** Creado [`frontend/cashier.html`](file:///c:/Users/Administrador/Desktop/PROGRAMACION/ERP%20Casino/Codigo/frontend/cashier.html) con estética Obsidian & Gold para bartenders y cajeros de sala. Permite desglosar comandas activas por slot y realizar cobros parciales o cierres financieros de cuentas.
+- **Router y API de Caja:** Creado `routers/cashier.py` para el listado FIFO de comandas pendientes de cobro y registro seguro de cobro (`CASH`/`CARD`/`COURTESY` con PIN de supervisor).
+- **Portal de Caja / Barra:** Creado `frontend/cashier.html` con estética Obsidian & Gold para bartenders y cajeros de sala. Permite desglosar comandas activas por slot y realizar cobros parciales o cierres financieros de cuentas.
+
+## Implementación de Menú Digital y PWA Cliente Anónimo - 2026-08-22
+- **Portal de Clientes en Sala (`frontend/cliente.html`):** Desarrollado con estética Obsidian & Gold y usabilidad móvil táctil superior para jugadores en sala.
+- **Acceso Cero Fricción:** Detección automática del identificador de máquina mediante parámetros de URL (`?machine_id=...`, `?slot=...`) sin requerir autenticación ni registro.
+- **Sticky Cart Footer:** Barra inferior flotante fija verde esmeralda con contador de productos en tiempo real, total acumulado y botón "Enviar Pedido".
+- **Garantía Transaccional y Sandboxing:** Las órdenes públicas se emiten con `current_user = None`, descuentan inventario de forma atómica en cocina o barra y emiten instantáneamente la comanda a KDS y al listado de cuentas abiertas de Caja.
+- **Dock de Asistencia en Sala:** Botones discretos integrados para llamar mesero, solicitar recarga de saldo (Runners) y reportar fallas técnicas (Sistemas).
+- **Enrutamiento Inteligente:** Mapeo automático de subdominios `menu.smartopsia.com` y `cliente.smartopsia.com` y rutas `/menu` y `/cliente`.
+
 
 

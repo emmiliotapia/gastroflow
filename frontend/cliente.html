@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Casino Prestige - Menú Digital y Pedidos en Sala</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#060608">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            obsidian: {
+              DEFAULT: '#0e0e11',
+              deep: '#060608',
+              card: '#16161b',
+              light: '#22222b',
+              border: '#2a2a36'
+            },
+            gold: {
+              400: '#e1b77c',
+              500: '#d49b4b',
+              600: '#c5843a',
+              goldish: '#d4af37'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            outfit: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #060608;
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+      background-image: 
+        radial-gradient(circle at 10% 10%, rgba(212, 175, 55, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(197, 132, 58, 0.04) 0%, transparent 40%);
+      background-attachment: fixed;
+    }
+
+    .glass-card {
+      background: rgba(22, 22, 27, 0.88);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, #d49b4b 0%, #c5843a 100%);
+      color: #060608;
+      font-weight: 700;
+      transition: all 0.2s ease;
+    }
+
+    .btn-gold:hover {
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.35);
+    }
+
+    .btn-emerald {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      font-weight: 800;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .btn-emerald:hover {
+      box-shadow: 0 6px 25px rgba(16, 185, 129, 0.6);
+      transform: translateY(-1px);
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 3px;
+      height: 3px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #060608;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2a2a36;
+      border-radius: 3px;
+    }
+
+    .drawer-open {
+      transform: translateY(0) !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col select-none pb-28">
+
+  <!-- HEADER ELEGANTE CON SLOT IDENTIFIER -->
+  <header class="bg-obsidian-deep/95 border-b border-obsidian-border px-4 py-3 sticky top-0 z-30 backdrop-blur-md flex justify-between items-center">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center">
+        <i data-lucide="crown" class="w-5 h-5 text-gold-400"></i>
+      </div>
+      <div>
+        <h1 class="font-outfit text-base font-bold text-white tracking-wider leading-tight">CASINO <span class="text-gold-400">PRESTIGE</span></h1>
+        <p class="text-[10px] text-gray-400 font-mono">Alimentos & Bebidas en Sala</p>
+      </div>
+    </div>
+
+    <!-- Machine Badge (Click to Change) -->
+    <button onclick="promptChangeSlot()" class="px-3 py-1.5 rounded-xl bg-obsidian border border-gold-500/40 hover:border-gold-500 text-xs font-mono font-bold text-gold-400 flex items-center gap-1.5 transition active:scale-95 shadow-md">
+      <i data-lucide="map-pin" class="w-3.5 h-3.5 text-gold-500"></i>
+      <span id="header-slot-badge">MÁQUINA: 000</span>
+    </button>
+  </header>
+
+  <!-- QUICK ASSISTANCE DOCK (BOTONES DISCRETOS DE PISO EN PARTE SUPERIOR / SUB-BAR) -->
+  <section class="max-w-4xl w-full mx-auto px-4 pt-3">
+    <div class="glass-card rounded-2xl p-2 flex items-center justify-between gap-2 border border-obsidian-border shadow-md">
+      <div class="text-[11px] font-mono font-semibold text-gray-400 pl-2 hidden sm:block">¿Necesitas asistencia en tu lugar?</div>
+      <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+        <!-- Llamar Mesero -->
+        <button onclick="callWaiter()" class="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-obsidian hover:bg-obsidian-light border border-obsidian-border text-gray-300 hover:text-white text-[11px] font-bold flex items-center justify-center gap-1.5 transition active:scale-95">
+          <i data-lucide="bell" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span>Llamar Mesero</span>
+        </button>
+
+        <!-- Solicitar Recarga -->
+        <button onclick="requestRecharge()" class="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-amber-950/40 hover:bg-amber-900/60 border border-amber-500/40 text-amber-300 text-[11px] font-bold flex items-center justify-center gap-1.5 transition active:scale-95">
+          <i data-lucide="dollar-sign" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span>Pedir Saldo</span>
+        </button>
+
+        <!-- Reportar Falla -->
+        <button onclick="openFaultModal()" class="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-red-950/40 hover:bg-red-900/60 border border-red-500/40 text-red-300 text-[11px] font-bold flex items-center justify-center gap-1.5 transition active:scale-95">
+          <i data-lucide="wrench" class="w-3.5 h-3.5 text-red-400"></i>
+          <span>Falla Técnica</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEARCH & CATEGORIES -->
+  <main class="max-w-4xl w-full mx-auto p-4 flex-1 flex flex-col gap-4">
+    
+    <!-- Instant Search Bar -->
+    <div class="relative">
+      <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3.5 text-gray-500"></i>
+      <input type="text" id="client-search" oninput="renderClientMenu()" placeholder="Buscar platillo, cerveza, cóctel o café..." class="w-full bg-obsidian border border-obsidian-border rounded-2xl py-3 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-gold-500 shadow-inner">
+    </div>
+
+    <!-- Category Pills -->
+    <div id="category-pills" class="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
+      <!-- Loaded dynamically -->
+    </div>
+
+    <!-- Product Grid with High Definition Cards -->
+    <div id="client-menu-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-3.5 sm:gap-4">
+      <!-- Loaded dynamically -->
+    </div>
+  </main>
+
+  <!-- STICKY CART FOOTER (SIEMPRE VISIBLE CUANDO CART >= 1 ITEM) -->
+  <footer id="sticky-cart-footer" class="fixed bottom-0 left-0 right-0 z-40 bg-obsidian-deep/95 border-t border-gold-500/30 p-3.5 backdrop-blur-xl transition-all duration-300 transform translate-y-full shadow-2xl">
+    <div class="max-w-4xl mx-auto flex items-center justify-between gap-4">
+      
+      <!-- Counter & Total Info -->
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-gold-500/15 border border-gold-500/40 flex items-center justify-center flex-shrink-0 text-gold-400 font-mono font-extrabold text-sm shadow-inner" id="cart-qty-badge">
+          0
+        </div>
+        <div>
+          <div class="text-[10px] text-gray-400 uppercase font-mono tracking-wider">Total a Pagar</div>
+          <div class="text-lg font-mono font-extrabold text-gold-400 leading-tight" id="cart-total-display">$0.00</div>
+        </div>
+      </div>
+
+      <!-- Emerald Submit Button -->
+      <button onclick="openOrderModal()" class="btn-emerald py-3.5 px-6 rounded-2xl text-xs sm:text-sm font-extrabold uppercase tracking-wider flex items-center justify-center gap-2 active:scale-95">
+        <i data-lucide="send" class="w-4 h-4"></i>
+        <span>Enviar Pedido</span>
+      </button>
+    </div>
+  </footer>
+
+  <!-- PRODUCT QUICK DETAIL / CUSTOMIZATION SHEET -->
+  <div id="item-modal-overlay" onclick="closeItemModal()" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 transition-opacity opacity-0 pointer-events-none"></div>
+  
+  <div id="item-modal" class="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-obsidian-card border-t border-obsidian-border rounded-t-3xl z-50 p-6 shadow-2xl transform translate-y-full transition-transform duration-300 ease-out">
+    <div class="flex justify-between items-start gap-3">
+      <div>
+        <span class="text-[10px] font-mono text-gold-400 font-bold px-2 py-0.5 rounded bg-gold-500/10 border border-gold-500/20" id="item-modal-cat">CATEGORÍA</span>
+        <h3 class="font-outfit text-xl font-bold text-white mt-1.5" id="item-modal-name">Nombre del Platillo</h3>
+      </div>
+      <button onclick="closeItemModal()" class="text-gray-400 hover:text-white p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+
+    <!-- Product Image Preview -->
+    <div id="item-modal-img-box" class="w-full h-36 bg-obsidian rounded-2xl my-3.5 overflow-hidden border border-obsidian-border flex items-center justify-center">
+      <img id="item-modal-img" src="" alt="Foto" class="w-full h-full object-cover hidden">
+      <div id="item-modal-img-placeholder" class="text-gray-600 flex flex-col items-center gap-1">
+        <i data-lucide="utensils" class="w-8 h-8 text-gold-500/30"></i>
+      </div>
+    </div>
+
+    <p class="text-xs text-gray-300 line-clamp-2" id="item-modal-desc">Descripción del platillo...</p>
+
+    <!-- Quantity & Custom Notes -->
+    <div class="mt-4 pt-3 border-t border-obsidian-border/60 space-y-3">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold text-gray-400">Porciones:</span>
+        <div class="flex items-center gap-3 bg-obsidian p-1.5 rounded-xl border border-obsidian-border">
+          <button onclick="adjustItemModalQty(-1)" class="w-8 h-8 rounded-lg bg-obsidian-light text-white font-bold flex items-center justify-center active:scale-95">-</button>
+          <span class="font-mono text-base font-bold text-gold-400 w-6 text-center" id="item-modal-qty">1</span>
+          <button onclick="adjustItemModalQty(1)" class="w-8 h-8 rounded-lg bg-obsidian-light text-white font-bold flex items-center justify-center active:scale-95">+</button>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-semibold text-gray-400 mb-1">Instrucciones Especiales (Opcional):</label>
+        <input type="text" id="item-modal-notes" placeholder="Ej. Sin cebolla, con salsa aparte, bien frío..." class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-gold-500">
+      </div>
+
+      <button onclick="confirmAddItemToCart()" class="w-full btn-gold py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 mt-2">
+        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+        <span id="item-modal-btn-text">Agregar • $0.00</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ORDER CONFIRMATION MODAL -->
+  <div id="order-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-card bg-obsidian-card p-6 rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto flex flex-col justify-between gap-4 border border-obsidian-border shadow-2xl">
+      
+      <div>
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center border-b border-obsidian-border pb-3">
+          <div>
+            <h3 class="font-outfit text-lg font-bold text-white flex items-center gap-2">
+              <i data-lucide="shopping-bag" class="w-5 h-5 text-emerald-400"></i> Confirmar Comanda
+            </h3>
+            <span class="text-xs font-mono text-gold-400 font-bold" id="confirm-modal-slot">Entrega en: SLOT 000</span>
+          </div>
+          <button onclick="closeOrderModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+
+        <!-- Items Breakdown -->
+        <div class="my-4 space-y-2.5 max-h-60 overflow-y-auto pr-1" id="order-confirm-items">
+          <!-- Loaded dynamically -->
+        </div>
+
+        <!-- General Order Notes -->
+        <div class="border-t border-obsidian-border pt-3">
+          <label class="block text-[11px] text-gray-400 font-mono mb-1">Comentarios para el mesero o cocina:</label>
+          <input type="text" id="order-general-notes" placeholder="Notas adicionales..." class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-gold-500">
+        </div>
+      </div>
+
+      <!-- Footer Action -->
+      <div class="border-t border-obsidian-border pt-3 space-y-3">
+        <div class="flex justify-between items-center">
+          <span class="text-xs font-mono text-gray-400">Total a Liquidar:</span>
+          <span class="text-xl font-mono font-extrabold text-gold-400" id="order-confirm-total">$0.00</span>
+        </div>
+
+        <button onclick="submitClientOrder()" id="btn-submit-order" class="w-full btn-emerald py-4 rounded-2xl text-xs sm:text-sm font-extrabold uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg">
+          <i data-lucide="check-circle" class="w-4 h-4"></i>
+          <span>Confirmar y Enviar a Cocina</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORDER SUCCESS CELEBRATION MODAL -->
+  <div id="success-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-card bg-obsidian-card p-6 rounded-3xl w-full max-w-sm flex flex-col items-center text-center gap-3 border border-emerald-500/40 shadow-2xl">
+      <div class="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center animate-bounce">
+        <i data-lucide="check" class="w-8 h-8 text-emerald-400"></i>
+      </div>
+      <h3 class="font-outfit text-xl font-bold text-white">¡Comanda Recibida!</h3>
+      <p class="text-xs text-gray-300 leading-relaxed">
+        Tu pedido <span class="font-mono font-bold text-gold-400" id="success-order-folio">#COM-00000</span> ha sido enviado a Cocina / Barra y será llevado a tu <span class="font-bold text-white" id="success-order-slot">Slot</span>.
+      </p>
+      <button onclick="closeSuccessModal()" class="btn-gold w-full py-3 rounded-xl text-xs font-bold uppercase mt-2">
+        Aceptar
+      </button>
+    </div>
+  </div>
+
+  <!-- FAULT REPORT MODAL -->
+  <div id="fault-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-card bg-obsidian-card p-6 rounded-3xl w-full max-w-sm flex flex-col gap-4 border border-obsidian-border shadow-2xl">
+      <div class="flex justify-between items-center border-b border-obsidian-border pb-2">
+        <h3 class="font-outfit text-base font-bold text-red-400 flex items-center gap-2">
+          <i data-lucide="wrench" class="w-4 h-4"></i> Reportar Falla en Máquina
+        </h3>
+        <button onclick="closeFaultModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-gray-400 mb-1">Máquina:</label>
+          <input type="text" id="fault-machine-display" readonly class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2 text-gold-400 font-mono text-xs font-bold">
+        </div>
+        <div>
+          <label class="block text-gray-400 mb-1">Describe el problema:</label>
+          <textarea id="fault-text" rows="3" placeholder="Billetero no acepta billetes, botón pegado, pantalla congelada..." class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-white text-xs focus:outline-none focus:border-red-500"></textarea>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-obsidian-border">
+        <button onclick="closeFaultModal()" class="px-4 py-2 rounded-xl bg-obsidian text-gray-400 font-bold text-xs">Cancelar</button>
+        <button onclick="submitFaultReport()" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs">Enviar Reporte</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    const proto = window.location.protocol === 'https:' ? 'https:' : 'http:';
+    const API_BASE = window.location.port === '8001' || window.location.port === '8000' ? '' : `${proto}//${window.location.host}`;
+
+    let clientSlot = '000';
+    let clientCatalog = [];
+    let selectedCategory = 'ALL';
+    let clientCart = [];
+
+    let activeModalProduct = null;
+    let modalQty = 1;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      initSlotFromURL();
+      loadCatalog();
+    });
+
+    // 1. Acceso Cero Fricción: Captura automática de ?machine_id=... o ?slot=...
+    function initSlotFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      const slotParam = params.get('machine_id') || params.get('machine_code') || params.get('slot') || params.get('m');
+      
+      if (slotParam && slotParam.trim()) {
+        clientSlot = slotParam.trim().toUpperCase();
+        localStorage.setItem('casino_client_slot', clientSlot);
+      } else {
+        clientSlot = localStorage.getItem('casino_client_slot') || '000';
+      }
+      updateSlotBadge();
+    }
+
+    function updateSlotBadge() {
+      document.getElementById('header-slot-badge').innerText = `MÁQUINA: ${clientSlot}`;
+      document.getElementById('confirm-modal-slot').innerText = `Entrega en: MÁQUINA ${clientSlot}`;
+    }
+
+    function promptChangeSlot() {
+      const nuevo = prompt("Ingresa el número o código de tu máquina / ubicación:", clientSlot);
+      if (nuevo && nuevo.trim()) {
+        clientSlot = nuevo.trim().toUpperCase();
+        localStorage.setItem('casino_client_slot', clientSlot);
+        updateSlotBadge();
+      }
+    }
+
+    // 2. Cargar Menú
+    async function loadCatalog() {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/products`);
+        if (!res.ok) throw new Error('Error al obtener menú');
+        clientCatalog = await res.json();
+
+        // Render Categories
+        const categories = ['ALL', ...new Set(clientCatalog.map(p => p.category))];
+        const catContainer = document.getElementById('category-pills');
+        catContainer.innerHTML = '';
+
+        categories.forEach(c => {
+          catContainer.innerHTML += `
+            <button onclick="selectCategory('${c}')" id="client-cat-btn-${c}" class="px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition ${c === 'ALL' ? 'bg-gold-500 text-black font-bold shadow-md shadow-gold-500/20' : 'bg-obsidian text-gray-400 hover:text-white border border-obsidian-border'}">
+              ${c === 'ALL' ? 'Todos los Productos' : c}
+            </button>
+          `;
+        });
+
+        renderClientMenu();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function selectCategory(cat) {
+      selectedCategory = cat;
+      const categories = ['ALL', ...new Set(clientCatalog.map(p => p.category))];
+      categories.forEach(c => {
+        const btn = document.getElementById(`client-cat-btn-${c}`);
+        if (btn) {
+          if (c === cat) {
+            btn.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-gold-500 text-black whitespace-nowrap transition shadow-md shadow-gold-500/20';
+          } else {
+            btn.className = 'px-4 py-2 rounded-xl text-xs font-semibold bg-obsidian text-gray-400 hover:text-white border border-obsidian-border whitespace-nowrap transition';
+          }
+        }
+      });
+      renderClientMenu();
+    }
+
+    function renderClientMenu() {
+      const query = document.getElementById('client-search').value.toLowerCase().trim();
+      const container = document.getElementById('client-menu-grid');
+      container.innerHTML = '';
+
+      const filtered = clientCatalog.filter(p => {
+        const matchCat = selectedCategory === 'ALL' || p.category === selectedCategory;
+        const matchQuery = p.name.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query) || (p.description && p.description.toLowerCase().includes(query));
+        return matchCat && matchQuery && p.is_active;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="col-span-3 text-center py-16 text-xs text-gray-500 italic">No se encontraron productos disponibles</div>';
+        return;
+      }
+
+      filtered.forEach(p => {
+        const price = parseFloat(p.price || 0);
+        const imgHtml = p.image_url 
+          ? `<img src="${p.image_url}" alt="${p.name}" class="w-full h-28 sm:h-36 object-cover rounded-xl mb-2.5 border border-obsidian-border group-hover:scale-102 transition duration-300">`
+          : `<div class="w-full h-28 sm:h-36 bg-obsidian rounded-xl mb-2.5 flex items-center justify-center border border-obsidian-border text-gray-600 group-hover:text-gold-400 transition"><i data-lucide="${p.destination_kds === 'BAR' ? 'wine' : 'utensils'}" class="w-9 h-9"></i></div>`;
+
+        container.innerHTML += `
+          <button type="button" onclick="openItemModal('${p.id}')" class="bg-obsidian hover:bg-obsidian-light p-3 rounded-2xl border border-obsidian-border hover:border-gold-500/50 text-left flex flex-col justify-between transition group shadow-lg active:scale-98">
+            <div>
+              ${imgHtml}
+              <div class="text-[9px] font-mono font-bold text-gold-400 uppercase tracking-wider">${p.category}</div>
+              <h4 class="text-xs sm:text-sm font-bold text-white group-hover:text-gold-400 transition mt-0.5 line-clamp-1 leading-tight">${p.name}</h4>
+              <p class="text-[10px] text-gray-400 mt-1 line-clamp-2 leading-relaxed">${p.description || 'Preparado al momento con ingredientes premium.'}</p>
+            </div>
+
+            <div class="mt-3 pt-2 border-t border-obsidian-border/50 flex justify-between items-center">
+              <span class="text-xs sm:text-sm font-mono font-extrabold text-gold-400">$${price.toFixed(2)}</span>
+              <div class="w-7 h-7 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400 group-hover:bg-gold-500 group-hover:text-black transition">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+              </div>
+            </div>
+          </button>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // MODAL DE DETALLE Y PERSONALIZACIÓN RÁPIDA
+    // =========================================================================
+
+    function openItemModal(productId) {
+      const prod = clientCatalog.find(p => p.id === productId);
+      if (!prod) return;
+
+      activeModalProduct = prod;
+      modalQty = 1;
+
+      document.getElementById('item-modal-cat').innerText = prod.category;
+      document.getElementById('item-modal-name').innerText = prod.name;
+      document.getElementById('item-modal-desc').innerText = prod.description || 'Preparación en tiempo real para servicio en sala.';
+      document.getElementById('item-modal-notes').value = '';
+      document.getElementById('item-modal-qty').innerText = modalQty;
+
+      // Imagen
+      const imgEl = document.getElementById('item-modal-img');
+      const placeholder = document.getElementById('item-modal-img-placeholder');
+      if (prod.image_url) {
+        imgEl.src = prod.image_url;
+        imgEl.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+      } else {
+        imgEl.classList.add('hidden');
+        placeholder.classList.remove('hidden');
+      }
+
+      updateItemModalButton();
+
+      const overlay = document.getElementById('item-modal-overlay');
+      const modal = document.getElementById('item-modal');
+      overlay.classList.remove('pointer-events-none');
+      overlay.classList.add('opacity-100');
+      modal.classList.add('drawer-open');
+    }
+
+    function closeItemModal() {
+      const overlay = document.getElementById('item-modal-overlay');
+      const modal = document.getElementById('item-modal');
+      overlay.classList.remove('opacity-100');
+      overlay.classList.add('pointer-events-none');
+      modal.classList.remove('drawer-open');
+      activeModalProduct = null;
+    }
+
+    function adjustItemModalQty(delta) {
+      modalQty = Math.max(1, modalQty + delta);
+      document.getElementById('item-modal-qty').innerText = modalQty;
+      updateItemModalButton();
+    }
+
+    function updateItemModalButton() {
+      if (!activeModalProduct) return;
+      const total = parseFloat(activeModalProduct.price || 0) * modalQty;
+      document.getElementById('item-modal-btn-text').innerText = `Agregar al Pedido • $${total.toFixed(2)}`;
+    }
+
+    function confirmAddItemToCart() {
+      if (!activeModalProduct) return;
+
+      const notes = document.getElementById('item-modal-notes').value.trim();
+      const existing = clientCart.find(i => i.product_id === activeModalProduct.id && i.notes === notes);
+
+      if (existing) {
+        existing.quantity += modalQty;
+      } else {
+        clientCart.push({
+          product_id: activeModalProduct.id,
+          name: activeModalProduct.name,
+          price: parseFloat(activeModalProduct.price || 0),
+          quantity: modalQty,
+          notes: notes
+        });
+      }
+
+      closeItemModal();
+      updateStickyFooter();
+    }
+
+    // =========================================================================
+    // STICKY FOOTER & CONFIRMATION MODAL
+    // =========================================================================
+
+    function updateStickyFooter() {
+      const footer = document.getElementById('sticky-cart-footer');
+      const countBadge = document.getElementById('cart-qty-badge');
+      const totalDisplay = document.getElementById('cart-total-display');
+
+      let totalCount = 0;
+      let totalMoney = 0;
+
+      clientCart.forEach(i => {
+        totalCount += i.quantity;
+        totalMoney += i.price * i.quantity;
+      });
+
+      if (clientCart.length > 0) {
+        countBadge.innerText = totalCount;
+        totalDisplay.innerText = `$${totalMoney.toFixed(2)}`;
+        footer.classList.remove('translate-y-full');
+      } else {
+        footer.classList.add('translate-y-full');
+      }
+    }
+
+    function openOrderModal() {
+      if (clientCart.length === 0) return;
+
+      const itemsContainer = document.getElementById('order-confirm-items');
+      itemsContainer.innerHTML = '';
+
+      let totalMoney = 0;
+
+      clientCart.forEach((it, idx) => {
+        const subtotal = it.price * it.quantity;
+        totalMoney += subtotal;
+
+        itemsContainer.innerHTML += `
+          <div class="flex justify-between items-center bg-obsidian p-3 rounded-2xl border border-obsidian-border text-xs">
+            <div>
+              <div class="font-bold text-white">${it.name}</div>
+              <div class="flex items-center gap-1.5 mt-0.5">
+                <span class="text-[10px] font-mono text-gray-400">$${it.price.toFixed(2)} c/u</span>
+                ${it.notes ? `<span class="text-[10px] text-amber-300 italic">("${it.notes}")</span>` : ''}
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button onclick="changeConfirmQty(${idx}, -1)" class="w-6 h-6 rounded bg-obsidian-light text-gray-300 font-bold flex items-center justify-center">-</button>
+              <span class="font-mono font-bold text-gold-400 w-4 text-center">${it.quantity}</span>
+              <button onclick="changeConfirmQty(${idx}, 1)" class="w-6 h-6 rounded bg-obsidian-light text-gray-300 font-bold flex items-center justify-center">+</button>
+              <span class="font-mono font-bold text-white w-14 text-right">$${subtotal.toFixed(2)}</span>
+            </div>
+          </div>
+        `;
+      });
+
+      document.getElementById('order-confirm-total').innerText = `$${totalMoney.toFixed(2)}`;
+      document.getElementById('order-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeOrderModal() {
+      document.getElementById('order-modal').classList.add('hidden');
+    }
+
+    function changeConfirmQty(index, delta) {
+      clientCart[index].quantity += delta;
+      if (clientCart[index].quantity <= 0) {
+        clientCart.splice(index, 1);
+      }
+      updateStickyFooter();
+      if (clientCart.length === 0) {
+        closeOrderModal();
+      } else {
+        openOrderModal();
+      }
+    }
+
+    async function submitClientOrder() {
+      if (clientCart.length === 0) return;
+
+      const btn = document.getElementById('btn-submit-order');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="animate-pulse">Enviando comanda a Cocina...</span>';
+
+      const generalNotes = document.getElementById('order-general-notes').value.trim();
+
+      const payload = {
+        machine_code: clientSlot,
+        notes: generalNotes,
+        items: clientCart.map(i => ({
+          product_id: i.product_id,
+          quantity: i.quantity,
+          is_courtesy: false
+        }))
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/cashier/orders`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Error procesando pedido');
+        }
+
+        const data = await res.json();
+        closeOrderModal();
+
+        // Limpiar carrito
+        clientCart = [];
+        updateStickyFooter();
+
+        // Mostrar celebración
+        document.getElementById('success-order-folio').innerText = `#${data.order_number}`;
+        document.getElementById('success-order-slot').innerText = `Máquina ${clientSlot}`;
+        document.getElementById('success-modal').classList.remove('hidden');
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4"></i><span>Confirmar y Enviar a Cocina</span>';
+        lucide.createIcons();
+      }
+    }
+
+    function closeSuccessModal() {
+      document.getElementById('success-modal').classList.add('hidden');
+    }
+
+    // =========================================================================
+    // BOTONES DE ASISTENCIA RÁPIDA (PISO Y PÁNICO)
+    // =========================================================================
+
+    async function callWaiter() {
+      try {
+        await fetch(`${API_BASE}/api/v1/tickets`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: `🛎️ [LLAMAR MESERO] Máquina ${clientSlot}`,
+            description: `Cliente en máquina ${clientSlot} solicita la atención de un mesero en sala.`,
+            machine_id: null
+          })
+        });
+        alert(`¡Mesero notificado! Un colaborador se acercará a la máquina ${clientSlot}.`);
+      } catch (e) {
+        alert('Llamada enviada.');
+      }
+    }
+
+    async function requestRecharge() {
+      try {
+        await fetch(`${API_BASE}/api/v1/tickets`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: `🟡 [SOLICITUD DE RECARGA] Máquina ${clientSlot}`,
+            description: `Cliente en máquina ${clientSlot} solicita recarga de créditos en su terminal.`,
+            machine_id: null
+          })
+        });
+        alert(`¡Alerta enviada a Runners! En breve se acercarán a la máquina ${clientSlot} para asistirte con tu saldo.`);
+      } catch (e) {
+        alert('Solicitud enviada.');
+      }
+    }
+
+    function openFaultModal() {
+      document.getElementById('fault-machine-display').value = `MÁQUINA: ${clientSlot}`;
+      document.getElementById('fault-text').value = '';
+      document.getElementById('fault-modal').classList.remove('hidden');
+    }
+
+    function closeFaultModal() {
+      document.getElementById('fault-modal').classList.add('hidden');
+    }
+
+    async function submitFaultReport() {
+      const text = document.getElementById('fault-text').value.trim();
+      if (!text) {
+        alert('Por favor describe brevemente la falla de la máquina.');
+        return;
+      }
+
+      try {
+        await fetch(`${API_BASE}/api/v1/tickets`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: `🔴 [FALLA TÉCNICA CLIENTE] Máquina ${clientSlot}`,
+            description: `Reporte de cliente en máquina ${clientSlot}: ${text}`,
+            machine_id: null
+          })
+        });
+        alert(`¡Ticket de soporte generado! El equipo de Sistemas atenderá la máquina ${clientSlot}.`);
+        closeFaultModal();
+      } catch (e) {
+        alert('Reporte enviado.');
+        closeFaultModal();
+      }
+    }
+  </script>
+</body>
+</html>

@@ -7,7 +7,7 @@ configura middlewares, routers y el health check de infraestructura.
 
 import asyncio
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from backend.websockets.kds_manager import kds_manager
 
@@ -66,14 +66,17 @@ from fastapi.responses import FileResponse, RedirectResponse
 def read_root(request: Request):
     """
     Sirve la interfaz adecuada según el subdominio o el Launchpad principal.
-    - pos.smartopsia.com -> pos.html
-    - kds.smartopsia.com -> kds.html
+    - menu.smartopsia.com / cliente.smartopsia.com -> cliente.html (Menú público para jugadores)
+    - pos.smartopsia.com -> pos.html (Comandero meseros)
+    - kds.smartopsia.com -> kds.html (Cocina / Barra)
     - caja.smartopsia.com / cashier.smartopsia.com -> cashier.html
     - cocina.smartopsia.com / catalogo.smartopsia.com -> catalogo.html
     - Cualquier otro host / raíz general -> index.html (Launchpad)
     """
     host = request.headers.get("host", "").lower().split(":")[0]
     
+    if (host.startswith("menu.") or host.startswith("cliente.")) and os.path.exists("frontend/cliente.html"):
+        return FileResponse("frontend/cliente.html")
     if host.startswith("pos.") and os.path.exists("frontend/pos.html"):
         return FileResponse("frontend/pos.html")
     if host.startswith("kds.") and os.path.exists("frontend/kds.html"):
@@ -89,6 +92,12 @@ def read_root(request: Request):
         return FileResponse("frontend/index.html")
     return RedirectResponse(url="/frontend/index.html")
 
+
+@app.get("/cliente", tags=["Frontend Layouts"])
+@app.get("/menu", tags=["Frontend Layouts"])
+def get_client_menu_page():
+    """Sirve el Menú Digital y Portal de Pedidos para Clientes en Sala."""
+    return FileResponse("frontend/cliente.html") if os.path.exists("frontend/cliente.html") else RedirectResponse("/frontend/cliente.html")
 
 @app.get("/pos", tags=["Frontend Layouts"])
 def get_pos_page():
@@ -111,6 +120,7 @@ def get_cashier_page():
 def get_catalogo_page():
     """Redirige directamente al Centro de Catálogo y Fichas Técnicas de Cocina."""
     return FileResponse("frontend/catalogo.html") if os.path.exists("frontend/catalogo.html") else RedirectResponse("/frontend/catalogo.html")
+
 
 @app.get("/staff", tags=["Frontend Layouts"])
 def get_staff_page():

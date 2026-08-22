@@ -107,7 +107,23 @@
       <p class="text-xs text-gray-400 mt-1">Selecciona el módulo correspondiente a tu estación de trabajo o dispositivo</p>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- 0. MENÚ DIGITAL CLIENTES (AUTOSERVICIO QR) -->
+      <a href="/menu" class="glass-card rounded-3xl p-6 flex flex-col justify-between group border-gold-500/20">
+        <div>
+          <div class="flex justify-between items-start mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center group-hover:bg-gold-500 group-hover:text-black text-gold-400 transition-all duration-300">
+              <i data-lucide="qr-code" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">CLIENTES EN SALA</span>
+          </div>
+          <h3 class="font-outfit text-lg font-bold text-white group-hover:text-gold-400 transition">Menú Digital & Pedidos QR</h3>
+          <p class="text-xs text-gray-400 mt-2 leading-relaxed">Portal público para jugadores. Acceso anónimo por slot (?machine_id), Sticky Cart Footer verde esmeralda y botones de asistencia (pedir saldo / mesero).</p>
+        </div>
+        <div class="mt-6 pt-4 border-t border-obsidian-border/50 flex justify-between items-center text-xs font-mono text-gold-400 font-bold">
+          <span>Abrir Menú Clientes</span>
+          <i data-lucide="arrow-right" class="w-4 h-4 transform group-hover:translate-x-1 transition"></i>
+        </div>
+      </a>
 
       <!-- 1. PWA MESEROS & PISO -->
       <a href="/pos" class="glass-card rounded-3xl p-6 flex flex-col justify-between group">
@@ -126,6 +142,7 @@
           <i data-lucide="arrow-right" class="w-4 h-4 transform group-hover:translate-x-1 transition"></i>
         </div>
       </a>
+
 
       <!-- 2. KDS PANTALLA DE PRODUCCIÓN -->
       <a href="/kds" class="glass-card rounded-3xl p-6 flex flex-col justify-between group">

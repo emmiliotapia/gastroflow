@@ -33,15 +33,19 @@
 
 ## Fase 3: Automatizaciones y Sistema Nervioso (n8n)
 - [x] Configurar webhooks en FastAPI hacia n8n.
-- [ ] Integrar canales de `notify.sh` segregados (Meseros, Runners, Sistemas).
+- [x] Integrar canales de `notify.sh` segregados (Meseros, Runners, Sistemas, Alertas).
 - [ ] Configurar cron job de escalamiento para minutas y tickets vencidos.
 
 ## Fase 4: Interfaces y PWAs (Capas Visibles)
-- [x] Desarrollar PWA Cliente / Comandero POS (Rejilla de categorías, lectura de QR de máquina, carrito y cobro).
-- [x] Desarrollar PWA KDS (Pantalla táctil de cocina/barra, conexión WebSocket con reconexión exponencial y cambio de estados).
+- [x] Desarrollar PWA Cliente / Portal Público (`cliente.html`) con acceso cero fricción por QR (`?machine_id=...`), Sticky Cart Footer y Dock de Asistencia.
+- [x] Desarrollar PWA Comandero Meseros (`pos.html`) con selector lateral de Venta vs Cortesía VIP y escáner de QR.
+- [x] Desarrollar PWA KDS (`kds.html`) (Pantalla táctil de cocina/barra, conexión WebSocket con semáforo de tiempos y timbres sonoros).
 - [x] Implementar infraestructura PWA (`manifest.json` y Service Worker `sw.js` para modo offline/standalone).
-- [x] Desarrollar PWA Staff (Tickets de sistemas y autorización por PIN).
+- [x] Desarrollar PWA Staff (`staff.html`) (Tickets de sistemas y autorización por PIN).
 - [x] Desarrollar Portal de Caja / Barra (`cashier.html`).
+- [x] Desarrollar Centro de Catálogo y Fichas Técnicas (`catalogo.html`).
+- [x] Desarrollar Launchpad Central de Módulos (`index.html`).
+
 
 ## Fase 5: Inteligencia Artificial, RAG y Servidor MCP SmartOpsia
 - [ ] Diseñar modelos ORM para almacenamiento de Embeddings Vectoriales (Manuales, Tickets, Minutas) usando `pgvector`.
