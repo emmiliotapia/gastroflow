@@ -16,13 +16,17 @@ sys.path.insert(0, ".")
 
 from backend.core.database import SessionLocal, engine
 from backend.core.security import get_password_hash, get_pin_hash
-from backend.models.enums import KDSStation, ProductType, UnitOfMeasure, UserRole, MachineStatus, StockLocation
+from backend.models.base import Base
+from backend.models.enums import KDSStation, ProductType, UnitOfMeasure, UserRole, MachineStatus, StockLocation, MembershipTier
 from backend.models.ingredient import Ingredient
 from backend.models.product import Product, RecipeItem
 from backend.models.user import Role, User
 from backend.models.pos import POSCategory, POSButton
 from backend.models.machine import Machine
-from backend.models.stock import StockLevel
+from backend.models.stock import StockLevel, StockTransaction
+from backend.models.vip_client import VIPClient
+from backend.models.order import Order, OrderItem
+from backend.models.ticket import Ticket
 
 
 # ==============================================================================
@@ -411,8 +415,7 @@ def seed_database():
                     stk = StockLevel(
                         ingredient_id=ing_obj.id,
                         location=loc,
-                        current_stock=Decimal("500.0000"),
-                        minimum_stock=Decimal("50.0000")
+                        quantity=Decimal("500.0000")
                     )
                     db.add(stk)
 
