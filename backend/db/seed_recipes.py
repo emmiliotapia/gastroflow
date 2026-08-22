@@ -8,7 +8,7 @@ de insumos, costos por unidad y recetas completas de Alimentos y Bebidas del Cas
 import sys
 from decimal import Decimal
 from typing import Dict, Any
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 # Garantizar resolución de módulos
@@ -291,6 +291,26 @@ def seed_database():
     print("[INFO] Iniciando proceso de seeding con fichas técnicas reales del Casino...")
 
     Base.metadata.create_all(bind=engine)
+
+    # 0. Sincronización automática de columnas para tablas existentes en PostgreSQL
+    with engine.begin() as conn:
+        migration_statements = [
+            "ALTER TABLE ingredients ADD COLUMN IF NOT EXISTS category VARCHAR(50) DEFAULT 'ABARROTES';",
+            "ALTER TABLE ingredients ADD COLUMN IF NOT EXISTS sub_recipe_id UUID;",
+            "ALTER TABLE products ADD COLUMN IF NOT EXISTS image_url TEXT;",
+            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status VARCHAR(50) DEFAULT 'PENDING';",
+            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50);",
+            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS closed_at TIMESTAMP WITH TIME ZONE;",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS hashed_pin VARCHAR(255);",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS membership_tier VARCHAR(50) DEFAULT 'CLASSIC';",
+            "ALTER TABLE machines ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;"
+        ]
+        for stmt in migration_statements:
+            try:
+                conn.execute(text(stmt))
+            except Exception:
+                pass
+
     db: Session = SessionLocal()
 
     try:
