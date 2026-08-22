@@ -8,7 +8,7 @@ Este módulo implementa los endpoints HTTP para:
 """
 
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
@@ -25,27 +25,49 @@ router = APIRouter(prefix="/api/v1/auth", tags=["Autenticación"])
     "/login",
     response_model=TokenResponse,
     summary="Iniciar sesión y obtener Token JWT",
-    description="Autentica al usuario mediante nombre de usuario y contraseña, retornando un token Bearer JWT."
+    description="Autentica al usuario mediante nombre de usuario y contraseña, de forma compatible con JSON, urlencoded y multipart form."
 )
-def login(
-    payload: LoginRequest,
+async def login(
+    request: Request,
     db: Session = Depends(get_db)
 ) -> TokenResponse:
     """
-    Endpoint de inicio de sesión. Validaciones:
-    1. Existencia del usuario por `username`.
-    2. Cuenta activa (`is_active`).
-    3. Coincidencia de hash de contraseña (`verify_password`).
-    4. Actualización del campo `last_login`.
+    Endpoint de inicio de sesión. Soporta JSON, form-urlencoded y multipart-form-data.
     """
+    content_type = request.headers.get("content-type", "")
+    username = None
+    password = None
+
+    if "application/json" in content_type:
+        try:
+            body = await request.json()
+            username = body.get("username")
+            password = body.get("password")
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid JSON body")
+    else:
+        # Form-urlencoded o multipart form data
+        try:
+            form = await request.form()
+            username = form.get("username")
+            password = form.get("password")
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid form data")
+
+    if not username or not password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nombre de usuario y contraseña son obligatorios."
+        )
+
     stmt = (
         select(User)
         .options(joinedload(User.role))
-        .where(User.username == payload.username)
+        .where(User.username == username)
     )
     user = db.execute(stmt).scalar_one_or_none()
 
-    if not user or not verify_password(payload.password, user.hashed_password):
+    if not user or not verify_password(password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Nombre de usuario o contraseña incorrectos.",

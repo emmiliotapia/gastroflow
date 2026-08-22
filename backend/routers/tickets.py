@@ -12,14 +12,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
 
-from backend.core.deps import get_current_user, get_db, require_role, verify_supervisor_pin
+from backend.core.deps import get_current_user, get_db, require_role, verify_supervisor_pin, get_optional_current_user
 from backend.core.security import verify_pin
 from backend.models.enums import UserRole, TicketStatus
 from backend.models.ticket import Ticket
 from backend.models.user import User
 from backend.models.machine import Machine
 from backend.schemas.ticket import TicketCreate, TicketAssign, TicketResolve, TicketClose, TicketRead
-from backend.utils.n8n import trigger_ticket_webhook
+from backend.utils.n8n import trigger_ticket_webhook, trigger_runner_alert_webhook
 
 router = APIRouter(prefix="/api/v1/tickets", tags=["Tickets de Mantenimiento / Sistemas"])
 
@@ -70,9 +70,10 @@ def list_tickets(
 def create_ticket(
     payload: TicketCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_optional_current_user)
 ) -> TicketRead:
     # Validar máquina si se provee
+    machine = None
     if payload.machine_id:
         machine = db.get(Machine, payload.machine_id)
         if not machine:
@@ -91,7 +92,7 @@ def create_ticket(
         machine_id=payload.machine_id,
         description=payload.description,
         status=TicketStatus.PENDIENTE,
-        created_by_id=current_user.id
+        created_by_id=current_user.id if current_user else None
     )
 
     db.add(ticket)
@@ -112,8 +113,19 @@ def create_ticket(
     final_ticket = db.execute(stmt).unique().scalar_one()
     dto = TicketRead.model_validate(final_ticket)
 
-    # Notificar webhook n8n
+    # Notificar webhook n8n estándar
     trigger_ticket_webhook(dto.model_dump(mode="json"))
+
+    # Notificar webhook de alerta-runner existente para canales notify.sh
+    desc = payload.description or ""
+    action = "falla"
+    if "[SOLICITUD DE RECARGA]" in desc:
+        action = "recarga"
+    elif "[LLAMAR MESERO]" in desc:
+        action = "mesero"
+    
+    machine_code = machine.asset_code if machine else "SALA"
+    trigger_runner_alert_webhook(machine_id=machine_code, action=action)
 
     return dto
 

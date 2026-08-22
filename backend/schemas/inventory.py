@@ -24,6 +24,8 @@ class StockLevelRead(BaseModel):
     product_id: Optional[uuid.UUID] = None
     location: StockLocation
     quantity: Decimal
+    ingredient_name: Optional[str] = None
+    product_name: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

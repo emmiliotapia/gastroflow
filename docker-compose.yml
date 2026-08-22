@@ -39,6 +39,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - ./frontend:/app/frontend
+      - ./backend:/app/backend
+      - ./uploads:/app/uploads
     networks:
       - casino_net
 

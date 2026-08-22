@@ -17,10 +17,12 @@ sys.path.insert(0, ".")
 from backend.core.database import SessionLocal, engine
 from backend.core.security import get_password_hash, get_pin_hash
 from backend.models.base import Base
-from backend.models.enums import KDSStation, ProductType, UnitOfMeasure, UserRole
+from backend.models.enums import KDSStation, ProductType, UnitOfMeasure, UserRole, MachineStatus
 from backend.models.ingredient import Ingredient
 from backend.models.product import Product, RecipeItem
 from backend.models.user import Role, User
+from backend.models.pos import POSCategory, POSButton
+from backend.models.machine import Machine
 
 
 # ==============================================================================
@@ -255,6 +257,24 @@ PRODUCTS_RECIPES_DATA = [
             ("ING-PICAD", Decimal("0"), UnitOfMeasure.PIECE),
             ("ING-TOM-SAL", Decimal("0.045"), UnitOfMeasure.GR),
         ]
+    },
+    {
+        "sku": "AYB-DRK-CERV",
+        "name": "CERVEZA CLASICA",
+        "category": "Bebidas",
+        "price": Decimal("45.00"),
+        "destination_kds": KDSStation.BAR,
+        "product_type": ProductType.DIRECT,
+        "items": []
+    },
+    {
+        "sku": "AYB-DRK-LIMO",
+        "name": "LIMONADA MINERAL",
+        "category": "Bebidas",
+        "price": Decimal("35.00"),
+        "destination_kds": KDSStation.BAR,
+        "product_type": ProductType.DIRECT,
+        "items": []
     }
 ]
 
@@ -393,7 +413,7 @@ def seed_database():
                     name=prod_data["name"],
                     description=f"Ficha técnica oficial de {prod_data['name']}",
                     category=prod_data["category"],
-                    product_type=ProductType.PREPARED,
+                    product_type=prod_data.get("product_type", ProductType.PREPARED),
                     destination_kds=prod_data["destination_kds"],
                     price=prod_data["price"],
                     courtesy_tier_min="GOLD",
@@ -433,8 +453,67 @@ def seed_database():
             print(f"    -> Insumos vinculados: {len(prod_data['items'])} ítems.")
             print(f"    -> Costo Total Producción: ${round(total_recipe_cost, 2)} | Margen: ${round(margin_amount, 2)} ({round(margin_percent, 1)}%)")
 
+        # 5. Cargar Botonera POS (Categorías y Botones)
+        print("\n--- CARGANDO CONFIGURACIÓN DE BOTONERA POS ---")
+        
+        # Categoría Alimentos
+        cat_alimentos = db.execute(select(POSCategory).where(POSCategory.name == "Alimentos")).scalar_one_or_none()
+        if not cat_alimentos:
+            cat_alimentos = POSCategory(name="Alimentos", display_order=1, is_active=True)
+            db.add(cat_alimentos)
+            db.flush()
+            print("  + Categoría POS creada: Alimentos")
+
+        # Categoría Bebidas
+        cat_bebidas = db.execute(select(POSCategory).where(POSCategory.name == "Bebidas")).scalar_one_or_none()
+        if not cat_bebidas:
+            cat_bebidas = POSCategory(name="Bebidas", display_order=2, is_active=True)
+            db.add(cat_bebidas)
+            db.flush()
+            print("  + Categoría POS creada: Bebidas")
+
+        # Vincular todos los productos activos a botones en Alimentos
+        all_products = db.execute(select(Product).where(Product.is_active == True)).scalars().all()
+        for idx, prod in enumerate(all_products):
+            # Verificar si ya tiene botón
+            btn = db.execute(select(POSButton).where(POSButton.product_id == prod.id)).scalar_one_or_none()
+            if not btn:
+                target_cat = cat_bebidas if prod.category.lower() == "bebidas" else cat_alimentos
+                btn = POSButton(
+                    category_id=target_cat.id,
+                    product_id=prod.id,
+                    display_order=idx + 1,
+                    label=prod.name,
+                    color_class="gold",
+                    is_active=True
+                )
+                db.add(btn)
+                print(f"    -> Botón creado para: {prod.name} en categoría {target_cat.name}")
+
+        # 6. Cargar Máquinas de Casino (Slots) de prueba
+        print("\n--- CARGANDO MÁQUINAS (SLOTS) DE PRUEBA ---")
+        machines_data = [
+            {"serial": "SN-SLOT-101", "asset": "SLOT-101", "model": "IGT PeakSlant", "zone": "Piso Principal", "token": "tok_slot_101"},
+            {"serial": "SN-SLOT-102", "asset": "SLOT-102", "model": "Bally Alpha II", "zone": "Piso Principal", "token": "tok_slot_102"},
+            {"serial": "SN-SLOT-VIP", "asset": "SLOT-VIP", "model": "Aria Premium", "zone": "Zona VIP", "token": "tok_slot_vip"}
+        ]
+        for m_data in machines_data:
+            m = db.execute(select(Machine).where(Machine.asset_code == m_data["asset"])).scalar_one_or_none()
+            if not m:
+                m = Machine(
+                    serial_number=m_data["serial"],
+                    asset_code=m_data["asset"],
+                    model=m_data["model"],
+                    zone=m_data["zone"],
+                    qr_code_token=m_data["token"],
+                    status=MachineStatus.OPERATIONAL,
+                    is_active=True
+                )
+                db.add(m)
+                print(f"  + Máquina creada: {m_data['asset']} (Token: {m_data['token']})")
+
         db.commit()
-        print("\n[SUCCESS] Seeding de fichas técnicas completado exitosamente.")
+        print("\n[SUCCESS] Seeding de fichas técnicas, configuración de botonera POS y máquinas completado exitosamente.")
 
     except Exception as e:
         db.rollback()

@@ -29,6 +29,7 @@
   - [x] Implementar gestor de WebSockets (`kds_manager`) para notificaciones en tiempo real a pantallas de Cocina y Barra.
   - [x] Implementar validación de niveles de clientes y sistema de cortesías con NIP.
   - [x] Crear endpoints de tickets de sistemas con los 4 estados (`PENDIENTE`, `EN_PROCESO`, `HOLD`, `FINALIZADO`).
+  - [x] Crear endpoints de Caja y Control de Cuentas Pendientes (`cashier.py`).
 
 ## Fase 3: Automatizaciones y Sistema Nervioso (n8n)
 - [x] Configurar webhooks en FastAPI hacia n8n.
@@ -40,6 +41,7 @@
 - [x] Desarrollar PWA KDS (Pantalla táctil de cocina/barra, conexión WebSocket con reconexión exponencial y cambio de estados).
 - [x] Implementar infraestructura PWA (`manifest.json` y Service Worker `sw.js` para modo offline/standalone).
 - [x] Desarrollar PWA Staff (Tickets de sistemas y autorización por PIN).
+- [x] Desarrollar Portal de Caja / Barra (`cashier.html`).
 
 ## Fase 5: Inteligencia Artificial, RAG y Servidor MCP SmartOpsia
 - [ ] Diseñar modelos ORM para almacenamiento de Embeddings Vectoriales (Manuales, Tickets, Minutas) usando `pgvector`.

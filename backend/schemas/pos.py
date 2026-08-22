@@ -7,6 +7,7 @@ de categorías y botones de la cuadrícula táctil del Punto de Venta.
 
 import uuid
 from typing import List, Optional
+from decimal import Decimal
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -18,6 +19,15 @@ class POSButtonCreate(BaseModel):
     display_order: int = Field(0, ge=0, description="Orden relativo en el grid")
 
 
+class POSButtonProductRead(BaseModel):
+    id: uuid.UUID
+    price: Decimal
+    is_active: bool
+    description: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class POSButtonRead(BaseModel):
     id: uuid.UUID
     category_id: uuid.UUID
@@ -26,6 +36,7 @@ class POSButtonRead(BaseModel):
     color_class: Optional[str] = None
     display_order: int
     is_active: bool
+    product: POSButtonProductRead
 
     model_config = ConfigDict(from_attributes=True)
 

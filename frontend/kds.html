@@ -4,72 +4,220 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Casino Prestige - Kitchen Display System (KDS)</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome for Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            obsidian: {
+              DEFAULT: '#0e0e11',
+              deep: '#060608',
+              card: '#16161b',
+              light: '#22222b',
+              border: '#2a2a36'
+            },
+            gold: {
+              400: '#e1b77c',
+              500: '#d49b4b',
+              600: '#c5843a',
+              goldish: '#d4af37'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            outfit: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
   <style>
     body {
-      background-color: #090909;
+      background-color: #060608;
+      color: #e2e8f0;
       font-family: 'Inter', sans-serif;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(212, 175, 55, 0.03) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(197, 132, 58, 0.02) 0%, transparent 40%);
+      background-attachment: fixed;
     }
-    .gold-accent {
-      color: #d4af37;
+
+    .glass-card {
+      background: rgba(22, 22, 27, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
     }
-    .border-gold {
-      border-color: #d4af37;
+
+    .glass-card:hover {
+      border-color: rgba(212, 175, 55, 0.25);
     }
-    .bg-gold {
-      background-color: #d4af37;
+
+    .gold-glow {
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
     }
-    .bg-obsidian-light {
-      background-color: #121212;
+
+    .btn-gold {
+      background: linear-gradient(135deg, #d49b4b 0%, #c5843a 100%);
+      color: #060608;
+      font-weight: 700;
+      transition: all 0.2s ease;
+    }
+
+    .btn-gold:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #060608;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #22222b;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #d49b4b;
+    }
+
+    @keyframes pulse-red {
+      0%, 100% { border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
+      50% { border-color: rgba(239, 68, 68, 0.9); box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
+    }
+
+    .card-urgent {
+      animation: pulse-red 2s infinite ease-in-out;
     }
   </style>
 </head>
-<body class="text-gray-200 min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col select-none overflow-hidden">
 
   <!-- HEADER -->
-  <header class="bg-obsidian-light border-b border-zinc-800 px-6 py-4 flex justify-between items-center">
-    <div class="flex items-center gap-3">
-      <i class="fa-solid fa-utensils gold-accent text-2xl animate-bounce"></i>
-      <h1 class="text-xl font-bold tracking-wider text-white">CASINO <span class="gold-accent">PRESTIGE</span> KDS</h1>
-    </div>
+  <header class="bg-obsidian-deep/95 border-b border-obsidian-border px-6 py-3.5 flex justify-between items-center z-20 backdrop-blur-md">
     <div class="flex items-center gap-4">
-      <div id="station-indicator" class="bg-zinc-900 border border-gold px-4 py-1.5 rounded-full text-xs font-mono gold-accent">
-        Estación: ...
+      <div class="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center">
+        <i data-lucide="chef-hat" class="w-6 h-6 text-gold-400"></i>
       </div>
-      <div id="ws-indicator" class="flex items-center gap-2 text-xs bg-red-950/40 text-red-400 border border-red-900/50 px-3 py-1.5 rounded-lg transition font-mono">
-        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>Desconectado
+      <div>
+        <h1 class="font-outfit text-lg font-bold text-white tracking-wider flex items-center gap-2">
+          PRESTIGE <span class="text-gold-400">KDS</span>
+          <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-obsidian-light border border-obsidian-border text-gray-400 uppercase" id="header-station-label">
+            COCINA
+          </span>
+        </h1>
+        <p class="text-[11px] text-gray-400 font-mono">Kitchen Display System & Production FIFO</p>
       </div>
+    </div>
+
+    <!-- Filter Pills & Status -->
+    <div class="flex items-center gap-3">
+      <!-- Tabs de Estado -->
+      <div class="bg-obsidian rounded-xl p-1 border border-obsidian-border flex gap-1">
+        <button onclick="setFilter('ALL')" id="filter-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-obsidian-light text-white transition">Todas</button>
+        <button onclick="setFilter('PENDING')" id="filter-pending" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white transition">En Cola</button>
+        <button onclick="setFilter('PREPARING')" id="filter-preparing" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white transition">Preparando</button>
+        <button onclick="setFilter('READY')" id="filter-ready" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white transition">Listas</button>
+      </div>
+
+      <!-- Selector de Estación -->
+      <button onclick="openStationModal()" class="px-3.5 py-2 rounded-xl bg-obsidian border border-obsidian-border hover:border-gold-500/40 text-xs font-bold text-gray-300 hover:text-gold-400 flex items-center gap-2 transition">
+        <i data-lucide="monitor" class="w-4 h-4 text-gold-400"></i>
+        <span id="current-station-btn">Estación: Cocina</span>
+      </button>
+
+      <!-- WebSocket Status Badge -->
+      <div id="ws-badge" class="flex items-center gap-2 text-xs bg-red-950/40 text-red-400 border border-red-900/50 px-3.5 py-2 rounded-xl font-mono">
+        <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+        <span>Desconectado</span>
+      </div>
+
+      <!-- Test Chime Audio Button -->
+      <button onclick="playChimeSound()" class="p-2 rounded-xl bg-obsidian border border-obsidian-border hover:border-gold-500/40 text-gray-400 hover:text-gold-400 transition" title="Probar Alerta Sonora">
+        <i data-lucide="volume-2" class="w-4 h-4"></i>
+      </button>
+
+      <!-- Recargar lista -->
+      <button onclick="loadKDSOrders()" class="p-2 rounded-xl bg-obsidian border border-obsidian-border hover:border-gold-500/40 text-gray-400 hover:text-gold-400 transition" title="Refrescar Comandas">
+        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+      </button>
     </div>
   </header>
 
-  <!-- KDS FIFO PANELS -->
-  <main class="flex-1 p-6 overflow-x-auto flex gap-6 items-start" id="kds-columns">
-    <!-- Las columnas FIFO se cargan de forma dinámica -->
-    <div class="text-zinc-500 text-center m-auto flex flex-col gap-2">
-      <i class="fa-solid fa-spinner text-4xl text-zinc-700 animate-spin"></i>
-      <span>Cargando comandas activas...</span>
+  <!-- MAIN FIFO HORIZONTAL CARDS CONTAINER -->
+  <main class="flex-1 p-6 overflow-x-auto overflow-y-hidden flex gap-5 items-stretch" id="kds-board">
+    <!-- Initial Loading State -->
+    <div class="m-auto flex flex-col items-center gap-3 text-gray-500">
+      <i data-lucide="loader-2" class="w-10 h-10 animate-spin text-gold-500"></i>
+      <span class="text-sm font-medium font-outfit">Sincronizando comandas de producción...</span>
     </div>
   </main>
 
+  <!-- FOOTER STATS BAR -->
+  <footer class="bg-obsidian-deep/95 border-t border-obsidian-border px-6 py-2.5 flex justify-between items-center text-xs font-mono text-gray-400 z-20">
+    <div class="flex items-center gap-6">
+      <span id="stat-total" class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-gold-400"></span> Total Activas: 0</span>
+      <span id="stat-pending" class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-400"></span> En Cola: 0</span>
+      <span id="stat-preparing" class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-400"></span> En Preparación: 0</span>
+      <span id="stat-ready" class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Listas para Entrega: 0</span>
+    </div>
+    <div class="flex items-center gap-4 text-[11px] text-gray-500">
+      <span>Auto-FIFO: Activo</span>
+      <span id="clock-display">00:00:00</span>
+    </div>
+  </footer>
+
   <!-- STATION SELECTOR MODAL -->
-  <div id="station-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center">
-    <div class="bg-obsidian-light border border-zinc-800 p-8 rounded-2xl w-full max-w-md flex flex-col gap-6 shadow-2xl">
-      <div class="text-center flex flex-col gap-2">
-        <i class="fa-solid fa-building-circle-check gold-accent text-4xl"></i>
-        <h3 class="text-xl font-bold text-white tracking-wider">Selección de Pantalla KDS</h3>
-        <p class="text-xs text-zinc-400">Selecciona el módulo o estación de producción de este monitor</p>
+  <div id="station-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="glass-card bg-obsidian-card border border-obsidian-border p-8 rounded-3xl w-full max-w-lg shadow-2xl flex flex-col gap-6">
+      <div class="text-center flex flex-col items-center gap-2">
+        <div class="w-16 h-16 rounded-2xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center mb-1">
+          <i data-lucide="monitor-play" class="w-8 h-8 text-gold-400"></i>
+        </div>
+        <h3 class="font-outfit text-2xl font-bold text-white tracking-wide">Seleccionar Monitor KDS</h3>
+        <p class="text-xs text-gray-400">Configura la estación de producción para filtrar las comandas de esta pantalla</p>
       </div>
-      <div class="grid grid-cols-2 gap-4">
-        <button onclick="setStation('KITCHEN')" class="bg-zinc-900/80 border border-zinc-800 hover:border-gold hover:bg-zinc-950 p-6 rounded-xl flex flex-col items-center gap-3 active:scale-[0.98] transition">
-          <i class="fa-solid fa-fire text-3xl gold-accent"></i>
-          <span class="font-bold text-sm text-white">COCINA</span>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <button onclick="selectStation('KITCHEN')" class="p-5 rounded-2xl bg-obsidian border border-obsidian-border hover:border-gold-500 hover:bg-obsidian-light flex flex-col items-center gap-3 transition group text-center">
+          <i data-lucide="flame" class="w-8 h-8 text-gold-400 group-hover:scale-110 transition-transform"></i>
+          <div>
+            <div class="font-bold text-sm text-white">COCINA</div>
+            <div class="text-[10px] text-gray-400 mt-0.5">Platillos y Alimentos</div>
+          </div>
         </button>
-        <button onclick="setStation('BAR')" class="bg-zinc-900/80 border border-zinc-800 hover:border-gold hover:bg-zinc-950 p-6 rounded-xl flex flex-col items-center gap-3 active:scale-[0.98] transition">
-          <i class="fa-solid fa-martini-glass-citrus text-3xl gold-accent"></i>
-          <span class="font-bold text-sm text-white">BARRA</span>
+
+        <button onclick="selectStation('BAR')" class="p-5 rounded-2xl bg-obsidian border border-obsidian-border hover:border-gold-500 hover:bg-obsidian-light flex flex-col items-center gap-3 transition group text-center">
+          <i data-lucide="wine" class="w-8 h-8 text-gold-400 group-hover:scale-110 transition-transform"></i>
+          <div>
+            <div class="font-bold text-sm text-white">BARRA</div>
+            <div class="text-[10px] text-gray-400 mt-0.5">Coctelería y Bebidas</div>
+          </div>
+        </button>
+
+        <button onclick="selectStation('ALL')" class="p-5 rounded-2xl bg-obsidian border border-obsidian-border hover:border-gold-500 hover:bg-obsidian-light flex flex-col items-center gap-3 transition group text-center">
+          <i data-lucide="layers" class="w-8 h-8 text-gold-400 group-hover:scale-110 transition-transform"></i>
+          <div>
+            <div class="font-bold text-sm text-white">GENERAL</div>
+            <div class="text-[10px] text-gray-400 mt-0.5">Todas las Estaciones</div>
+          </div>
         </button>
       </div>
     </div>
@@ -77,227 +225,387 @@
 
   <!-- JAVASCRIPT LOGIC -->
   <script>
-    // Configuración API y WebSocket URL
-    const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8001' : '';
-    const WS_BASE = window.location.hostname === 'localhost' ? 'ws://localhost:8001' : `ws://${window.location.host}`;
+    // Configuración Dinámica de API y WebSocket
+    const proto = window.location.protocol === 'https:' ? 'https:' : 'http:';
+    const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const API_BASE = window.location.port === '8001' || window.location.port === '8000' 
+      ? '' 
+      : `${proto}//${window.location.host}`;
+    const WS_BASE = `${wsProto}//${window.location.host}`;
 
-    let currentStation = null;
+    let currentStation = localStorage.getItem('kds_station') || 'KITCHEN';
+    let currentFilter = 'ALL';
     let ordersList = [];
     let ws = null;
-    let reconnectDelay = 1000; // Delay inicial de 1s
+    let reconnectTimeout = null;
+    let reconnectDelay = 1000;
 
-    // Selección de Estación
-    function setStation(station) {
+    // Web Audio Synthesizer para alertas sonoras de cocina (sin ficheros externos)
+    let audioCtx = null;
+    function playChimeSound() {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+
+        const now = audioCtx.currentTime;
+        
+        // Tono 1 (Crystal ping)
+        const osc1 = audioCtx.createOscillator();
+        const gain1 = audioCtx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(880, now); // A5
+        osc1.frequency.exponentialRampToValueAtTime(1760, now + 0.15);
+        gain1.gain.setValueAtTime(0.3, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc1.connect(gain1);
+        gain1.connect(audioCtx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.4);
+
+        // Tono 2 (Double bell)
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(1318.5, now + 0.12); // E6
+        gain2.gain.setValueAtTime(0.35, now + 0.12);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.start(now + 0.12);
+        osc2.stop(now + 0.6);
+      } catch (e) {
+        console.warn('Audio no inicializado:', e);
+      }
+    }
+
+    // Inicialización
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      updateClock();
+      setInterval(updateClock, 1000);
+      setInterval(renderTimers, 1000); // Actualiza semáforos de tiempo cada segundo
+
+      if (localStorage.getItem('kds_station')) {
+        document.getElementById('station-modal').classList.add('hidden');
+        applyStation(currentStation);
+      }
+    });
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock-display').innerText = now.toLocaleTimeString();
+    }
+
+    function openStationModal() {
+      document.getElementById('station-modal').classList.remove('hidden');
+    }
+
+    function selectStation(station) {
       currentStation = station;
+      localStorage.setItem('kds_station', station);
       document.getElementById('station-modal').classList.add('hidden');
-      document.getElementById('station-indicator').innerText = `Estación: ${station}`;
-      
-      // 1. Cargar órdenes iniciales
+      applyStation(station);
+    }
+
+    function applyStation(station) {
+      const labelMap = {
+        'KITCHEN': 'COCINA',
+        'BAR': 'BARRA',
+        'ALL': 'SUPERVISIÓN GENERAL'
+      };
+      document.getElementById('header-station-label').innerText = labelMap[station] || station;
+      document.getElementById('current-station-btn').innerText = `Estación: ${labelMap[station] || station}`;
+
       loadKDSOrders();
-      // 2. Conectar WebSocket
       connectWS();
     }
 
-    // Cargar órdenes activas por REST (HTTP GET)
+    function setFilter(filter) {
+      currentFilter = filter;
+      ['all', 'pending', 'preparing', 'ready'].forEach(f => {
+        const el = document.getElementById(`filter-${f}`);
+        if (f.toUpperCase() === filter) {
+          el.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-gold-500 text-black transition';
+        } else {
+          el.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white transition';
+        }
+      });
+      renderOrders();
+    }
+
+    // Cargar órdenes por REST
     async function loadKDSOrders() {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          alert('Debe iniciar sesión en el comandero primero.');
-          window.location.href = 'pos.html';
-          return;
-        }
-
-        const res = await fetch(`${API_BASE}/api/v1/kds/orders?station=${currentStation}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        if (!res.ok) throw new Error('Error al consultar KDS');
+        const queryParam = currentStation === 'ALL' ? '' : `?station=${currentStation}`;
+        const res = await fetch(`${API_BASE}/api/v1/kds/orders${queryParam}`);
+        if (!res.ok) throw new Error('Error al consultar comanda');
         ordersList = await res.json();
         renderOrders();
       } catch (err) {
-        console.error('Falla en REST:', err);
+        console.error('Falla consultando órdenes KDS:', err);
       }
     }
 
-    // Pintar tarjetas de Comandas
+    // Renderizar Tablero de Comandas
     function renderOrders() {
-      const columns = document.getElementById('kds-columns');
-      columns.innerHTML = '';
+      const board = document.getElementById('kds-board');
+      board.innerHTML = '';
 
-      if (ordersList.length === 0) {
-        columns.innerHTML = `
-          <div class="text-zinc-500 text-center m-auto flex flex-col gap-2 py-20">
-            <i class="fa-solid fa-circle-check text-5xl text-zinc-800"></i>
-            <span>¡Sin comandas pendientes! Buen trabajo.</span>
+      // Filtrar según tab activa
+      let filtered = ordersList;
+      if (currentFilter !== 'ALL') {
+        filtered = ordersList.filter(o => o.status === currentFilter);
+      }
+
+      // Actualizar contadores en el footer
+      document.getElementById('stat-total').innerHTML = `<span class="w-2 h-2 rounded-full bg-gold-400"></span> Total Activas: ${ordersList.length}`;
+      document.getElementById('stat-pending').innerHTML = `<span class="w-2 h-2 rounded-full bg-red-400"></span> En Cola: ${ordersList.filter(o=>o.status==='PENDING').length}`;
+      document.getElementById('stat-preparing').innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span> En Preparación: ${ordersList.filter(o=>o.status==='PREPARING').length}`;
+      document.getElementById('stat-ready').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Listas para Entrega: ${ordersList.filter(o=>o.status==='READY').length}`;
+
+      if (filtered.length === 0) {
+        board.innerHTML = `
+          <div class="m-auto flex flex-col items-center gap-3 text-gray-500 py-20">
+            <div class="w-16 h-16 rounded-2xl bg-obsidian-card border border-obsidian-border flex items-center justify-center">
+              <i data-lucide="check-circle-2" class="w-8 h-8 text-emerald-500"></i>
+            </div>
+            <span class="text-base font-outfit font-semibold text-gray-300">¡Todas las comandas al día!</span>
+            <span class="text-xs text-gray-500">Sin pedidos pendientes en estación ${currentStation}</span>
           </div>
         `;
+        lucide.createIcons();
         return;
       }
 
-      ordersList.forEach(order => {
-        // Formatear botones de acción según estado
-        let actionBtn = '';
-        let headerColor = 'bg-zinc-900 border-zinc-800';
+      filtered.forEach((order, index) => {
+        // Cálculo de semáforo de tiempo
+        const createdAt = new Date(order.created_at || Date.now());
+        const elapsedMinutes = Math.floor((Date.now() - createdAt.getTime()) / 60000);
+        
+        let timerColor = 'bg-emerald-950/40 text-emerald-400 border-emerald-800/40';
+        let cardUrgentClass = '';
+        if (elapsedMinutes >= 20) {
+          timerColor = 'bg-red-950/80 text-red-300 border-red-800';
+          cardUrgentClass = 'card-urgent';
+        } else if (elapsedMinutes >= 10) {
+          timerColor = 'bg-amber-950/60 text-amber-300 border-amber-800/50';
+        }
+
+        // Configuración visual según status
         let statusBadge = '';
+        let actionBtn = '';
+        let headerBorder = 'border-obsidian-border';
 
         if (order.status === 'PENDING') {
-          headerColor = 'bg-red-950/40 border-red-900/30';
-          statusBadge = '<span class="text-xs bg-red-950 text-red-400 border border-red-900/50 px-2 py-0.5 rounded">En Cola</span>';
+          statusBadge = '<span class="text-[10px] font-mono font-bold bg-red-950/80 text-red-300 border border-red-800 px-2 py-0.5 rounded">EN COLA</span>';
           actionBtn = `
-            <button onclick="changeStatus('${order.id}', 'PREPARING')" class="w-full bg-gold hover:bg-yellow-600 text-black font-extrabold py-2.5 rounded-lg text-xs uppercase tracking-wider transition">
-              <i class="fa-solid fa-play mr-2"></i>Preparar
+            <button onclick="changeOrderStatus('${order.id}', 'PREPARING')" class="w-full btn-gold py-3 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2">
+              <i data-lucide="play" class="w-4 h-4"></i> Iniciar Preparación
             </button>
           `;
         } else if (order.status === 'PREPARING') {
-          headerColor = 'bg-amber-950/40 border-amber-900/30';
-          statusBadge = '<span class="text-xs bg-amber-950 text-amber-400 border border-amber-900/50 px-2 py-0.5 rounded">Preparando</span>';
+          statusBadge = '<span class="text-[10px] font-mono font-bold bg-amber-950/80 text-amber-300 border border-amber-800 px-2 py-0.5 rounded">PREPARANDO</span>';
           actionBtn = `
-            <button onclick="changeStatus('${order.id}', 'READY')" class="w-full bg-green-600 hover:bg-green-700 text-white font-extrabold py-2.5 rounded-lg text-xs uppercase tracking-wider transition">
-              <i class="fa-solid fa-check-double mr-2"></i>Terminar
+            <button onclick="changeOrderStatus('${order.id}', 'READY')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40 transition">
+              <i data-lucide="check-check" class="w-4 h-4"></i> Marcar Listo
             </button>
           `;
         } else if (order.status === 'READY') {
-          headerColor = 'bg-green-950/20 border-green-900/30';
-          statusBadge = '<span class="text-xs bg-green-950 text-green-400 border border-green-900/50 px-2 py-0.5 rounded">Listo</span>';
+          statusBadge = '<span class="text-[10px] font-mono font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded animate-pulse">LISTO PARA ENTREGA</span>';
           actionBtn = `
-            <button onclick="changeStatus('${order.id}', 'DELIVERED')" class="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-extrabold py-2.5 rounded-lg text-xs uppercase tracking-wider transition">
-              <i class="fa-solid fa-box mr-2"></i>Entregar
+            <button onclick="changeOrderStatus('${order.id}', 'DELIVERED')" class="w-full bg-obsidian-light hover:bg-obsidian-border text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 border border-obsidian-border transition">
+              <i data-lucide="package-check" class="w-4 h-4 text-emerald-400"></i> Despachar / Entregado
             </button>
           `;
         }
 
-        // Renderizar items
+        // Renderizar renglones de platillos/bebidas
         let itemsHtml = '';
-        order.items.forEach(it => {
+        (order.items || []).forEach(it => {
           itemsHtml += `
-            <div class="flex justify-between items-start border-b border-zinc-800/50 pb-2">
+            <div class="flex justify-between items-start py-2 border-b border-obsidian-border/40">
               <div class="flex flex-col">
-                <span class="text-sm font-bold text-white">${it.product_name || 'Insumo'}</span>
+                <span class="text-sm font-bold text-white leading-tight">${it.product_name || 'Insumo'}</span>
+                ${it.destination_kds ? `<span class="text-[10px] font-mono text-gray-500 uppercase mt-0.5">${it.destination_kds}</span>` : ''}
               </div>
-              <span class="font-mono font-extrabold text-gold text-sm bg-zinc-900/80 px-2 py-0.5 rounded border border-zinc-800">x${parseInt(it.quantity)}</span>
+              <span class="text-sm font-mono font-extrabold text-gold-400 bg-obsidian-deep px-2.5 py-0.5 rounded-lg border border-obsidian-border">
+                x${parseInt(it.quantity)}
+              </span>
             </div>
           `;
         });
 
-        columns.innerHTML += `
-          <div class="flex-shrink-0 w-80 bg-obsidian-light border border-zinc-800 rounded-2xl flex flex-col shadow-xl">
-            <!-- Header Tarjeta -->
-            <div class="p-4 border-b border-zinc-800 flex justify-between items-center rounded-t-2xl ${headerColor}">
-              <div class="flex flex-col gap-0.5">
-                <span class="text-xs font-mono text-zinc-400">${order.order_number}</span>
-                <span class="text-xs text-zinc-500 font-bold uppercase"><i class="fa-solid fa-microchip mr-1.5"></i>Slot ID</span>
+        // Slot ID o Terminal
+        const slotCode = order.machine_code || 'SALA / BARRA';
+        const waiterName = order.created_by_name || 'Staff';
+
+        board.innerHTML += `
+          <div class="w-80 flex-shrink-0 glass-card rounded-2xl flex flex-col justify-between shadow-2xl border ${headerBorder} ${cardUrgentClass} transition-all">
+            
+            <!-- Card Header -->
+            <div class="p-4 border-b border-obsidian-border bg-obsidian/60 rounded-t-2xl flex justify-between items-start">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono font-bold text-gold-400">${order.order_number}</span>
+                  <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-obsidian-light border border-obsidian-border text-gray-400">#${index + 1}</span>
+                </div>
+                <div class="font-outfit text-base font-bold text-white flex items-center gap-1.5 mt-1">
+                  <i data-lucide="cpu" class="w-4 h-4 text-gold-400"></i>
+                  <span>${slotCode}</span>
+                </div>
+                <div class="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
+                  <i data-lucide="user" class="w-3 h-3 text-gray-500"></i>
+                  <span>${waiterName}</span>
+                </div>
               </div>
-              ${statusBadge}
+
+              <div class="flex flex-col items-end gap-1.5">
+                ${statusBadge}
+                <div class="text-[11px] font-mono px-2 py-0.5 rounded-md border ${timerColor} flex items-center gap-1" data-created="${order.created_at}">
+                  <i data-lucide="clock" class="w-3 h-3"></i>
+                  <span class="timer-text">${formatTimer(order.created_at)}</span>
+                </div>
+              </div>
             </div>
 
-            <!-- Detalle Items -->
-            <div class="p-4 flex-1 flex flex-col gap-3 max-h-72 overflow-y-auto">
+            <!-- Card Items List -->
+            <div class="p-4 flex-1 overflow-y-auto max-h-72 flex flex-col gap-1">
               ${itemsHtml}
-              
-              <!-- Notas -->
               ${order.notes ? `
-                <div class="mt-2 bg-zinc-900/80 border border-zinc-800 p-2.5 rounded-lg text-[10px] text-zinc-400 italic">
-                  <i class="fa-solid fa-comment-dots mr-1.5 gold-accent"></i>"${order.notes}"
+                <div class="mt-3 p-2.5 rounded-xl bg-obsidian-deep/80 border border-gold-500/20 text-xs text-amber-200/90 italic flex items-start gap-2">
+                  <i data-lucide="message-square" class="w-3.5 h-3.5 text-gold-400 flex-shrink-0 mt-0.5"></i>
+                  <span>"${order.notes}"</span>
                 </div>
               ` : ''}
             </div>
 
-            <!-- Acciones -->
-            <div class="p-4 border-t border-zinc-800">
+            <!-- Card Actions -->
+            <div class="p-4 border-t border-obsidian-border bg-obsidian/40 rounded-b-2xl">
               ${actionBtn}
             </div>
           </div>
         `;
       });
+
+      lucide.createIcons();
     }
 
-    // Cambiar estado por REST
-    async function changeStatus(orderId, newStatus) {
+    function formatTimer(createdAtStr) {
+      if (!createdAtStr) return '00:00';
+      const created = new Date(createdAtStr);
+      const diffSecs = Math.max(0, Math.floor((Date.now() - created.getTime()) / 1000));
+      const mins = Math.floor(diffSecs / 60);
+      const secs = diffSecs % 60;
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}m`;
+    }
+
+    function renderTimers() {
+      document.querySelectorAll('[data-created]').forEach(el => {
+        const createdStr = el.getAttribute('data-created');
+        const textSpan = el.querySelector('.timer-text');
+        if (textSpan) {
+          textSpan.innerText = formatTimer(createdStr);
+        }
+      });
+    }
+
+    // Actualizar Estado de Comanda por REST
+    async function changeOrderStatus(orderId, nextStatus) {
       try {
-        const token = localStorage.getItem('token');
         const res = await fetch(`${API_BASE}/api/v1/kds/orders/${orderId}/status`, {
           method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ status: newStatus })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: nextStatus })
         });
-        
-        if (!res.ok) throw new Error('Error al actualizar comanda');
-        
-        // Actualización local
-        ordersList = ordersList.filter(o => o.id !== orderId);
-        
-        // Si el estado no es DELIVERED, podríamos querer mantenerlo, 
-        // pero la lista `/api/v1/kds/orders?station=...` solo retorna activos.
-        // Volvemos a consultar para refrescar
-        loadKDSOrders();
+        if (!res.ok) throw new Error('Error actualizando estatus');
+
+        if (nextStatus === 'DELIVERED') {
+          ordersList = ordersList.filter(o => o.id !== orderId);
+        } else {
+          const idx = ordersList.findIndex(o => o.id === orderId);
+          if (idx !== -1) {
+            ordersList[idx].status = nextStatus;
+          }
+        }
+        renderOrders();
       } catch (err) {
         alert(err.message);
       }
     }
 
-    // Conectar WebSocket con reconexión exponencial
+    // Conexión WebSocket Resiliente
     function connectWS() {
-      const wsIndicator = document.getElementById('ws-indicator');
-      
-      console.log(`[WS] Conectando a ${WS_BASE}/ws/kds?station=${currentStation}`);
-      ws = new WebSocket(`${WS_BASE}/ws/kds?station=${currentStation}`);
+      if (ws) {
+        try { ws.close(); } catch(e) {}
+      }
+
+      const badge = document.getElementById('ws-badge');
+      const wsUrl = `${WS_BASE}/ws/kds?station=${currentStation}`;
+      console.log(`[WS] Conectando a ${wsUrl}`);
+
+      ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
-        console.log('[WS] Conectado exitosamente.');
-        wsIndicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>Conectado`;
-        wsIndicator.classList.remove('bg-red-950/40', 'text-red-400', 'border-red-900/50');
-        wsIndicator.classList.add('bg-green-950/40', 'text-green-400', 'border-green-900/50');
-        reconnectDelay = 1000; // Reset delay de reconexión
+        console.log('[WS] Conexión KDS establecida.');
+        badge.className = 'flex items-center gap-2 text-xs bg-emerald-950/60 text-emerald-400 border border-emerald-800/60 px-3.5 py-2 rounded-xl font-mono';
+        badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>En Línea</span>';
+        reconnectDelay = 1000;
       };
 
       ws.onmessage = (event) => {
         try {
-          const data = JSON.parse(event.data);
-          console.log('[WS] Mensaje recibido:', data);
+          const payload = JSON.parse(event.data);
+          console.log('[WS] Mensaje recibido:', payload);
 
-          if (data.event === 'NEW_ORDER') {
-            // Filtrar si alguno de los items del pedido pertenece a la estación del KDS
-            const hasMatch = data.order.items.some(it => it.product_name); // ya filtrado en backend
-            if (hasMatch) {
-              ordersList.push(data.order);
+          if (payload.event === 'NEW_ORDER') {
+            playChimeSound();
+            // Verificar si aplica a esta estación
+            const incoming = payload.order;
+            if (currentStation !== 'ALL') {
+              const matching = (incoming.items || []).filter(it => it.destination_kds === currentStation);
+              if (matching.length > 0) {
+                incoming.items = matching;
+                ordersList.push(incoming);
+                renderOrders();
+              }
+            } else {
+              ordersList.push(incoming);
               renderOrders();
             }
-          } else if (data.event === 'STATUS_UPDATE') {
-            // Si el estado cambió a entregado o ajeno, quitarlo de pantalla
-            if (data.status === 'DELIVERED') {
-              ordersList = ordersList.filter(o => o.id !== data.order_id);
+          } else if (payload.event === 'STATUS_UPDATE') {
+            if (payload.status === 'DELIVERED') {
+              ordersList = ordersList.filter(o => o.id !== payload.order_id);
             } else {
-              // Actualizar estado del elemento en la lista local
-              const idx = ordersList.findIndex(o => o.id === data.order_id);
+              const idx = ordersList.findIndex(o => o.id === payload.order_id);
               if (idx !== -1) {
-                ordersList[idx].status = data.status;
+                ordersList[idx].status = payload.status;
+              } else if (payload.order) {
+                ordersList.push(payload.order);
               }
             }
             renderOrders();
           }
         } catch (err) {
-          console.error('[WS] Error interpretando payload:', err);
+          console.warn('[WS] Error parseando mensaje:', err);
         }
       };
 
       ws.onclose = () => {
-        console.log('[WS] Conexión cerrada.');
-        wsIndicator.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>Desconectado`;
-        wsIndicator.classList.remove('bg-green-950/40', 'text-green-400', 'border-green-900/50');
-        wsIndicator.classList.add('bg-red-950/40', 'text-red-400', 'border-red-900/50');
-        
-        // Intentar reconectar
-        setTimeout(connectWS, reconnectDelay);
-        reconnectDelay = Math.min(reconnectDelay * 2, 30000); // Exponencial hasta 30s
+        console.log('[WS] Conexión cerrada. Reconectando...');
+        badge.className = 'flex items-center gap-2 text-xs bg-red-950/60 text-red-400 border border-red-800/60 px-3.5 py-2 rounded-xl font-mono';
+        badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span><span>Reconectando...</span>';
+
+        clearTimeout(reconnectTimeout);
+        reconnectTimeout = setTimeout(connectWS, reconnectDelay);
+        reconnectDelay = Math.min(reconnectDelay * 2, 20000);
       };
 
       ws.onerror = (err) => {
-        console.error('[WS] Falla técnica:', err);
+        console.error('[WS] Error:', err);
         ws.close();
       };
     }

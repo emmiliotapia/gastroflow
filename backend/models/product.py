@@ -64,6 +64,12 @@ class Product(Base, TimestampMixin):
         comment="Categoría del menú (ej. Coctelería, Entradas, Platos Fuertes, Bebidas Embotelladas)"
     )
 
+    image_url: Mapped[Optional[str]] = mapped_column(
+        String(500),
+        nullable=True,
+        comment="URL o ruta de la fotografía del platillo/bebida para POS y menús"
+    )
+
     product_type: Mapped[ProductType] = mapped_column(
         Enum(ProductType, name="product_type_enum", create_type=True),
         nullable=False,

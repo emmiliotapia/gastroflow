@@ -8,7 +8,7 @@ Este módulo contiene las dependencias reutilizables para routers REST:
 - Verificación del NIP/PIN Poka-Yoke para supervisores (`verify_supervisor_pin`).
 """
 
-from typing import Callable, Generator, List, Sequence
+from typing import Callable, Generator, List, Sequence, Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
@@ -22,6 +22,7 @@ from backend.models.user import User
 
 # Esquema de autenticación Bearer para Swagger UI y cabeceras HTTP
 security_bearer = HTTPBearer(auto_error=True)
+security_bearer_optional = HTTPBearer(auto_error=False)
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -127,3 +128,36 @@ def verify_supervisor_pin(
         )
 
     return current_user
+
+
+def get_optional_current_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_bearer_optional),
+    db: Session = Depends(get_db)
+) -> Optional[User]:
+    """
+    Intenta extraer y validar el usuario desde JWT.
+    Si no se envía cabecera de autenticación, retorna None de forma segura.
+    """
+    if not credentials:
+        return None
+
+    try:
+        payload = decode_access_token(credentials.credentials)
+        username: str = payload.get("sub")
+        if username is None:
+            return None
+    except JWTError:
+        return None
+
+    stmt = (
+        select(User)
+        .options(joinedload(User.role))
+        .where(User.username == username)
+    )
+    user = db.execute(stmt).scalar_one_or_none()
+
+    if user is None or not user.is_active:
+        return None
+
+    return user
+

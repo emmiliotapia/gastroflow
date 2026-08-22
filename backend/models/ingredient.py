@@ -7,7 +7,7 @@ inventario base, costos por unidad y control de stock mínimo en cocina y barra.
 
 import uuid
 from decimal import Decimal
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 from sqlalchemy import Boolean, Enum, Numeric, String, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -52,6 +52,19 @@ class Ingredient(Base, TimestampMixin):
         Enum(UnitOfMeasure, name="unit_of_measure_enum", create_type=True),
         nullable=False,
         comment="Unidad de medida estandarizada para costeo y descuento de inventario"
+    )
+
+    category: Mapped[Optional[str]] = mapped_column(
+        String(50),
+        nullable=True,
+        default="ABARROTES",
+        comment="Categoría del insumo (PROTEINAS, VEGETALES, LACTEOS, PANADERIA, ABARROTES, LICORES, etc.)"
+    )
+
+    sub_recipe_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        nullable=True,
+        comment="ID de producto/subreceta vinculada si es un insumo elaborado"
     )
 
     cost_per_unit: Mapped[Decimal] = mapped_column(

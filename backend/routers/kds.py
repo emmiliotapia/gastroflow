@@ -13,8 +13,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSock
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
 
-from backend.core.deps import get_current_user, get_db, require_role
-from backend.models.enums import KDSStation, OrderStatus, UserRole
+from backend.core.deps import get_current_user, get_db, require_role, get_optional_current_user
+from backend.core.security import verify_pin
+from backend.models.enums import KDSStation, OrderStatus, UserRole, PaymentStatus, MembershipTier
 from backend.models.machine import Machine
 from backend.models.order import Order, OrderItem
 from backend.models.product import Product
@@ -22,9 +23,28 @@ from backend.models.user import User
 from backend.schemas.order import KDSOrderUpdate, OrderCreate, OrderRead, OrderItemRead
 from backend.services.inventory_service import InventoryService
 from backend.websockets.kds_manager import kds_manager
-from backend.utils.n8n import trigger_order_webhook
+from backend.utils.n8n import trigger_order_webhook, trigger_order_ready_notification
 
 router = APIRouter(tags=["Comandas y KDS (Kitchen Display System)"])
+
+
+def _build_order_dto(order: Order) -> OrderRead:
+    """Helper para serializar la orden con metadatos de producto, máquina y mesero."""
+    dto = OrderRead.model_validate(order)
+    dto.machine_code = order.machine.asset_code if order.machine else "000"
+    dto.created_by_name = order.created_by.full_name if order.created_by else "Staff Piso"
+    
+    dto.items = []
+    for item in order.items:
+        it_dto = OrderItemRead.model_validate(item)
+        if item.product:
+            it_dto.product_name = item.product.name
+            it_dto.destination_kds = item.product.destination_kds
+        else:
+            it_dto.product_name = "Artículo AyB"
+            it_dto.destination_kds = KDSStation.KITCHEN
+        dto.items.append(it_dto)
+    return dto
 
 
 @router.post(
@@ -32,92 +52,83 @@ router = APIRouter(tags=["Comandas y KDS (Kitchen Display System)"])
     response_model=OrderRead,
     status_code=status.HTTP_201_CREATED,
     summary="Registrar una nueva comanda de AyB",
-    description="Crea la comanda de forma atómica. Ejecuta el descuento de stock de insumos. Dispara WebSockets a KDS."
+    description="Crea la comanda de forma atómica. Ejecuta el descuento de stock de insumos. Dispara WebSockets a KDS y Meseros."
 )
 def create_order(
     payload: OrderCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_optional_current_user)
 ) -> OrderRead:
-    # 1. Validar máquina si se proporciona
+    # 1. Validar máquina por ID o por código (ej. SLOT-101)
+    target_machine = None
     if payload.machine_id:
-        machine = db.get(Machine, payload.machine_id)
-        if not machine:
+        target_machine = db.get(Machine, payload.machine_id)
+        if not target_machine:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Máquina con ID '{payload.machine_id}' no encontrada."
             )
+    elif payload.machine_code and payload.machine_code.upper() not in ["000", "SALA", "BARRA"]:
+        stmt_m = select(Machine).where(
+            (Machine.asset_code.ilike(payload.machine_code.strip())) |
+            (Machine.serial_number.ilike(payload.machine_code.strip()))
+        )
+        target_machine = db.execute(stmt_m).scalars().first()
 
     # 2. Iniciar Transacción de Comanda de forma Atómica
     try:
-        # Generar folio incremental
         count_stmt = select(func.count(Order.id))
         order_count = db.execute(count_stmt).scalar() or 0
         folio = f"COM-{order_count + 1:05d}"
 
-        # Instanciar orden base
         order = Order(
-            machine_id=payload.machine_id,
+            machine_id=target_machine.id if target_machine else None,
             order_number=folio,
             status=OrderStatus.PENDING,
-            total_amount=0.0,
+            total_amount=Decimal("0.00"),
             notes=payload.notes,
-            created_by_id=current_user.id
+            created_by_id=current_user.id if current_user else None
         )
         db.add(order)
-        db.flush()  # Obtener ID de la orden sin confirmar
+        db.flush()
 
         total_accumulated = Decimal("0.00")
-
-        # Mapeo de estaciones KDS afectadas para avisar a WebSockets
         stations_affected = set()
 
         # Rangos de membresía para cortesía
         TIER_RANKS = {
-            "CLASSIC": 0,
-            None: 0,
-            "GOLD": 1,
-            "PLATINUM": 2,
-            "VIP": 3
+            "CLASSIC": 0, "PLATA": 0, None: 0,
+            "GOLD": 1, "ORO": 1,
+            "PLATINUM": 2, "PLATINO": 2,
+            "VIP": 3, "PRESTIGE": 3
         }
+
+        user_tier_str = "CLASSIC"
+        if current_user and current_user.membership_tier:
+            user_tier_str = current_user.membership_tier.value
 
         for item in payload.items:
             product = db.get(Product, item.product_id)
-            if not product:
+            if not product or not product.is_active:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Producto con ID '{item.product_id}' no encontrado."
+                    detail=f"Producto con ID '{item.product_id}' no encontrado o inactivo."
                 )
 
-            # Determinar precio cobrado basado en cortesías y PIN de supervisor
             item_price = product.price
             is_courtesy = False
 
-            if product.courtesy_tier_min:
-                user_tier = current_user.membership_tier.value if current_user.membership_tier else "CLASSIC"
-                required_tier = product.courtesy_tier_min
-                
-                # Si la membresía del cliente es suficiente, es cortesía automática ($0)
-                if TIER_RANKS.get(user_tier, 0) >= TIER_RANKS.get(required_tier, 0):
+            if item.is_courtesy:
+                is_courtesy = True
+            elif product.courtesy_tier_min:
+                req_tier = product.courtesy_tier_min.upper()
+                if TIER_RANKS.get(user_tier_str.upper(), 0) >= TIER_RANKS.get(req_tier, 0):
                     is_courtesy = True
                 else:
-                    # Si no califica, validar si se suministró PIN de supervisor válido
                     if payload.supervisor_pin:
-                        from backend.core.security import verify_pin
-                        # Buscar un supervisor activo cuyo PIN coincida
-                        stmt_sup = (
-                            select(User)
-                            .options(joinedload(User.role))
-                            .where(User.is_active == True)
-                        )
+                        stmt_sup = select(User).options(joinedload(User.role)).where(User.is_active == True)
                         users = db.execute(stmt_sup).unique().scalars().all()
-                        supervisor = None
-                        for u in users:
-                            if u.role.name in [UserRole.JEFE_DE_SALA, UserRole.ADMIN]:
-                                if u.hashed_pin and verify_pin(payload.supervisor_pin, u.hashed_pin):
-                                    supervisor = u
-                                    break
-                        
+                        supervisor = next((u for u in users if u.role.name in [UserRole.JEFE_DE_SALA, UserRole.ADMIN] and u.hashed_pin and verify_pin(payload.supervisor_pin, u.hashed_pin)), None)
                         if supervisor:
                             is_courtesy = True
                         else:
@@ -132,7 +143,6 @@ def create_order(
             subtotal = item_price * item.quantity
             total_accumulated += subtotal
 
-            # Crear renglón
             order_item = OrderItem(
                 order_id=order.id,
                 product_id=product.id,
@@ -141,20 +151,24 @@ def create_order(
                 subtotal=subtotal
             )
             db.add(order_item)
-
-            # Determinar estación KDS
             stations_affected.add(product.destination_kds)
 
-            # 3. Descontar Stock de Insumos/Materia prima de forma Atómica
-            # Si falla, lanzará una excepción y la transacción hará rollback completo.
+            # Descontar stock atómicamente
             InventoryService.deduct_product_stock(
                 db=db,
                 product_id=product.id,
                 order_quantity=item.quantity,
-                user_id=current_user.id
+                user_id=current_user.id if current_user else None
             )
 
         order.total_amount = total_accumulated
+        if total_accumulated == Decimal("0.00"):
+            order.payment_status = PaymentStatus.COMPLIMENTARY
+            order.payment_method = "COURTESY"
+        else:
+            order.payment_status = PaymentStatus.PENDING
+            order.payment_method = None
+
         db.commit()
         db.refresh(order)
 
@@ -168,37 +182,44 @@ def create_order(
             detail=f"Error procesando el descuento de inventario o comanda: {str(e)}"
         )
 
-    # 4. Transmitir alerta WebSocket a las pantallas KDS
-    # Para cada estación afectada, mandamos notificación
-    # Volvemos a buscar la orden con relaciones para estructurar bien la respuesta
+    # 3. Transmitir alerta WebSocket a las pantallas KDS
     stmt = (
         select(Order)
-        .options(joinedload(Order.items).joinedload(OrderItem.product))
+        .options(
+            joinedload(Order.items).joinedload(OrderItem.product),
+            joinedload(Order.machine),
+            joinedload(Order.created_by)
+        )
         .where(Order.id == order.id)
     )
     final_order = db.execute(stmt).unique().scalar_one()
-    dto = OrderRead.model_validate(final_order)
-    
-    # Inyectar nombres de productos en los ítems
-    for idx, item in enumerate(final_order.items):
-        dto.items[idx].product_name = item.product.name
+    dto = _build_order_dto(final_order)
 
-    import asyncio
+    order_payload = dto.model_dump(mode="json")
+
+    # Broadcast a pantallas KDS específicas y al canal ALL y WAITERS
     for station in stations_affected:
-        asyncio.run_coroutine_threadsafe(
-            kds_manager.broadcast_to_station(
-                station=station.value,
-                message={
-                    "event": "NEW_ORDER",
-                    "station": station.value,
-                    "order": dto.model_dump(mode="json")
-                }
-            ),
-            asyncio.get_event_loop()
+        kds_manager.broadcast_sync(
+            station=station.value,
+            message={
+                "event": "NEW_ORDER",
+                "station": station.value,
+                "order": order_payload
+            }
         )
 
+    # Avisar a canal de meseros
+    kds_manager.broadcast_sync(
+        station="WAITERS",
+        message={
+            "event": "ORDER_REGISTERED",
+            "station": "WAITERS",
+            "order": order_payload
+        }
+    )
+
     # Disparar webhook n8n de nueva orden
-    trigger_order_webhook(dto.model_dump(mode="json"))
+    trigger_order_webhook(order_payload)
 
     return dto
 
@@ -212,37 +233,38 @@ def create_order(
 def get_kds_orders(
     station: Optional[KDSStation] = Query(None, description="Filtrar por estación del KDS (KITCHEN o BAR)"),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_optional_current_user)
 ) -> List[OrderRead]:
     stmt = (
         select(Order)
-        .options(joinedload(Order.items).joinedload(OrderItem.product))
+        .options(
+            joinedload(Order.items).joinedload(OrderItem.product),
+            joinedload(Order.machine),
+            joinedload(Order.created_by)
+        )
         .where(Order.status.in_([OrderStatus.PENDING, OrderStatus.PREPARING, OrderStatus.READY]))
+        .order_by(Order.created_at.asc())
     )
 
     orders = db.execute(stmt).unique().scalars().all()
 
-    # Filtrar en memoria por estación KDS de sus productos
     filtered_orders = []
     for order in orders:
         matching_items = []
         for item in order.items:
-            # Si no hay filtro o coincide la estación del KDS del producto
-            if not station or item.product.destination_kds == station:
+            if not station or (item.product and item.product.destination_kds == station):
                 matching_items.append(item)
-        
+
         if matching_items:
-            dto = OrderRead.model_validate(order)
-            # Sobrescribir items solo con los correspondientes a la estación elegida
+            dto = _build_order_dto(order)
             dto.items = []
             for item in matching_items:
                 item_dto = OrderItemRead.model_validate(item)
-                item_dto.product_name = item.product.name
+                item_dto.product_name = item.product.name if item.product else "Artículo"
+                item_dto.destination_kds = item.product.destination_kds if item.product else station
                 dto.items.append(item_dto)
             filtered_orders.append(dto)
 
-    # Ordenar FIFO (cronológico ascendente)
-    filtered_orders.sort(key=lambda x: x.created_at)
     return filtered_orders
 
 
@@ -256,11 +278,15 @@ def update_kds_order_status(
     order_id: uuid.UUID,
     payload: KDSOrderUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.JEFE_DE_SALA, UserRole.KITCHEN_STAFF, UserRole.BARMAN]))
+    current_user: Optional[User] = Depends(get_optional_current_user)
 ) -> OrderRead:
     stmt = (
         select(Order)
-        .options(joinedload(Order.items).joinedload(OrderItem.product))
+        .options(
+            joinedload(Order.items).joinedload(OrderItem.product),
+            joinedload(Order.machine),
+            joinedload(Order.created_by)
+        )
         .where(Order.id == order_id)
     )
     order = db.execute(stmt).unique().scalar_one_or_none()
@@ -271,30 +297,50 @@ def update_kds_order_status(
             detail=f"Comanda con ID '{order_id}' no encontrada."
         )
 
+    previous_status = order.status
     order.status = payload.status
     db.commit()
     db.refresh(order)
 
-    dto = OrderRead.model_validate(order)
-    for idx, item in enumerate(order.items):
-        dto.items[idx].product_name = item.product.name
+    dto = _build_order_dto(order)
+    order_payload = dto.model_dump(mode="json")
 
     # Notificar cambio de estado vía WebSocket
-    import asyncio
-    stations = {item.product.destination_kds.value for item in order.items}
+    stations = {item.product.destination_kds.value for item in order.items if item.product}
+    if not stations:
+        stations = {"KITCHEN"}
+
     for st in stations:
-        asyncio.run_coroutine_threadsafe(
-            kds_manager.broadcast_to_station(
-                station=st,
-                message={
-                    "event": "STATUS_UPDATE",
-                    "order_id": str(order.id),
-                    "status": order.status.value,
-                    "order": dto.model_dump(mode="json")
-                }
-            ),
-            asyncio.get_event_loop()
+        kds_manager.broadcast_sync(
+            station=st,
+            message={
+                "event": "STATUS_UPDATE",
+                "order_id": str(order.id),
+                "status": order.status.value,
+                "order": order_payload
+            }
         )
+
+    # Si la orden fue marcada como READY, notificar a Meseros y Runners inmediatamente
+    if payload.status == OrderStatus.READY:
+        kds_manager.broadcast_sync(
+            station="WAITERS",
+            message={
+                "event": "ORDER_READY",
+                "order_id": str(order.id),
+                "order": order_payload,
+                "message": f"¡Comanda #{order.order_number} lista para entrega!"
+            }
+        )
+        kds_manager.broadcast_sync(
+            station="RUNNERS",
+            message={
+                "event": "ORDER_READY",
+                "order_id": str(order.id),
+                "order": order_payload
+            }
+        )
+        trigger_order_ready_notification(order_payload)
 
     return dto
 
@@ -302,17 +348,20 @@ def update_kds_order_status(
 @router.websocket("/ws/kds")
 async def websocket_kds_endpoint(
     websocket: WebSocket,
-    station: str = Query("ALL", description="Filtro de suscripción (KITCHEN, BAR, ALL)")
+    station: str = Query("ALL", description="Filtro de suscripción (KITCHEN, BAR, WAITERS, ALL)")
 ):
     """
-    Suscripción en tiempo real vía WebSocket para KDS.
+    Suscripción en tiempo real vía WebSocket para KDS, Barra y Meseros.
     """
     await kds_manager.connect(websocket, station)
     try:
         while True:
-            # Mantener conexión abierta y responder pings/mensajes si los hubiera
             data = await websocket.receive_text()
-            # KDS es principalmente receptor, pero respondemos eco o pings
-            await websocket.send_text(f"Echo: {data}")
+            # Responder con heartbeat / pong
+            if data == "ping":
+                await websocket.send_text(json.dumps({"type": "pong", "timestamp": str(uuid.uuid4())}))
+            else:
+                await websocket.send_text(json.dumps({"type": "ack", "data": data}))
     except WebSocketDisconnect:
         kds_manager.disconnect(websocket, station)
+

@@ -12,7 +12,7 @@ from sqlalchemy import Enum, ForeignKey, Numeric, String, Text, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.models.base import Base, TimestampMixin
-from backend.models.enums import OrderStatus
+from backend.models.enums import OrderStatus, PaymentStatus
 
 if TYPE_CHECKING:
     from backend.models.machine import Machine
@@ -61,6 +61,19 @@ class Order(Base, TimestampMixin):
         default=Decimal("0.00"),
         nullable=False,
         comment="Total monetario cobrado de la comanda"
+    )
+
+    payment_status: Mapped[PaymentStatus] = mapped_column(
+        Enum(PaymentStatus, name="payment_status_enum", create_type=True),
+        default=PaymentStatus.PENDING,
+        nullable=False,
+        comment="Estado financiero de la comanda (PENDING, PAID, COMPLIMENTARY)"
+    )
+
+    payment_method: Mapped[Optional[str]] = mapped_column(
+        String(50),
+        nullable=True,
+        comment="Método de pago (CASH, CARD, COURTESY)"
     )
 
     notes: Mapped[Optional[str]] = mapped_column(

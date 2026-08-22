@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
-from backend.core.deps import get_current_user, get_db, require_role
+from backend.core.deps import get_current_user, get_db, require_role, get_optional_current_user
 from backend.models.enums import KDSStation, ProductType, UserRole
 from backend.models.ingredient import Ingredient
 from backend.models.product import Product, RecipeItem
@@ -71,6 +71,7 @@ def _build_product_read_schema(product: Product) -> ProductRead:
         name=product.name,
         description=product.description,
         category=product.category,
+        image_url=product.image_url,
         product_type=product.product_type,
         destination_kds=product.destination_kds,
         price=product.price,
@@ -80,6 +81,7 @@ def _build_product_read_schema(product: Product) -> ProductRead:
         recipe_items=recipe_read_items,
         total_production_cost=total_cost
     )
+
 
 
 # ==============================================================================
@@ -248,6 +250,7 @@ def create_product(
         name=payload.name,
         description=payload.description,
         category=payload.category,
+        image_url=payload.image_url,
         product_type=payload.product_type,
         destination_kds=payload.destination_kds,
         price=payload.price,
@@ -300,7 +303,7 @@ def list_products(
     destination_kds: Optional[KDSStation] = Query(None, description="KITCHEN vs BAR"),
     is_active: Optional[bool] = Query(None, description="Estado activo/inactivo"),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_optional_current_user)
 ) -> List[ProductRead]:
     stmt = (
         select(Product)
@@ -329,7 +332,7 @@ def list_products(
 def get_product(
     product_id: uuid.UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_optional_current_user)
 ) -> ProductRead:
     stmt = (
         select(Product)
@@ -345,6 +348,68 @@ def get_product(
         )
 
     return _build_product_read_schema(product)
+
+
+@router.put(
+    "/products/{product_id}",
+    response_model=ProductRead,
+    summary="Actualizar producto de AyB"
+)
+def update_product(
+    product_id: uuid.UUID,
+    payload: ProductUpdate,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user)
+) -> ProductRead:
+    product = db.get(Product, product_id)
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado.")
+
+    update_data = payload.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(product, field, value)
+
+    db.commit()
+    db.refresh(product)
+    return _build_product_read_schema(product)
+
+
+from fastapi import UploadFile, File
+import shutil
+import os
+
+@router.post(
+    "/products/{product_id}/image",
+    response_model=ProductRead,
+    summary="Subir o actualizar fotografía del producto"
+)
+async def upload_product_image(
+    product_id: uuid.UUID,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user)
+) -> ProductRead:
+    product = db.get(Product, product_id)
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado.")
+
+    # Guardar en uploads/products/
+    upload_dir = os.path.join("uploads", "products")
+    os.makedirs(upload_dir, exist_ok=True)
+
+    extension = os.path.splitext(file.filename)[1] or ".jpg"
+    filename = f"{product.id}_{uuid.uuid4().hex[:8]}{extension}"
+    file_path = os.path.join(upload_dir, filename)
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    product.image_url = f"/uploads/products/{filename}"
+    db.commit()
+    db.refresh(product)
+    return _build_product_read_schema(product)
+
+
 
 
 @router.post(
@@ -447,3 +512,195 @@ def calculate_product_cost(
         profit_margin_percent=round(margin_percent, 2),
         recipe_items=product_dto.recipe_items
     )
+
+
+# ==============================================================================
+# Endpoints de Clientes VIP y Tabulador de Cortesías (/api/v1/vip-clients)
+# ==============================================================================
+
+from backend.models.vip_client import VIPClient
+from backend.models.enums import MembershipTier, StockLocation
+from backend.schemas.catalog import (
+    VIPClientCreate,
+    VIPClientRead,
+    CourtesyValidationRequest,
+    CourtesyValidationResponse,
+)
+from backend.services.inventory_service import InventoryService
+
+
+@router.get(
+    "/vip-clients",
+    response_model=List[VIPClientRead],
+    summary="Listar padrón de clientes VIP",
+    description="Consulta y búsqueda de clientes del padrón VIP de marketing."
+)
+def list_vip_clients(
+    search: Optional[str] = Query(None, description="Buscar por nombre, código o tarjeta"),
+    tier: Optional[str] = Query(None, description="Filtrar por nivel (PLATA, ORO, PLATINO, PRESTIGE)"),
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user)
+) -> List[VIPClientRead]:
+    stmt = select(VIPClient).where(VIPClient.is_active == True)
+    if search:
+        stmt = stmt.where(
+            (VIPClient.full_name.ilike(f"%{search}%")) |
+            (VIPClient.client_code.ilike(f"%{search}%")) |
+            (VIPClient.card_number.ilike(f"%{search}%"))
+        )
+    if tier:
+        stmt = stmt.where(VIPClient.tier == tier.upper())
+
+    stmt = stmt.order_by(VIPClient.full_name.asc())
+    clients = db.execute(stmt).scalars().all()
+    return [VIPClientRead.model_validate(c) for c in clients]
+
+
+@router.post(
+    "/vip-clients",
+    response_model=VIPClientRead,
+    status_code=status.HTTP_201_CREATED,
+    summary="Registrar socio en padrón VIP"
+)
+def create_vip_client(
+    payload: VIPClientCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.JEFE_DE_SALA]))
+) -> VIPClientRead:
+    # Validar código único
+    existing = db.execute(select(VIPClient).where(VIPClient.client_code == payload.client_code)).scalar_one_or_none()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Ya existe un cliente con el código '{payload.client_code}'."
+        )
+
+    # Validar tier enum
+    tier_enum = MembershipTier.PLATA
+    try:
+        tier_enum = MembershipTier[payload.tier.upper()]
+    except KeyError:
+        pass
+
+    client = VIPClient(
+        client_code=payload.client_code,
+        full_name=payload.full_name,
+        card_number=payload.card_number,
+        phone=payload.phone,
+        tier=tier_enum,
+        daily_courtesy_limit=payload.daily_courtesy_limit,
+        is_active=True,
+        notes=payload.notes
+    )
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    return VIPClientRead.model_validate(client)
+
+
+@router.post(
+    "/vip-clients/validate-courtesy",
+    response_model=CourtesyValidationResponse,
+    summary="Validar elegibilidad de cortesía para un cliente VIP"
+)
+def validate_courtesy(
+    payload: CourtesyValidationRequest,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user)
+) -> CourtesyValidationResponse:
+    # 1. Buscar producto
+    product = db.get(Product, payload.product_id)
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado.")
+
+    # 2. Buscar cliente por código, tarjeta o nombre
+    ident = payload.client_identifier.strip()
+    stmt = select(VIPClient).where(
+        (VIPClient.client_code.ilike(ident)) |
+        (VIPClient.card_number.ilike(ident)) |
+        (VIPClient.full_name.ilike(f"%{ident}%"))
+    )
+    client = db.execute(stmt).scalars().first()
+
+    client_tier = client.tier.value if client else "CLASSIC"
+    client_name = client.full_name if client else "Cliente General"
+
+    TIER_RANKS = {
+        "CLASSIC": 0, "PLATA": 0, None: 0,
+        "GOLD": 1, "ORO": 1,
+        "PLATINUM": 2, "PLATINO": 2,
+        "VIP": 3, "PRESTIGE": 3
+    }
+
+    req_tier = product.courtesy_tier_min or "PRESTIGE"
+    is_eligible = TIER_RANKS.get(client_tier.upper(), 0) >= TIER_RANKS.get(req_tier.upper(), 0)
+
+    return CourtesyValidationResponse(
+        is_eligible=is_eligible,
+        client_name=client_name,
+        client_tier=client_tier,
+        required_tier=req_tier,
+        product_name=product.name,
+        product_price=product.price,
+        final_price=Decimal("0.00") if is_eligible else product.price,
+        requires_supervisor_pin=not is_eligible,
+        message="Cortesía autorizada por nivel VIP" if is_eligible else f"Requiere PIN de supervisor (Nivel mínimo: {req_tier})"
+    )
+
+
+@router.get(
+    "/courtesy-rules",
+    summary="Consultar tabulador y reglas de cortesías por nivel VIP"
+)
+def get_courtesy_rules():
+    """Retorna la matriz de beneficios y tabulador de cortesías."""
+    return {
+        "levels": [
+            {
+                "tier": "PLATA",
+                "alias": "CLASSIC",
+                "badge_color": "#94a3b8",
+                "benefits": "Cafetería, aguas embotelladas y refrescos seleccionados",
+                "allowed_categories": ["Cafetería", "Bebidas no alcohólicas"],
+                "daily_limit": 3
+            },
+            {
+                "tier": "ORO",
+                "alias": "GOLD",
+                "badge_color": "#f59e0b",
+                "benefits": "Cervezas nacionales, coctelería clásica y botanas/snacks",
+                "allowed_categories": ["Cafetería", "Bebidas", "Cervezas", "Entradas", "Snacks"],
+                "daily_limit": 6
+            },
+            {
+                "tier": "PLATINO",
+                "alias": "PLATINUM",
+                "badge_color": "#e2e8f0",
+                "benefits": "Coctelería premium, destilados importados y platos fuertes",
+                "allowed_categories": ["Cafetería", "Coctelería", "Especialidades", "Hamburguesas Gourmet", "Bebidas"],
+                "daily_limit": 10
+            },
+            {
+                "tier": "PRESTIGE",
+                "alias": "VIP",
+                "badge_color": "#d4af37",
+                "benefits": "Cortesías 100% libres en todo el menú de Alimentos y Bebidas",
+                "allowed_categories": ["*"],
+                "daily_limit": 99
+            }
+        ]
+    }
+
+
+@router.get(
+    "/kitchen/stock",
+    summary="Consultar existencias dedicadas en el área de producción / cocina"
+)
+def get_kitchen_stock(
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user)
+):
+    """Retorna las existencias físicas en la bodega de Cocina (KITCHEN)."""
+    return InventoryService.get_stock_by_location(db=db, location=StockLocation.KITCHEN)
+
+

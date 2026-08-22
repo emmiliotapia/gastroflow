@@ -38,3 +38,10 @@
 - **PWA Staff y Control Técnico:** Diseñada la interfaz `staff.html` con estética premium Obsidian & Gold, incluyendo listado interactivo de tragamonedas con generación de etiquetas QR, gestor de tickets FIFO y teclado numérico virtual para validación de PIN de supervisores en el cierre.
 - **Integraciones n8n:** Añadido despachador de webhooks asíncrono no bloqueante en `backend/utils/n8n.py`.
 
+## Implementación de Portal de Caja y Cuentas Pendientes - 2026-08-21
+- **Modelo de Cuentas y Cobros:** Añadida la enumeración `PaymentStatus` y los campos `payment_status` y `payment_method` a la cabecera del pedido [`Order`](file:///c:/Users/Administrador/Desktop/PROGRAMACION/ERP%20Casino/Codigo/backend/models/order.py) para dar trazabilidad al cobro.
+- **Automatización de Pago:** Las comandas creadas a $0.00 (100% cortesías por nivel o PIN) se registran automáticamente como `COMPLIMENTARY` con método de pago `COURTESY`. El resto inician en `PENDING` para su cobro definitivo en caja.
+- **Router y API de Caja:** Creado [`routers/cashier.py`](file:///c:/Users/Administrador/Desktop/PROGRAMACION/ERP%20Casino/Codigo/backend/routers/cashier.py) para el listado FIFO de comandas pendientes de cobro y registro seguro de cobro (`CASH`/`CARD`/`COURTESY` con PIN de supervisor).
+- **Portal de Caja / Barra:** Creado [`frontend/cashier.html`](file:///c:/Users/Administrador/Desktop/PROGRAMACION/ERP%20Casino/Codigo/frontend/cashier.html) con estética Obsidian & Gold para bartenders y cajeros de sala. Permite desglosar comandas activas por slot y realizar cobros parciales o cierres financieros de cuentas.
+
+

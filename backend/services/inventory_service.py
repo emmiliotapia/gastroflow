@@ -268,7 +268,7 @@ class InventoryService:
                 "deducted_quantity": order_quantity
             })
 
-        # B) Producto PREPARED (Descuento atómico por Receta)
+        # B) Producto PREPARED (Descuento atómico por Receta con soporte de cascada)
         else:
             if not product.recipe_items:
                 raise HTTPException(
@@ -280,6 +280,7 @@ class InventoryService:
                 required_qty = item.quantity * order_quantity
                 ing = item.ingredient
 
+                # Descuento directo del insumo base en la estación
                 InventoryService.adjust_stock(
                     db=db,
                     location=location,
@@ -300,6 +301,38 @@ class InventoryService:
                     "unit": item.unit_of_measure.value
                 })
 
+                # Descuento en CASCADA si el insumo es una subreceta vinculada
+                if ing and hasattr(ing, 'sub_recipe_id') and ing.sub_recipe_id:
+                    sub_prod = db.execute(
+                        select(Product)
+                        .options(joinedload(Product.recipe_items).joinedload(RecipeItem.ingredient))
+                        .where(Product.id == ing.sub_recipe_id)
+                    ).unique().scalar_one_or_none()
+
+                    if sub_prod and sub_prod.recipe_items:
+                        for sub_item in sub_prod.recipe_items:
+                            sub_req_qty = sub_item.quantity * required_qty
+                            sub_ing = sub_item.ingredient
+                            InventoryService.adjust_stock(
+                                db=db,
+                                location=location,
+                                transaction_type=StockTransactionType.SALE_DEDUCTION,
+                                quantity=-abs(sub_req_qty),
+                                ingredient_id=sub_item.ingredient_id,
+                                unit_cost=sub_ing.cost_per_unit if sub_ing else Decimal("0.0000"),
+                                notes=f"Cascada subreceta ({ing.name}): {sub_prod.name} (x{sub_req_qty})",
+                                user_id=user_id
+                            )
+                            deducted_items.append({
+                                "type": "SUB_INGREDIENT",
+                                "parent_ingredient": ing.name,
+                                "ingredient_id": str(sub_item.ingredient_id),
+                                "ingredient_code": sub_ing.code if sub_ing else None,
+                                "ingredient_name": sub_ing.name if sub_ing else None,
+                                "deducted_quantity": float(sub_req_qty),
+                                "unit": sub_item.unit_of_measure.value
+                            })
+
         return {
             "status": "success",
             "product_sku": product.sku,
@@ -308,6 +341,40 @@ class InventoryService:
             "location": location.value,
             "deducted_components": deducted_items
         }
+
+    @staticmethod
+    def get_stock_by_location(db: Session, location: StockLocation) -> List[Dict[str, Any]]:
+        """
+        Retorna la lista de existencias físicas vigentes en una ubicación dada (KITCHEN o BAR).
+        """
+        stmt = (
+            select(StockLevel)
+            .options(joinedload(StockLevel.ingredient), joinedload(StockLevel.product))
+            .where(StockLevel.location == location)
+            .order_by(StockLevel.updated_at.desc())
+        )
+        levels = db.execute(stmt).scalars().all()
+        
+        result = []
+        for sl in levels:
+            name = sl.ingredient.name if sl.ingredient else (sl.product.name if sl.product else "Ítem")
+            code = sl.ingredient.code if sl.ingredient else (sl.product.sku if sl.product else "N/A")
+            unit = sl.ingredient.unit_of_measure.value if sl.ingredient else "PIECE"
+            cost = float(sl.ingredient.cost_per_unit) if sl.ingredient else float(sl.product.price if sl.product else 0.0)
+
+            result.append({
+                "id": str(sl.id),
+                "item_id": str(sl.ingredient_id or sl.product_id),
+                "item_type": "INGREDIENT" if sl.ingredient_id else "PRODUCT",
+                "code": code,
+                "name": name,
+                "location": sl.location.value,
+                "quantity": float(sl.quantity),
+                "unit": unit,
+                "unit_cost": cost,
+                "total_value": float(sl.quantity) * cost
+            })
+        return result
 
     @staticmethod
     def get_low_stock_alerts(db: Session) -> List[Dict[str, Any]]:
@@ -341,3 +408,4 @@ class InventoryService:
             })
 
         return alerts
+

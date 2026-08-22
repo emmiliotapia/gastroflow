@@ -18,6 +18,8 @@ from backend.models.enums import (
     UnitOfMeasure,
     UserRole,
     MembershipTier,
+    PaymentStatus,
+    IngredientCategory,
 )
 from backend.models.ingredient import Ingredient
 from backend.models.machine import Machine
@@ -28,6 +30,7 @@ from backend.models.stock import StockLevel, StockTransaction
 from backend.models.user import Role, User
 from backend.models.waste import WasteLog
 from backend.models.ticket import Ticket
+from backend.models.vip_client import VIPClient
 
 __all__ = [
     # Base
@@ -44,6 +47,8 @@ __all__ = [
     "StockTransactionType",
     "OrderStatus",
     "MembershipTier",
+    "PaymentStatus",
+    "IngredientCategory",
     # Models
     "Ingredient",
     "Product",
@@ -59,4 +64,6 @@ __all__ = [
     "POSCategory",
     "POSButton",
     "Ticket",
+    "VIPClient",
 ]
+

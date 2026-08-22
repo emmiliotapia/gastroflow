@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from backend.core.deps import get_current_user, get_db, require_role
+from backend.core.deps import get_current_user, get_db, require_role, get_optional_current_user
 from backend.models.enums import UserRole, MachineStatus
 from backend.models.machine import Machine
 from backend.models.user import User
@@ -72,7 +72,7 @@ def get_machine_by_token(
 def get_machine(
     machine_id: uuid.UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_optional_current_user)
 ) -> MachineRead:
     machine = db.get(Machine, machine_id)
     if not machine or not machine.is_active:

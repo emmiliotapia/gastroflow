@@ -42,7 +42,8 @@ Para exponer la API y las interfaces PWA hacia internet de forma segura con TLS/
 - **Opciones Avanzadas (Custom Nginx Configuration):**
   ```nginx
   location / {
-      rewrite ^/$ /frontend/pos.html break;
+      # Mapea la raíz al catálogo sin fricciones de clientes
+      rewrite ^/$ /frontend/catalogo.html break;
       proxy_pass http://172.17.0.1:8001;
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
@@ -59,7 +60,15 @@ Para exponer la API y las interfaces PWA hacia internet de forma segura con TLS/
       proxy_pass http://172.17.0.1:8001/login;
   }
   ```
+- **Rutas de Acceso en Producción:**
+  - **Catálogo de Clientes:** `https://pos.smartopsia.com/` (Redirección automática)
+  - **Comandero Meseros:** `https://pos.smartopsia.com/frontend/pos.html`
+  - **Portal de Caja:** `https://pos.smartopsia.com/frontend/cashier.html`
+  - **Portal Staff y Técnicos:** `https://pos.smartopsia.com/frontend/staff.html`
+  - **Cocina KDS:** `https://pos.smartopsia.com/frontend/kds.html`
 - **SSL / Certificado:** Let's Encrypt + Force SSL habilitado.
+
+
 
 ### Proxy Host 3: Pantalla KDS (`kds.smartopsia.com`)
 - **Domain Names:** `kds.smartopsia.com`

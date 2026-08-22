@@ -113,9 +113,40 @@ class OrderStatus(str, Enum):
 class MembershipTier(str, Enum):
     """
     Niveles de membresía del cliente para determinar elegibilidad de cortesías.
+    Soporta nomenclatura estándar (CLASSIC, GOLD, PLATINUM, VIP) y en español (PLATA, ORO, PLATINO, PRESTIGE).
     """
     CLASSIC = "CLASSIC"
+    PLATA = "PLATA"
     GOLD = "GOLD"
+    ORO = "ORO"
     PLATINUM = "PLATINUM"
+    PLATINO = "PLATINO"
     VIP = "VIP"
+    PRESTIGE = "PRESTIGE"
+
+
+class IngredientCategory(str, Enum):
+    """
+    Categorías estandarizadas de insumos y materias primas.
+    """
+    PROTEINAS = "PROTEINAS"      # Carnes, Pollo, Pescados
+    VEGETALES = "VEGETALES"      # Verduras, Frutas frescas
+    LACTEOS = "LACTEOS"          # Quesos, Cremas, Mantequillas
+    PANADERIA = "PANADERIA"      # Panes, Tortillas, Harinas
+    ABARROTES = "ABARROTES"      # Salsas, Aceites, Condimentos, Enlatados
+    LICORES = "LICORES"          # Destilados, Vinos, Cervezas base
+    MEZCLADORES = "MEZCLADORES"  # Jugos, Jarabes, Refrescos base
+    DESECHABLES = "DESECHABLES"  # Empaques, Vasos, Servilletas
+    SUBRECETAS = "SUBRECETAS"    # Preparados intermedios / salsas caseras
+
+
+class PaymentStatus(str, Enum):
+    """
+    Estados financieros o de pago de la comanda.
+    """
+    PENDING = "PENDING"                # Cuenta abierta pendiente de cobro en caja
+    PAID = "PAID"                      # Liquidada en caja (Efectivo / Tarjeta)
+    COMPLIMENTARY = "COMPLIMENTARY"    # Cortesía autorizada sin costo ($0.00)
+
+
 

@@ -9,7 +9,7 @@ simulador del motor de descuento atómico del POS.
 from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from backend.core.deps import get_current_user, get_db, require_role
 from backend.models.enums import StockLocation, UserRole
@@ -43,12 +43,18 @@ def get_stock_levels(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ) -> List[StockLevelRead]:
-    stmt = select(StockLevel)
+    stmt = select(StockLevel).options(joinedload(StockLevel.ingredient), joinedload(StockLevel.product))
     if location:
         stmt = stmt.where(StockLevel.location == location)
 
     levels = db.execute(stmt).scalars().all()
-    return [StockLevelRead.model_validate(l) for l in levels]
+    res = []
+    for l in levels:
+        dto = StockLevelRead.model_validate(l)
+        dto.ingredient_name = l.ingredient.name if l.ingredient else None
+        dto.product_name = l.product.name if l.product else None
+        res.append(dto)
+    return res
 
 
 @router.post(
