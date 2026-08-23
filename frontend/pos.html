@@ -706,7 +706,9 @@
       }
 
       const notes = document.getElementById('pos-order-notes').value.trim();
+      const clientOrderId = 'POS-' + currentSlot + '-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7);
       const payload = {
+        client_order_id: clientOrderId,
         machine_code: currentSlot,
         notes: notes,
         items: posCart.map(i => ({
@@ -715,6 +717,7 @@
           is_courtesy: i.is_courtesy
         }))
       };
+
 
       try {
         const res = await fetch(`${API_BASE}/api/v1/cashier/orders`, {

@@ -383,6 +383,128 @@ def test_restaurant_e2e_full_lifecycle():
     assert corte_final["net_revenue"] == corte_final["total_sales_amount"] - corte_final["total_waste_cost"]
     print(f"[OK] 3.3 Balance Neto en Corte de Caja: Ventas ${corte_final['total_sales_amount']:.2f} - Mermas ${corte_final['total_waste_cost']:.2f} = Neto ${corte_final['net_revenue']:.2f}")
 
+    # =========================================================================
+    # FLUJO 4: SEGUROS OPERATIVOS (ANTI-DOUBLE TAP, CANCELACIÓN Y CIERRE BLINDADO)
+    # =========================================================================
+    print("\n--- FLUJO 4: Seguros Operativos y Blindaje ---")
+
+    # 4.1 Idempotencia / Anti-Double Tap
+    client_order_token = "IDEMP-TOKEN-TEST-999"
+    idemp_payload = {
+        "machine_code": "SLOT-101",
+        "client_order_id": client_order_token,
+        "items": [{"product_id": burger_id, "quantity": 1, "is_courtesy": False}]
+    }
+
+    # Primer envío
+    res_idemp_1 = client.post("/api/v1/orders/", json=idemp_payload)
+    assert res_idemp_1.status_code == 201
+    order_idemp_1 = res_idemp_1.json()
+
+    # Stock de carne tras 1er envío: 4,500 - 200 = 4,300g
+    res_stock_carne = client.get("/api/v1/kitchen/stock")
+    carne_lvl = next((i for i in res_stock_carne.json() if i["code"] == "ING-CAR-SIR"), None)
+    assert carne_lvl is not None and float(carne_lvl["quantity"]) == 4300.0
+
+    # Segundo envío idéntico (simulando doble clic o reintento de red)
+    res_idemp_2 = client.post("/api/v1/orders/", json=idemp_payload)
+    assert res_idemp_2.status_code == 201
+    order_idemp_2 = res_idemp_2.json()
+
+    assert order_idemp_1["id"] == order_idemp_2["id"], "Idempotencia: debe retornar la misma comanda"
+    assert order_idemp_1["order_number"] == order_idemp_2["order_number"]
+
+    # Stock NO debe haberse descontado dos veces
+    res_stock_carne_2 = client.get("/api/v1/kitchen/stock")
+    carne_lvl_2 = next((i for i in res_stock_carne_2.json() if i["code"] == "ING-CAR-SIR"), None)
+    assert carne_lvl_2 is not None and float(carne_lvl_2["quantity"]) == 4300.0
+    print(f"[OK] 4.1 Idempotencia Anti-Double Tap validada (Comanda #{order_idemp_1['order_number']}, sin doble deducción de stock).")
+
+    # 4.2 Auditoría y Cancelación Estricta con PIN
+    # A) Intento con PIN inválido -> 401
+    cancel_bad_pin = {
+        "supervisor_pin": "0000",
+        "reason": "Error en captura de platillo"
+    }
+    res_cancel_bad = client.post(f"/api/v1/orders/{order_idemp_1['id']}/cancel", json=cancel_bad_pin)
+    assert res_cancel_bad.status_code == 401
+    print(f"[OK] 4.2.a Cancelación rechazada con PIN inválido (HTTP 401).")
+
+    # B) Cancelación de orden PENDING con PIN válido (9999) -> Reversa limpia a inventario
+    cancel_valid = {
+        "supervisor_pin": "9999",
+        "reason": "Cliente cambió de opinión antes de preparación"
+    }
+    res_cancel_ok = client.post(f"/api/v1/orders/{order_idemp_1['id']}/cancel", json=cancel_valid)
+    assert res_cancel_ok.status_code == 200
+    cancelled_order = res_cancel_ok.json()
+    assert cancelled_order["status"] == "CANCELLED"
+    assert cancelled_order["cancellation_reason"] == cancel_valid["reason"]
+    assert cancelled_order["cancelled_by_name"] == "Jefe de Sala Turno A"
+
+    # Stock debe haberse revertido limpiamente: 4,300 + 200 = 4,500g
+    res_stock_reverted = client.get("/api/v1/kitchen/stock")
+    carne_reverted = next((i for i in res_stock_reverted.json() if i["code"] == "ING-CAR-SIR"), None)
+    assert carne_reverted is not None and float(carne_reverted["quantity"]) == 4500.0
+    print(f"[OK] 4.2.b Cancelación en PENDING autorizada con PIN (Stock de Carne revertido a 4,500g).")
+
+
+
+    # C) Cancelación de orden en PREPARING -> Genera Merma Justificada
+    order_prep_payload = {
+        "machine_code": "SLOT-101",
+        "client_order_id": "ORD-PREP-TEST-1",
+        "items": [{"product_id": burger_id, "quantity": 1, "is_courtesy": False}]
+    }
+    res_order_prep = client.post("/api/v1/orders/", json=order_prep_payload)
+    order_prep = res_order_prep.json()
+    # Mover a PREPARING en KDS
+    client.patch(f"/api/v1/kds/orders/{order_prep['id']}/status", json={"status": "PREPARING"})
+
+    # Cancelar orden en preparación con PIN
+    res_cancel_prep = client.post(
+        f"/api/v1/orders/{order_prep['id']}/cancel",
+        json={"supervisor_pin": "9999", "reason": "Platillo derramado en barra"}
+    )
+    assert res_cancel_prep.status_code == 200
+
+    # Verificar que se haya registrado en WasteLog
+    waste_logs_all = client.get("/api/v1/inventory/waste").json()
+    assert any("Platillo derramado en barra" in w.get("reason", "") for w in waste_logs_all)
+    print(f"[OK] 4.2.c Cancelación en PREPARING generó Merma Justificada automáticamente.")
+
+    # 4.3 Cierre de Turno / Reporte Z Blindado con Arqueo
+    # A) Intento con PIN inválido -> 401
+    close_bad_payload = {
+        "declared_cash": 370.00,
+        "supervisor_pin": "1234",
+        "cashier_name": "Cajero Turno Matutino"
+    }
+    res_close_bad = client.post("/api/v1/cashier/corte-caja/close", json=close_bad_payload)
+    assert res_close_bad.status_code == 401
+
+    # B) Cierre definitivo con PIN de supervisor (9999) y arqueo
+    close_valid_payload = {
+        "declared_cash": 370.00,
+        "supervisor_pin": "9999",
+        "cashier_name": "Cajero Principal",
+        "notes": "Arqueo de turno cuadrado al 100% sin faltantes"
+    }
+    res_close_ok = client.post("/api/v1/cashier/corte-caja/close", json=close_valid_payload)
+    assert res_close_ok.status_code == 201
+    shift_cert = res_close_ok.json()
+    assert shift_cert["folio"].startswith("CRTE-")
+    assert float(shift_cert["declared_cash"]) == 370.00
+    assert float(shift_cert["difference"]) == 0.00
+    assert shift_cert["supervisor_name"] == "Jefe de Sala Turno A"
+    print(f"[OK] 4.3.a Cierre de Turno Blindado {shift_cert['folio']} autorizado con PIN (Diferencia: ${shift_cert['difference']}).")
+
+    # C) Histórico de Cierres
+    res_closings = client.get("/api/v1/cashier/corte-caja/closures")
+    assert res_closings.status_code == 200
+    assert len(res_closings.json()) >= 1
+    print(f"[OK] 4.3.b Histórico de Reportes Z inmutables verificado exitosamente.")
+
     print("\n=================================================================")
     print("¡TODAS LAS PRUEBAS E2E DEL RESTAURANTE PASARON CON 100% DE ÉXITO!")
     print("=================================================================\n")
@@ -390,4 +512,5 @@ def test_restaurant_e2e_full_lifecycle():
 
 if __name__ == "__main__":
     test_restaurant_e2e_full_lifecycle()
+
 

@@ -10,8 +10,9 @@ Este router expone los endpoints para:
 
 import uuid
 from decimal import Decimal
-from typing import List, Optional
+from typing import Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
@@ -99,13 +100,29 @@ def get_pending_orders(
     response_model=OrderRead,
     status_code=status.HTTP_201_CREATED,
     summary="Generar nueva orden / comanda desde caja",
-    description="Permite al cajero o barman levantar un pedido, descontar stock de forma atómica y disparar KDS."
+    description="Permite al cajero o barman levantar un pedido con idempotencia anti-double tap, descontar stock de forma atómica y disparar KDS."
 )
 def create_cashier_order(
     payload: OrderCreate,
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_optional_current_user)
 ) -> OrderRead:
+    # 0. Control de Idempotencia / Anti-Double Tap
+    if payload.client_order_id:
+        stmt_existing = (
+            select(Order)
+            .options(
+                joinedload(Order.items).joinedload(OrderItem.product),
+                joinedload(Order.machine),
+                joinedload(Order.created_by),
+                joinedload(Order.cancelled_by)
+            )
+            .where(Order.client_order_id == payload.client_order_id.strip())
+        )
+        existing_order = db.execute(stmt_existing).unique().scalar_one_or_none()
+        if existing_order:
+            return _build_cashier_order_dto(existing_order)
+
     # 1. Validar máquina o asignar general 000
     target_machine = None
     if payload.machine_id:
@@ -125,6 +142,7 @@ def create_cashier_order(
 
         order = Order(
             machine_id=target_machine.id if target_machine else None,
+            client_order_id=payload.client_order_id.strip() if payload.client_order_id else None,
             order_number=folio,
             status=OrderStatus.PENDING,
             total_amount=Decimal("0.00"),
@@ -133,6 +151,7 @@ def create_cashier_order(
         )
         db.add(order)
         db.flush()
+
 
         total_accumulated = Decimal("0.00")
         stations_affected = set()
@@ -604,5 +623,241 @@ def get_cashier_history(
     stmt = stmt.order_by(Order.created_at.desc()).limit(limit)
     orders = db.execute(stmt).unique().scalars().all()
     return [_build_cashier_order_dto(o) for o in orders]
+
+
+# ------------------------------------------------------------------------------
+# 8. CIERRE DE TURNO / REPORTE Z INMUTABLE Y CANCELACIONES AUDITADAS
+# ------------------------------------------------------------------------------
+
+from pydantic import ConfigDict
+from backend.models.shift import ShiftClosing
+from backend.schemas.order import OrderCancel
+
+class ShiftCloseRequest(BaseModel):
+    declared_cash: Decimal = Field(..., ge=0, description="Efectivo físico contado en caja")
+    supervisor_pin: str = Field(..., min_length=4, max_length=6, description="PIN del supervisor para autorizar el arqueo definitivo")
+    cashier_name: Optional[str] = Field("Cajero en Turno", description="Nombre o identificador del cajero")
+    notes: Optional[str] = Field(None, description="Observaciones o justificaciones de diferencias")
+
+
+class ShiftClosingRead(BaseModel):
+    id: uuid.UUID
+    folio: str
+    shift_date: str
+    cashier_name: str
+    expected_cash: Decimal
+    declared_cash: Decimal
+    difference: Decimal
+    card_total: Decimal
+    courtesy_total: Decimal
+    total_sales: Decimal
+    total_waste: Decimal
+    net_balance: Decimal
+    paid_orders_count: int
+    complimentary_orders_count: int
+    supervisor_name: Optional[str] = None
+    notes: Optional[str] = None
+    created_at: Any
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+@router.post(
+    "/corte-caja/close",
+    response_model=ShiftClosingRead,
+    status_code=status.HTTP_201_CREATED,
+    summary="Cierre Definitivo de Turno / Reporte Z con Arqueo",
+    description="Exige PIN de supervisor. Registra de forma inmutable el arqueo, calcula diferencias y blinda el turno."
+)
+def close_cashier_shift(
+    payload: ShiftCloseRequest,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user)
+) -> ShiftClosingRead:
+    # 1. Validar PIN de supervisor
+    stmt_sup = select(User).options(joinedload(User.role)).where(User.is_active == True)
+    users = db.execute(stmt_sup).unique().scalars().all()
+    supervisor = next((u for u in users if u.role.name in [UserRole.JEFE_DE_SALA, UserRole.ADMIN] and u.hashed_pin and verify_pin(payload.supervisor_pin, u.hashed_pin)), None)
+
+    if not supervisor:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="El PIN de supervisor ingresado no es válido para autorizar el cierre de turno."
+        )
+
+    # 2. Calcular datos del turno actual (hoy)
+    now = datetime.now()
+    day_obj = now.date()
+    start_day = datetime.combine(day_obj, time.min)
+    end_day = datetime.combine(day_obj, time.max)
+
+    stmt_orders = (
+        select(Order)
+        .options(
+            joinedload(Order.items).joinedload(OrderItem.product),
+            joinedload(Order.machine),
+            joinedload(Order.created_by)
+        )
+        .where(Order.created_at >= start_day, Order.created_at <= end_day)
+    )
+    orders = db.execute(stmt_orders).unique().scalars().all()
+
+    cash_total = Decimal("0.00")
+    card_total = Decimal("0.00")
+    courtesy_total = Decimal("0.00")
+    paid_count = 0
+    comp_count = 0
+
+    for o in orders:
+        if o.payment_status == PaymentStatus.PAID:
+            paid_count += 1
+            if o.payment_method == "CARD":
+                card_total += o.total_amount
+            else:
+                cash_total += o.total_amount
+        elif o.payment_status == PaymentStatus.COMPLIMENTARY:
+            comp_count += 1
+            for it in o.items:
+                orig_price = it.product.price if it.product else Decimal("0.00")
+                courtesy_total += orig_price * it.quantity
+
+    total_sales = cash_total + card_total
+
+    # Mermas
+    stmt_waste = select(WasteLog).where(WasteLog.created_at >= start_day, WasteLog.created_at <= end_day)
+    waste_logs = db.execute(stmt_waste).scalars().all()
+    total_waste = sum([w.total_cost for w in waste_logs], Decimal("0.00"))
+
+    # Diferencia de arqueo
+    difference = payload.declared_cash - cash_total
+    net_balance = total_sales - total_waste
+
+    # Generar folio único
+    count_stmt = select(func.count(ShiftClosing.id))
+    closing_count = db.execute(count_stmt).scalar() or 0
+    date_str = day_obj.strftime("%Y%m%d")
+    folio = f"CRTE-{date_str}-{closing_count + 1:04d}"
+
+    closing = ShiftClosing(
+        folio=folio,
+        shift_date=day_obj.isoformat(),
+        cashier_name=payload.cashier_name or (current_user.full_name if current_user else "Cajero General"),
+        expected_cash=cash_total,
+        declared_cash=payload.declared_cash,
+        difference=difference,
+        card_total=card_total,
+        courtesy_total=courtesy_total,
+        total_sales=total_sales,
+        total_waste=total_waste,
+        net_balance=net_balance,
+        paid_orders_count=paid_count,
+        complimentary_orders_count=comp_count,
+        supervisor_id=supervisor.id,
+        notes=payload.notes
+    )
+    db.add(closing)
+    db.commit()
+    db.refresh(closing)
+
+    dto = ShiftClosingRead.model_validate(closing)
+    dto.supervisor_name = supervisor.full_name
+    return dto
+
+
+@router.get(
+    "/corte-caja/closures",
+    response_model=List[ShiftClosingRead],
+    summary="Listar cierres de turno y arqueos inmutables",
+    description="Retorna el histórico de cierres de caja y Reportes Z autorizados por supervisor."
+)
+def get_shift_closings(
+    limit: int = Query(50, ge=1, le=200),
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user)
+) -> List[ShiftClosingRead]:
+    stmt = (
+        select(ShiftClosing)
+        .options(joinedload(ShiftClosing.supervisor))
+        .order_by(ShiftClosing.created_at.desc())
+        .limit(limit)
+    )
+    closings = db.execute(stmt).scalars().all()
+    res = []
+    for c in closings:
+        dto = ShiftClosingRead.model_validate(c)
+        dto.supervisor_name = c.supervisor.full_name if c.supervisor else "Supervisor"
+        res.append(dto)
+    return res
+
+
+@router.post(
+    "/orders/{order_id}/cancel",
+    response_model=OrderRead,
+    summary="Cancelar comanda desde caja con PIN de supervisor",
+    description="Permite al cajero o supervisor cancelar una comanda abierta o en proceso con PIN y justificación."
+)
+def cancel_cashier_order(
+    order_id: uuid.UUID,
+    payload: OrderCancel,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user)
+) -> OrderRead:
+    # 1. Validar PIN
+    if not payload.supervisor_pin:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="PIN de supervisor requerido.")
+    stmt_sup = select(User).options(joinedload(User.role)).where(User.is_active == True)
+    users = db.execute(stmt_sup).unique().scalars().all()
+    supervisor = next((u for u in users if u.role.name in [UserRole.JEFE_DE_SALA, UserRole.ADMIN] and u.hashed_pin and verify_pin(payload.supervisor_pin, u.hashed_pin)), None)
+    if not supervisor:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="PIN de supervisor inválido.")
+
+    stmt = (
+        select(Order)
+        .options(
+            joinedload(Order.items).joinedload(OrderItem.product),
+            joinedload(Order.machine),
+            joinedload(Order.created_by)
+        )
+        .where(Order.id == order_id)
+    )
+    order = db.execute(stmt).unique().scalar_one_or_none()
+    if not order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comanda no encontrada.")
+    if order.status == OrderStatus.CANCELLED:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="La comanda ya fue cancelada.")
+
+    if order.status in [OrderStatus.PREPARING, OrderStatus.READY, OrderStatus.DELIVERED]:
+        for item in order.items:
+            reason = f"Cancelación caja #{order.order_number}: {payload.reason} (Autorizó: {supervisor.full_name})"
+            InventoryService.record_order_cancellation_waste(
+                db=db,
+                product_id=item.product_id,
+                order_quantity=item.quantity,
+                reason=reason,
+                user_id=supervisor.id
+            )
+    else:
+        for item in order.items:
+            notes = f"Reversa por cancelación caja #{order.order_number}: {payload.reason} (Autorizó: {supervisor.full_name})"
+            InventoryService.revert_product_stock(
+                db=db,
+                product_id=item.product_id,
+                order_quantity=item.quantity,
+                notes=notes,
+                user_id=supervisor.id
+            )
+
+    order.status = OrderStatus.CANCELLED
+    order.cancellation_reason = payload.reason
+    order.cancelled_by_id = supervisor.id
+    order.cancelled_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(order)
+
+    dto = _build_cashier_order_dto(order)
+    order_payload = dto.model_dump(mode="json")
+    kds_manager.broadcast_sync(station="WAITERS", message={"event": "ORDER_CANCELLED", "order_id": str(order.id), "order": order_payload})
+    return dto
+
 
 

@@ -6,10 +6,12 @@ para capturar comisiones de venta de AyB vinculadas a slots/mesas.
 """
 
 import uuid
+from datetime import datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING, List, Optional
-from sqlalchemy import Enum, ForeignKey, Numeric, String, Text, UUID
+from sqlalchemy import DateTime, Enum, ForeignKey, Numeric, String, Text, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 
 from backend.models.base import Base, TimestampMixin
 from backend.models.enums import OrderStatus, PaymentStatus
@@ -82,6 +84,32 @@ class Order(Base, TimestampMixin):
         comment="Comentarios especiales (ej. Sin cebolla, Aderezo extra)"
     )
 
+    client_order_id: Mapped[Optional[str]] = mapped_column(
+        String(100),
+        nullable=True,
+        index=True,
+        comment="Token de idempotencia para prevenir duplicados por doble click"
+    )
+
+    cancellation_reason: Mapped[Optional[str]] = mapped_column(
+        String(255),
+        nullable=True,
+        comment="Motivo justificado de cancelación"
+    )
+
+    cancelled_by_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        comment="Supervisor que autorizó la cancelación con PIN"
+    )
+
+    cancelled_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        comment="Fecha y hora en que se canceló la orden"
+    )
+
     created_by_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="SET NULL"),
@@ -91,12 +119,14 @@ class Order(Base, TimestampMixin):
 
     # Relaciones
     machine: Mapped[Optional["Machine"]] = relationship("Machine")
-    created_by: Mapped[Optional["User"]] = relationship("User")
+    created_by: Mapped[Optional["User"]] = relationship("User", foreign_keys=[created_by_id])
+    cancelled_by: Mapped[Optional["User"]] = relationship("User", foreign_keys=[cancelled_by_id])
     items: Mapped[List["OrderItem"]] = relationship(
         "OrderItem",
         back_populates="order",
         cascade="all, delete-orphan"
     )
+
 
     def __repr__(self) -> str:
         return f"<Order(folio='{self.order_number}', status='{self.status.value}', total=${self.total_amount})>"

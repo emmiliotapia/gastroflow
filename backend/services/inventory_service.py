@@ -343,7 +343,113 @@ class InventoryService:
         }
 
     @staticmethod
+    def revert_product_stock(
+        db: Session,
+        product_id: uuid.UUID,
+        order_quantity: Decimal,
+        location: Optional[StockLocation] = None,
+        notes: Optional[str] = None,
+        user_id: Optional[uuid.UUID] = None
+    ):
+        """
+        Reversa el stock descontado de una comanda cancelada cuando aún estaba en PENDING.
+        Incrementa el stock físico de insumos/productos en la bodega correspondiente.
+        """
+        stmt = (
+            select(Product)
+            .options(joinedload(Product.recipe_items).joinedload(RecipeItem.ingredient))
+            .where(Product.id == product_id)
+        )
+        product = db.execute(stmt).unique().scalar_one_or_none()
+        if not product:
+            return
+
+        if not location:
+            location = StockLocation.BAR if product.destination_kds == KDSStation.BAR else StockLocation.KITCHEN
+
+        if product.product_type == ProductType.DIRECT:
+            InventoryService.adjust_stock(
+                db=db,
+                location=location,
+                transaction_type=StockTransactionType.ADJUSTMENT,
+                quantity=abs(order_quantity),
+                product_id=product.id,
+                notes=notes or f"Reversa por cancelación comanda: {product.name}",
+                user_id=user_id
+            )
+        else:
+            if product.recipe_items:
+                for item in product.recipe_items:
+                    required_qty = item.quantity * order_quantity
+                    ing = item.ingredient
+                    InventoryService.adjust_stock(
+                        db=db,
+                        location=location,
+                        transaction_type=StockTransactionType.ADJUSTMENT,
+                        quantity=abs(required_qty),
+                        ingredient_id=item.ingredient_id,
+                        unit_cost=ing.cost_per_unit if ing else Decimal("0.0000"),
+                        notes=notes or f"Reversa por cancelación comanda: {product.name}",
+                        user_id=user_id
+                    )
+
+    @staticmethod
+    def record_order_cancellation_waste(
+        db: Session,
+        product_id: uuid.UUID,
+        order_quantity: Decimal,
+        reason: str,
+        location: Optional[StockLocation] = None,
+        user_id: Optional[uuid.UUID] = None
+    ):
+        """
+        Registra la pérdida monetaria (merma justificada) cuando una comanda se cancela
+        después de haber entrado a producción (PREPARING, READY o DELIVERED).
+        """
+        stmt = (
+            select(Product)
+            .options(joinedload(Product.recipe_items).joinedload(RecipeItem.ingredient))
+            .where(Product.id == product_id)
+        )
+        product = db.execute(stmt).unique().scalar_one_or_none()
+        if not product:
+            return
+
+        if not location:
+            location = StockLocation.BAR if product.destination_kds == KDSStation.BAR else StockLocation.KITCHEN
+
+        if product.product_type == ProductType.DIRECT:
+            total_loss = (product.price or Decimal("0.00")) * order_quantity
+            waste_log = WasteLog(
+                product_id=product.id,
+                location=location,
+                quantity=abs(order_quantity),
+                reason=reason,
+                total_cost=total_loss,
+                recorded_by_id=user_id
+            )
+            db.add(waste_log)
+        else:
+            if product.recipe_items:
+                for item in product.recipe_items:
+                    required_qty = item.quantity * order_quantity
+                    ing = item.ingredient
+                    cost = ing.cost_per_unit if ing else Decimal("0.0000")
+                    total_loss = cost * required_qty
+                    waste_log = WasteLog(
+                        ingredient_id=item.ingredient_id,
+                        location=location,
+                        quantity=abs(required_qty),
+                        reason=reason,
+                        total_cost=total_loss,
+                        recorded_by_id=user_id
+                    )
+                    db.add(waste_log)
+        db.commit()
+
+    @staticmethod
     def get_stock_by_location(db: Session, location: StockLocation) -> List[Dict[str, Any]]:
+
         """
         Retorna la lista de existencias físicas vigentes en una ubicación dada (KITCHEN o BAR).
         """

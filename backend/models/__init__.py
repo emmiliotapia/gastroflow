@@ -31,6 +31,7 @@ from backend.models.user import Role, User
 from backend.models.waste import WasteLog
 from backend.models.ticket import Ticket
 from backend.models.vip_client import VIPClient
+from backend.models.shift import ShiftClosing
 
 __all__ = [
     # Base
@@ -65,5 +66,7 @@ __all__ = [
     "POSButton",
     "Ticket",
     "VIPClient",
+    "ShiftClosing",
 ]
+
 

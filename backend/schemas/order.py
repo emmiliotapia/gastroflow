@@ -35,6 +35,7 @@ class OrderItemRead(BaseModel):
 class OrderCreate(BaseModel):
     machine_id: Optional[uuid.UUID] = Field(None, description="UUID de la máquina/slot si el pedido viene de escaneo QR")
     machine_code: Optional[str] = Field(None, description="Código de máquina/slot alternativo (ej. SLOT-101, 000)")
+    client_order_id: Optional[str] = Field(None, description="UUID o token de idempotencia para prevenir duplicados por doble click")
     notes: Optional[str] = Field(None, example="Sin cebolla, aderezo extra", description="Notas de preparación")
     items: List[OrderItemCreate] = Field(..., min_length=1, description="Detalle de productos ordenados")
     supervisor_pin: Optional[str] = Field(None, description="PIN opcional de supervisor para autorizar cortesía si excede el nivel")
@@ -46,11 +47,15 @@ class OrderRead(BaseModel):
     machine_id: Optional[uuid.UUID] = None
     machine_code: Optional[str] = Field(None, description="Código de activo de la máquina (ej. SLOT-101 o 000)")
     order_number: str
+    client_order_id: Optional[str] = None
     status: OrderStatus
     total_amount: Decimal
     payment_status: PaymentStatus
     payment_method: Optional[str] = None
     notes: Optional[str] = None
+    cancellation_reason: Optional[str] = None
+    cancelled_by_name: Optional[str] = Field(None, description="Nombre del supervisor que autorizó la cancelación")
+    cancelled_at: Optional[Any] = None
     created_by_id: Optional[uuid.UUID] = None
     created_by_name: Optional[str] = Field(None, description="Nombre del mesero o cajero que levantó la orden")
     created_at: Any
@@ -66,5 +71,11 @@ class KDSOrderUpdate(BaseModel):
 class OrderPay(BaseModel):
     payment_method: str = Field(..., example="CASH", description="Método de pago (CASH, CARD, COURTESY)")
     supervisor_pin: Optional[str] = Field(None, min_length=4, max_length=6, description="PIN opcional de supervisor si se autoriza cortesía de última hora")
+
+
+class OrderCancel(BaseModel):
+    supervisor_pin: str = Field(..., min_length=4, max_length=6, description="PIN de supervisor obligatorio para autorizar la cancelación")
+    reason: str = Field(..., min_length=3, max_length=255, description="Motivo justificado de la cancelación")
+
 
 

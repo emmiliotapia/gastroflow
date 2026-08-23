@@ -629,8 +629,10 @@
       btn.innerHTML = '<span class="animate-pulse">Enviando comanda a Cocina...</span>';
 
       const generalNotes = document.getElementById('order-general-notes').value.trim();
+      const clientOrderId = 'QR-' + clientSlot + '-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7);
 
       const payload = {
+        client_order_id: clientOrderId,
         machine_code: clientSlot,
         notes: generalNotes,
         items: clientCart.map(i => ({
@@ -639,6 +641,7 @@
           is_courtesy: false
         }))
       };
+
 
       try {
         const res = await fetch(`${API_BASE}/api/v1/cashier/orders`, {

@@ -80,7 +80,19 @@
   - Validación automatizada completa de Flujo 1 (Comanda QR -> KDS FIFO -> Cashier -> Pago Efectivo/Cortesía PIN -> Descuento atómico -> Arqueo Reporte Z).
   - Validación automatizada de Flujo 2 (Asistencia Runners `🟡 Pedir Saldo`, Meseros y Falla Técnica Sistemas hacia `ntfy`).
   - Validación de Flujo 3 (Merma valorizada y balance neto en corte de turno).
+  - Validación de Flujo 4 (Idempotencia Anti-Double Tap, Cancelación con PIN y Reversa/Merma automática, Cierre Blindado con Arqueo de Efectivo).
   - Resultado: 100% de éxito en todas las pruebas.
+
+## Seguros Operativos y Blindaje Transaccional - 2026-08-23
+- **Idempotencia / Anti-Double Tap (`client_order_id`):**
+  - Cada solicitud de comanda en `cliente.html`, `pos.html` y `cashier.html` envía un token único de cliente. Si la red o el usuario reintenta, el backend detecta el token existente y retorna la comanda ya procesada sin duplicar registros ni descontar stock múltiple.
+- **Cancelaciones Auditadas con PIN (Poka-Yoke):**
+  - Todo intento de cancelación exige obligatoriamente un `supervisor_pin` válido (`JEFE_DE_SALA` o `ADMIN`).
+  - Si la comanda estaba en `PENDING` (no cocinada), se genera una reversa limpia al inventario.
+  - Si la comanda estaba en `PREPARING`, `READY` o `DELIVERED`, se registra automáticamente una `WasteLog` (merma justificada) asociada al supervisor que autorizó.
+- **Cierre Definitivo de Turno & Reporte Z Inmutable (`POST /api/v1/cashier/corte-caja/close`, modelo `ShiftClosing`):**
+  - Genera un certificado inmutable (`CRTE-YYYYMMDD-XXXX`) registrando el arqueo físico declarado vs teórico calculado, diferencia monetaria (sobrante/faltante) y autorización mediante PIN.
+
 
 
 

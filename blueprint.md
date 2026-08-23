@@ -152,3 +152,22 @@ El módulo de Caja y Alimentos & Bebidas integra un motor de consolidación fina
 
 3. **Bitácora de Mermas y Ajustes de Cocina (`GET & POST /api/v1/inventory/waste`)**:
    - Registro visual e inmediato de pérdidas imprevistas con justificación monetaria y descuento atómico directo de stock.
+
+---
+
+## 10. Seguros Operativos, Idempotencia y Blindaje Financiero
+
+Para blindar la operación en sala frente a fallas de conectividad, reintentos humanos o manipulaciones no autorizadas, el ecosistema integra los siguientes seguros nativos:
+
+1. **Idempotencia / Anti-Double Tap (`client_order_id`)**:
+   - Las PWAs de Clientes (`cliente.html`), Meseros (`pos.html`) y Caja (`cashier.html`) generan un token de cliente único por cada intento de comanda.
+   - El motor de FastAPI valida si el token ya fue registrado. Si detecta un reintento (por doble clic o latencia de red móvil), retorna inmediatamente la comanda existente sin crear duplicados ni descontar inventario múltiple.
+
+2. **Poka-Yoke en Cancelaciones y Conversión a Merma**:
+   - Toda cancelación de comandas exige la validación mediante PIN de supervisor (`JEFE_DE_SALA` o `ADMIN`).
+   - Si la comanda se cancela cuando aún estaba en estado `PENDING` (no ha entrado a cocción/barra), el sistema ejecuta una reversa limpia reponiendo el stock de insumos.
+   - Si la comanda ya estaba en `PREPARING`, `READY` o `DELIVERED`, el sistema no reincorpora el stock como producto limpio, sino que genera automáticamente un registro en `WasteLog` (merma justificada) con el nombre del supervisor autorizador y el motivo de pérdida.
+
+3. **Cierre Definitivo de Turno y Arqueo Inmutable (`ShiftClosing`)**:
+   - El arqueo físico se ingresa en tiempo real calculando la diferencia entre el efectivo teórico y el contado.
+   - El cierre definitivo (`POST /api/v1/cashier/corte-caja/close`) exige autorización con PIN y genera un certificado con folio inmutable `CRTE-YYYYMMDD-XXXX`, preservando la integridad histórica del balance para auditoría contable.

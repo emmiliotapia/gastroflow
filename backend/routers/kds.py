@@ -7,6 +7,8 @@ vía WebSockets.
 """
 
 import uuid
+import json
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect, status
@@ -20,7 +22,7 @@ from backend.models.machine import Machine
 from backend.models.order import Order, OrderItem
 from backend.models.product import Product
 from backend.models.user import User
-from backend.schemas.order import KDSOrderUpdate, OrderCreate, OrderRead, OrderItemRead
+from backend.schemas.order import KDSOrderUpdate, OrderCreate, OrderRead, OrderItemRead, OrderCancel
 from backend.services.inventory_service import InventoryService
 from backend.websockets.kds_manager import kds_manager
 from backend.utils.n8n import trigger_order_webhook, trigger_order_ready_notification
@@ -29,10 +31,11 @@ router = APIRouter(tags=["Comandas y KDS (Kitchen Display System)"])
 
 
 def _build_order_dto(order: Order) -> OrderRead:
-    """Helper para serializar la orden con metadatos de producto, máquina y mesero."""
+    """Helper para serializar la orden con metadatos de producto, máquina, mesero y cancelación."""
     dto = OrderRead.model_validate(order)
     dto.machine_code = order.machine.asset_code if order.machine else "000"
     dto.created_by_name = order.created_by.full_name if order.created_by else "Staff Piso"
+    dto.cancelled_by_name = order.cancelled_by.full_name if hasattr(order, 'cancelled_by') and order.cancelled_by else None
     
     dto.items = []
     for item in order.items:
@@ -52,13 +55,30 @@ def _build_order_dto(order: Order) -> OrderRead:
     response_model=OrderRead,
     status_code=status.HTTP_201_CREATED,
     summary="Registrar una nueva comanda de AyB",
-    description="Crea la comanda de forma atómica. Ejecuta el descuento de stock de insumos. Dispara WebSockets a KDS y Meseros."
+    description="Crea la comanda de forma atómica con soporte anti-double tap (idempotencia). Ejecuta el descuento de stock de insumos y notifica vía WebSocket."
 )
 def create_order(
     payload: OrderCreate,
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_optional_current_user)
 ) -> OrderRead:
+    # 0. Control de Idempotencia / Anti-Double Tap
+    if payload.client_order_id:
+        stmt_existing = (
+            select(Order)
+            .options(
+                joinedload(Order.items).joinedload(OrderItem.product),
+                joinedload(Order.machine),
+                joinedload(Order.created_by),
+                joinedload(Order.cancelled_by)
+            )
+            .where(Order.client_order_id == payload.client_order_id.strip())
+        )
+        existing_order = db.execute(stmt_existing).unique().scalar_one_or_none()
+        if existing_order:
+            # Retornar comanda ya creada para evitar duplicación y doble descuento
+            return _build_order_dto(existing_order)
+
     # 1. Validar máquina por ID o por código (ej. SLOT-101)
     target_machine = None
     if payload.machine_id:
@@ -83,6 +103,7 @@ def create_order(
 
         order = Order(
             machine_id=target_machine.id if target_machine else None,
+            client_order_id=payload.client_order_id.strip() if payload.client_order_id else None,
             order_number=folio,
             status=OrderStatus.PENDING,
             total_amount=Decimal("0.00"),
@@ -91,6 +112,7 @@ def create_order(
         )
         db.add(order)
         db.flush()
+
 
         total_accumulated = Decimal("0.00")
         stations_affected = set()
@@ -426,8 +448,142 @@ def update_kds_order_status(
     return dto
 
 
+@router.post(
+    "/api/v1/orders/{order_id}/cancel",
+    response_model=OrderRead,
+    summary="Cancelar una comanda con PIN de supervisor y registro de merma/reversa",
+    description="Exige PIN de supervisor. Si la comanda estaba en preparación o lista, registra merma justificada. Si estaba pendiente, revierte el stock."
+)
+@router.post(
+    "/api/v1/kds/orders/{order_id}/cancel",
+    response_model=OrderRead,
+    include_in_schema=False
+)
+def cancel_order(
+    order_id: uuid.UUID,
+    payload: OrderCancel,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user)
+) -> OrderRead:
+    # 1. Validar PIN de supervisor
+    if not payload.supervisor_pin:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Se requiere el PIN de supervisor para autorizar la cancelación."
+        )
+
+    stmt_sup = select(User).options(joinedload(User.role)).where(User.is_active == True)
+    users = db.execute(stmt_sup).unique().scalars().all()
+    supervisor = next((u for u in users if u.role.name in [UserRole.JEFE_DE_SALA, UserRole.ADMIN] and u.hashed_pin and verify_pin(payload.supervisor_pin, u.hashed_pin)), None)
+
+    if not supervisor:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="El PIN de supervisor ingresado no es válido para autorizar la cancelación."
+        )
+
+    # 2. Consultar la comanda
+    stmt = (
+        select(Order)
+        .options(
+            joinedload(Order.items).joinedload(OrderItem.product),
+            joinedload(Order.machine),
+            joinedload(Order.created_by)
+        )
+        .where(Order.id == order_id)
+    )
+    order = db.execute(stmt).unique().scalar_one_or_none()
+
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Comanda con ID '{order_id}' no encontrada."
+        )
+
+    if order.status == OrderStatus.CANCELLED:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Esta comanda ya ha sido cancelada previamente."
+        )
+
+    # 3. Lógica de Reversa o Merma según el estado de producción
+    try:
+        if order.status in [OrderStatus.PREPARING, OrderStatus.READY, OrderStatus.DELIVERED]:
+            # Alimentos ya cocinados/preparados -> Generar merma justificada
+            for item in order.items:
+                reason = f"Cancelación comanda #{order.order_number}: {payload.reason} (Autorizó: {supervisor.full_name})"
+                InventoryService.record_order_cancellation_waste(
+                    db=db,
+                    product_id=item.product_id,
+                    order_quantity=item.quantity,
+                    reason=reason,
+                    user_id=supervisor.id
+                )
+        else:
+            # Orden en PENDING -> Revertir stock al almacén/estación limpia
+            for item in order.items:
+                notes = f"Reversa por cancelación comanda #{order.order_number}: {payload.reason} (Autorizó: {supervisor.full_name})"
+                InventoryService.revert_product_stock(
+                    db=db,
+                    product_id=item.product_id,
+                    order_quantity=item.quantity,
+                    notes=notes,
+                    user_id=supervisor.id
+                )
+
+        # 4. Actualizar estado de comanda y auditoría
+        order.status = OrderStatus.CANCELLED
+        order.cancellation_reason = payload.reason
+        order.cancelled_by_id = supervisor.id
+        order.cancelled_at = datetime.now(timezone.utc)
+        db.commit()
+        db.refresh(order)
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error procesando cancelación: {str(e)}"
+        )
+
+    # 5. Broadcast WebSocket a KDS y meseros
+    dto = _build_order_dto(order)
+    order_payload = dto.model_dump(mode="json")
+
+    stations = {item.product.destination_kds.value for item in order.items if item.product}
+    if not stations:
+        stations = {"KITCHEN", "BAR"}
+
+    for st in stations:
+        kds_manager.broadcast_sync(
+            station=st,
+            message={
+                "event": "ORDER_CANCELLED",
+                "order_id": str(order.id),
+                "order": order_payload,
+                "reason": payload.reason,
+                "authorized_by": supervisor.full_name
+            }
+        )
+
+    kds_manager.broadcast_sync(
+        station="WAITERS",
+        message={
+            "event": "ORDER_CANCELLED",
+            "order_id": str(order.id),
+            "order": order_payload,
+            "reason": payload.reason
+        }
+    )
+
+    return dto
+
 
 @router.websocket("/ws/kds")
+
 async def websocket_kds_endpoint(
     websocket: WebSocket,
     station: str = Query("ALL", description="Filtro de suscripción (KITCHEN, BAR, WAITERS, ALL)")

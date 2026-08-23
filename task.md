@@ -33,9 +33,13 @@
   - [x] Crear endpoint de Corte de Caja / Reporte Z (`GET /api/v1/cashier/corte-caja`) con segregación de cobros, cortesías y deducción de mermas.
   - [x] Crear endpoint de Historial y Auditoría de Comandas (`GET /api/v1/cashier/history`).
   - [x] Crear endpoint de Bitácora de Mermas Valorizadas (`GET /api/v1/inventory/waste`).
-  - [x] Construir Suite de Pruebas Automatizadas End-to-End (`tests/test_restaurant_e2e.py`) con 100% de cobertura de flujos de comanda, KDS, asistencia y arqueo.
+  - [x] Implementar Mecanismo de Idempotencia / Anti-Double Tap (`client_order_id`) para blindar la emisión de comandas.
+  - [x] Implementar Cancelaciones Auditadas con PIN de Supervisor (reversa limpia en `PENDING` y merma justificada automática en `PREPARING`/`READY`).
+  - [x] Implementar Cierre Definitivo de Turno y Arqueo Inmutable (`POST /api/v1/cashier/corte-caja/close`, modelo `ShiftClosing`).
+  - [x] Construir Suite de Pruebas Automatizadas End-to-End (`tests/test_restaurant_e2e.py`) con 100% de cobertura de flujos de comanda, KDS, asistencia, arqueo y seguros operativos.
 
 ## Fase 3: Automatizaciones y Sistema Nervioso (n8n & ntfy)
+
 - [x] Configurar webhooks en FastAPI hacia n8n.
 - [x] Integrar canales de `notify.sh` segregados (Meseros, Runners, Sistemas, Alertas).
 - [x] Desplegar e integrar servidor privado autoalojado de **`ntfy`** (`binwiederhier/ntfy`) en Docker `casino_net` (Puerto host 8080).
