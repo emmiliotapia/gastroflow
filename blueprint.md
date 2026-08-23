@@ -95,3 +95,42 @@ Para dar soporte a la operación ágil y sin fricciones en sala, el sistema inte
 
 4. **Notificaciones Push en Tiempo Real (WebSockets KDS)**:
    - Administrado por `KDSConnectionManager`. Al crearse un pedido o cambiar de estado, se propaga un broadcast instantáneo a través de `/ws/kds` para actualizar de inmediato las pantallas activas de cocina o barra.
+
+---
+
+## 8. Arquitectura de Notificaciones Push Privadas (`ntfy` & `notify.sh`)
+
+El ecosistema integra un servidor autoalojado de **`ntfy`** (`binwiederhier/ntfy`) ejecutándose en la red interna Docker `casino_net` y expuesto mediante Nginx Proxy Manager en `https://ntfy.smartopsia.com` (Puerto host `8080`).
+
+### Canales Operativos Segregados:
+1. **`prestige-meseros`**: Llamados de clientes desde slots (`🛎️ Llamar Mesero`) y alertas de platillos terminados en KDS (`ORDER_READY`).
+2. **`prestige-runners`**: Peticiones de recargas de créditos / saldo en slots (`🟡 Pedir Saldo`).
+3. **`prestige-kds`**: Comandas nuevas enviadas desde el Menú Digital QR o el POS.
+4. **`prestige-sistemas`**: Reportes de fallas técnicas en tragamonedas (`🔴 Falla Técnica`) y apertura de tickets.
+5. **`prestige-alertas`**: Notificaciones de inventario por debajo del stock de seguridad.
+
+### Flujo de Notificación Híbrido:
+```
+┌─────────────────────────┐
+│ Evento Operativo en ERP │ (QR / POS / KDS / Tickets)
+└───────────┬─────────────┘
+            │
+            ├──────────────────────────────────────────┐
+            ▼                                          ▼
+┌───────────────────────────────┐        ┌───────────────────────────────┐
+│     FastAPI Core Backend      │        │  Script Shell `notify.sh`     │
+│   (backend/utils/n8n.py)      │        │  (Invocaciones del sistema)   │
+└───────────┬───────────────────┘        └─────────────┬─────────────────┘
+            │                                          │
+            ├───────────────────┬──────────────────────┘
+            ▼                   ▼
+┌────────────────────────┐ ┌──────────────────────────────────────────────┐
+│  Servidor ntfy Privado │ │           Instancia Local n8n                │
+│ https://ntfy.smartopsia│ │ (https://n8n.smartopsia.com/webhook/...)     │
+└───────────┬────────────┘ └──────────────────────────────────────────────┘
+            ▼
+┌────────────────────────────────────────────────────────┐
+│ App Móvil `ntfy` en Smartphones y Relojes del Personal │
+│ (Meseros, Runners, Cocineros y Técnicos de Sistemas)   │
+└────────────────────────────────────────────────────────┘
+```

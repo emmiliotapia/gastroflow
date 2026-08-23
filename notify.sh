@@ -12,8 +12,9 @@ MESSAGE="${3:-Sin detalle de mensaje}"
 PAYLOAD="${4:-{}}"
 
 NTFY_TOPIC_PREFIX="${NTFY_TOPIC_PREFIX:-prestige-}"
-NTFY_SERVER="${NTFY_SERVER:-https://ntfy.sh}"
+NTFY_SERVER="${NTFY_SERVER:-https://ntfy.smartopsia.com}"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] [NOTIFY] Canal: [$CHANNEL] | Asunto: $TITLE"
 echo "  -> Mensaje: $MESSAGE"

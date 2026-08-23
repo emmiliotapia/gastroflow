@@ -31,9 +31,10 @@ N8N_WEBHOOK_ALERTS = os.getenv("N8N_WEBHOOK_ALERTS", "https://n8n.smartopsia.com
 N8N_WEBHOOK_RUNNERS = os.getenv("N8N_WEBHOOK_RUNNERS", "https://n8n.smartopsia.com/webhook/alerta-runner")
 N8N_WEBHOOK_MESEROS = os.getenv("N8N_WEBHOOK_MESEROS", "https://n8n.smartopsia.com/webhook/alerta-meseros")
 
-# Configuración de ntfy.sh (Push Notifications a Celulares y Relojes)
-NTFY_SERVER = os.getenv("NTFY_SERVER", "https://ntfy.sh")
+# Configuración del Servidor Privado de ntfy (Push Notifications a Celulares y Relojes)
+NTFY_SERVER = os.getenv("NTFY_SERVER", "https://ntfy.smartopsia.com")
 NTFY_TOPIC_PREFIX = os.getenv("NTFY_TOPIC_PREFIX", "prestige-")
+
 
 
 def _execute_notify_script(channel: str, title: str, message: str, payload: dict, priority: str = "4", tags: str = "bell"):

@@ -52,5 +52,21 @@
 - **Dock de Asistencia en Sala:** Botones discretos integrados para llamar mesero, solicitar recarga de saldo (Runners) y reportar fallas técnicas (Sistemas).
 - **Enrutamiento Inteligente:** Mapeo automático de subdominios `menu.smartopsia.com` y `cliente.smartopsia.com` y rutas `/menu` y `/cliente`.
 
+## Despliegue de Servidor Privado de Notificaciones Push (ntfy) - 2026-08-23
+- **Contenedor Dedicado (`casino_ntfy`):** Integrada la imagen oficial `binwiederhier/ntfy` conectada a la red Docker `casino_net`.
+- **Puerto y Mapeo Host:** Puerto host **`8080`** mapeado al puerto interno `80` del contenedor para balanceo por Nginx Proxy Manager.
+- **Subdominio Configurado:** `https://ntfy.smartopsia.com` apuntando a `172.17.0.1:8080` (con WebSockets y SSL activados).
+- **Persistencia y Control de Acceso:**
+  - Archivo de configuración central: `docker/ntfy/server.yml`.
+  - Base de datos SQLite persistente para mensajes y caché: `/var/cache/ntfy/cache.db`.
+  - Base de datos de autenticación y tokens de seguridad: `/var/cache/ntfy/user.db`.
+- **Topics Segregados Migrados al Servidor Privado:**
+  - `https://ntfy.smartopsia.com/prestige-meseros` (Llamados de clientes y comida lista).
+  - `https://ntfy.smartopsia.com/prestige-runners` (Solicitudes de recargas de créditos).
+  - `https://ntfy.smartopsia.com/prestige-kds` (Nuevas comandas a cocina y barra).
+  - `https://ntfy.smartopsia.com/prestige-sistemas` (Fallas técnicas en slots y tickets).
+- **Scripts y n8n Actualizados:** `notify.sh`, `backend/utils/n8n.py` y `n8n_workflow_prestige.json` apuntan por defecto a `https://ntfy.smartopsia.com`.
+
+
 
 

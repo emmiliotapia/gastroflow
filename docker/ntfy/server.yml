@@ -1,0 +1,36 @@
+# ==============================================================================
+# Casino Prestige - Archivo de Configuración del Servidor ntfy Privado
+# Documentación Oficial: https://docs.ntfy.sh/config/
+# ==============================================================================
+
+# URL pública base expuesta a través de Nginx Proxy Manager con SSL
+base-url: "https://ntfy.smartopsia.com"
+
+# Puerto de escucha interno del contenedor
+listen-http: ":80"
+
+# Activar soporte para proxy inverso (Nginx Proxy Manager)
+behind-proxy: true
+
+# Base de datos de caché SQLite persistente para mensajes recibidos
+cache-file: "/var/cache/ntfy/cache.db"
+cache-duration: "24h"
+
+# Base de datos de autenticación y control de accesos por usuario/token
+auth-file: "/var/cache/ntfy/user.db"
+auth-default-access: "read-write"
+
+# Habilitar inicio de sesión web y administración de usuarios
+enable-login: true
+
+# Servir la interfaz web oficial de ntfy en la raíz del subdominio
+web-root: "app"
+
+# Límites de adjuntos y mensajes
+attachment-cache-dir: "/var/cache/ntfy/attachments"
+attachment-total-size-limit: "1G"
+attachment-file-size-limit: "15M"
+attachment-expiry-duration: "24h"
+
+# Ajuste de cabeceras y keepalive
+keepalive-interval: "45s"

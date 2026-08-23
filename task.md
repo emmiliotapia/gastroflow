@@ -31,10 +31,14 @@
   - [x] Crear endpoints de tickets de sistemas con los 4 estados (`PENDIENTE`, `EN_PROCESO`, `HOLD`, `FINALIZADO`).
   - [x] Crear endpoints de Caja y Control de Cuentas Pendientes (`cashier.py`).
 
-## Fase 3: Automatizaciones y Sistema Nervioso (n8n)
+## Fase 3: Automatizaciones y Sistema Nervioso (n8n & ntfy)
 - [x] Configurar webhooks en FastAPI hacia n8n.
 - [x] Integrar canales de `notify.sh` segregados (Meseros, Runners, Sistemas, Alertas).
+- [x] Desplegar e integrar servidor privado autoalojado de **`ntfy`** (`binwiederhier/ntfy`) en Docker `casino_net` (Puerto host 8080).
+- [x] Configurar subdominio `ntfy.smartopsia.com` y persistencia SQLite (`cache.db`, `user.db`).
+- [x] Crear workflow modular de n8n para enrutamiento inteligente de eventos a topics de `ntfy`.
 - [ ] Configurar cron job de escalamiento para minutas y tickets vencidos.
+
 
 ## Fase 4: Interfaces y PWAs (Capas Visibles)
 - [x] Desarrollar PWA Cliente / Portal Público (`cliente.html`) con acceso cero fricción por QR (`?machine_id=...`), Sticky Cart Footer y Dock de Asistencia.

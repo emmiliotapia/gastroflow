@@ -196,7 +196,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://ntfy.sh/prestige-meseros",
+        "url": "https://ntfy.smartopsia.com/prestige-meseros",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -232,7 +232,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://ntfy.sh/prestige-runners",
+        "url": "https://ntfy.smartopsia.com/prestige-runners",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -268,7 +268,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://ntfy.sh/prestige-kds",
+        "url": "https://ntfy.smartopsia.com/prestige-kds",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -304,7 +304,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://ntfy.sh/prestige-sistemas",
+        "url": "https://ntfy.smartopsia.com/prestige-sistemas",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -337,6 +337,7 @@
         780
       ]
     },
+
     {
       "parameters": {
         "respondWith": "json",

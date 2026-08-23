@@ -46,8 +46,42 @@ services:
     networks:
       - casino_net
 
+  # Servidor Privado de Notificaciones Push (ntfy.sh autoalojado)
+  ntfy:
+    image: binwiederhier/ntfy:latest
+    container_name: casino_ntfy
+    restart: always
+    command:
+      - serve
+    environment:
+      - NTFY_BASE_URL=${NTFY_BASE_URL:-https://ntfy.smartopsia.com}
+      - NTFY_BEHIND_PROXY=true
+      - NTFY_ATTACHMENT_CACHE_DIR=/var/cache/ntfy/attachments
+      - NTFY_CACHE_FILE=/var/cache/ntfy/cache.db
+      - NTFY_AUTH_FILE=/var/cache/ntfy/user.db
+      - NTFY_AUTH_DEFAULT_ACCESS=${NTFY_AUTH_DEFAULT_ACCESS:-read-write}
+      - NTFY_ENABLE_LOGIN=true
+    volumes:
+      - ./docker/ntfy/server.yml:/etc/ntfy/server.yml:ro
+      - ntfy_cache:/var/cache/ntfy
+      - ntfy_config:/etc/ntfy
+    ports:
+      # Puerto 8080 en el VPS host para Nginx Proxy Manager (ntfy.smartopsia.com)
+      - "${NTFY_PORT_HOST:-8080}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --tries=1 http://localhost:80/v1/health -O - | grep -q '\"healthy\":true' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - casino_net
+
 volumes:
   pgdata_casino:
+    driver: local
+  ntfy_cache:
+    driver: local
+  ntfy_config:
     driver: local
 
 networks:
