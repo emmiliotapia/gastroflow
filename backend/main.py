@@ -13,10 +13,18 @@ from backend.websockets.kds_manager import kds_manager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Auto-parchear y asegurar esquema de BD (creación de tablas/columnas nuevas)
+    try:
+        from backend.core.database import auto_patch_schema
+        auto_patch_schema()
+    except Exception as e:
+        print(f"[STARTUP] Error auto-parcheando esquema de BD: {e}")
+
     # Inicializar el loop de asyncio en el connection manager de KDS
     loop = asyncio.get_running_loop()
     kds_manager.set_loop(loop)
     yield
+
 
 app = FastAPI(
     title="Casino Intelligent Hub - Core API",
@@ -153,6 +161,13 @@ def health_check():
     }
 
 
+from fastapi.responses import Response
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    return Response(status_code=204)
+
+
 # --- ALIAS DE AUTENTICACIÓN ---
 from fastapi import Request
 from backend.schemas.auth import TokenResponse
@@ -165,3 +180,4 @@ async def login_alias(request: Request, db = Depends(get_db)):
     Alias global de inicio de sesión (/login) compatible con todos los frontends.
     """
     return await auth_login(request, db)
+

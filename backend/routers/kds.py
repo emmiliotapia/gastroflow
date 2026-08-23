@@ -262,7 +262,8 @@ def get_kds_orders(
         .options(
             joinedload(Order.items).joinedload(OrderItem.product),
             joinedload(Order.machine),
-            joinedload(Order.created_by)
+            joinedload(Order.created_by),
+            joinedload(Order.cancelled_by)
         )
         .where(Order.status.in_([OrderStatus.PENDING, OrderStatus.PREPARING, OrderStatus.READY]))
         .order_by(Order.created_at.asc())
@@ -283,7 +284,7 @@ def get_kds_orders(
             for item in matching_items:
                 item_dto = OrderItemRead.model_validate(item)
                 item_dto.product_name = item.product.name if item.product else "Artículo"
-                item_dto.destination_kds = item.product.destination_kds if item.product else station
+                item_dto.destination_kds = item.product.destination_kds if item.product else (station or KDSStation.KITCHEN)
                 dto.items.append(item_dto)
             filtered_orders.append(dto)
 
@@ -306,12 +307,14 @@ def get_kds_history(
         .options(
             joinedload(Order.items).joinedload(OrderItem.product),
             joinedload(Order.machine),
-            joinedload(Order.created_by)
+            joinedload(Order.created_by),
+            joinedload(Order.cancelled_by)
         )
         .where(Order.status == OrderStatus.DELIVERED)
         .order_by(Order.updated_at.desc())
         .limit(limit)
     )
+
 
     orders = db.execute(stmt).unique().scalars().all()
 
