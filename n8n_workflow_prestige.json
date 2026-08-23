@@ -1,0 +1,495 @@
+{
+  "name": "Casino Prestige - Despachador de Alertas Operativas (n8n & ntfy.sh)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "casino-alerts",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-universal",
+      "name": "Webhook Universal Alertas",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        300
+      ],
+      "webhookId": "casino-alerts"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "alerta-meseros",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-meseros",
+      "name": "Webhook Meseros (Llamados & Órdenes Listas)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        100
+      ],
+      "webhookId": "alerta-meseros"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "alerta-runner",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-runners",
+      "name": "Webhook Runners (Recargas & Saldo)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        500
+      ],
+      "webhookId": "alerta-runner"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ordenes-nuevas",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-kds",
+      "name": "Webhook KDS (Nueva Comanda)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        700
+      ],
+      "webhookId": "ordenes-nuevas"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tickets-sistemas",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-sistemas",
+      "name": "Webhook Sistemas (Fallas Técnicas)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        900
+      ],
+      "webhookId": "tickets-sistemas"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.channel || $json.channel || 'runners' }}",
+                    "rightValue": "meseros",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Canal Meseros"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.channel || $json.channel || 'runners' }}",
+                    "rightValue": "runners",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Canal Runners"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.channel || $json.channel || '' }}",
+                    "rightValue": "kds",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Canal KDS (Cocina/Barra)"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.channel || $json.channel || '' }}",
+                    "rightValue": "sistemas",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Canal Sistemas"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "switch-router",
+      "name": "Router por Canal",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        550,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ntfy.sh/prestige-meseros",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Title",
+              "value": "={{ $json.body.title || $json.title || '🛎️ Alerta Meseros' }}"
+            },
+            {
+              "name": "Priority",
+              "value": "={{ $json.body.priority || '4' }}"
+            },
+            {
+              "name": "Tags",
+              "value": "bell,plate,runner"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "text/plain",
+        "body": "={{ $json.body.message || $json.message || 'Atención requerida en sala' }}",
+        "options": {}
+      },
+      "id": "ntfy-meseros",
+      "name": "ntfy.sh ➔ prestige-meseros",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ntfy.sh/prestige-runners",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Title",
+              "value": "={{ $json.body.title || $json.title || '⚡ Alerta Runners' }}"
+            },
+            {
+              "name": "Priority",
+              "value": "={{ $json.body.priority || '4' }}"
+            },
+            {
+              "name": "Tags",
+              "value": "moneybag,runner,zap"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "text/plain",
+        "body": "={{ $json.body.message || $json.message || 'Recarga de saldo requerida' }}",
+        "options": {}
+      },
+      "id": "ntfy-runners",
+      "name": "ntfy.sh ➔ prestige-runners",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ntfy.sh/prestige-kds",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Title",
+              "value": "={{ $json.body.title || $json.title || '🍽️ Nueva Comanda' }}"
+            },
+            {
+              "name": "Priority",
+              "value": "4"
+            },
+            {
+              "name": "Tags",
+              "value": "fire,cooking,fork_and_knife"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "text/plain",
+        "body": "={{ $json.body.message || $json.message || 'Nueva orden en cocina' }}",
+        "options": {}
+      },
+      "id": "ntfy-kds",
+      "name": "ntfy.sh ➔ prestige-kds",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        580
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ntfy.sh/prestige-sistemas",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Title",
+              "value": "={{ $json.body.title || $json.title || '🚨 Falla Técnica' }}"
+            },
+            {
+              "name": "Priority",
+              "value": "5"
+            },
+            {
+              "name": "Tags",
+              "value": "warning,tools,red_circle"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "text/plain",
+        "body": "={{ $json.body.message || $json.message || 'Incidencia técnica en slot' }}",
+        "options": {}
+      },
+      "id": "ntfy-sistemas",
+      "name": "ntfy.sh ➔ prestige-sistemas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        780
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"event_received\": true,\n  \"channel\": \"{{ $json.body.channel || $json.channel }}\",\n  \"timestamp\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-ok",
+      "name": "Responder 200 OK al ERP",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        480
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Universal Alertas": {
+      "main": [
+        [
+          {
+            "node": "Router por Canal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Meseros (Llamados & Órdenes Listas)": {
+      "main": [
+        [
+          {
+            "node": "Router por Canal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Runners (Recargas & Saldo)": {
+      "main": [
+        [
+          {
+            "node": "Router por Canal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook KDS (Nueva Comanda)": {
+      "main": [
+        [
+          {
+            "node": "Router por Canal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Sistemas (Fallas Técnicas)": {
+      "main": [
+        [
+          {
+            "node": "Router por Canal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Router por Canal": {
+      "main": [
+        [
+          {
+            "node": "ntfy.sh ➔ prestige-meseros",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ntfy.sh ➔ prestige-runners",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ntfy.sh ➔ prestige-kds",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ntfy.sh ➔ prestige-sistemas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ntfy.sh ➔ prestige-meseros": {
+      "main": [
+        [
+          {
+            "node": "Responder 200 OK al ERP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ntfy.sh ➔ prestige-runners": {
+      "main": [
+        [
+          {
+            "node": "Responder 200 OK al ERP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ntfy.sh ➔ prestige-kds": {
+      "main": [
+        [
+          {
+            "node": "Responder 200 OK al ERP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ntfy.sh ➔ prestige-sistemas": {
+      "main": [
+        [
+          {
+            "node": "Responder 200 OK al ERP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

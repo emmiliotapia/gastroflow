@@ -116,18 +116,24 @@ def create_ticket(
     # Notificar webhook n8n estándar
     trigger_ticket_webhook(dto.model_dump(mode="json"))
 
-    # Notificar webhook de alerta-runner existente para canales notify.sh
+    # Extraer código de máquina si viene en el título o descripción
     desc = payload.description or ""
-    action = "falla"
+    machine_code = machine.asset_code if machine else None
+    if not machine_code:
+        import re
+        match = re.search(r"Máquina\s+([A-Za-z0-9\-_]+)", desc, re.IGNORECASE)
+        machine_code = match.group(1) if match else "SALA"
+
+    # Despachar al canal especializado
     if "[SOLICITUD DE RECARGA]" in desc:
-        action = "recarga"
+        trigger_runner_alert_webhook(machine_id=machine_code, action="recarga")
     elif "[LLAMAR MESERO]" in desc:
-        action = "mesero"
-    
-    machine_code = machine.asset_code if machine else "SALA"
-    trigger_runner_alert_webhook(machine_id=machine_code, action=action)
+        trigger_runner_alert_webhook(machine_id=machine_code, action="mesero")
+    else:
+        trigger_runner_alert_webhook(machine_id=machine_code, action="falla")
 
     return dto
+
 
 
 @router.patch(

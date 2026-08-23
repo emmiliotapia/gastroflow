@@ -413,8 +413,18 @@ def update_kds_order_status(
             }
         )
         trigger_order_ready_notification(order_payload)
+    elif payload.status == OrderStatus.DELIVERED:
+        kds_manager.broadcast_sync(
+            station="WAITERS",
+            message={
+                "event": "ORDER_DELIVERED",
+                "order_id": str(order.id),
+                "order": order_payload
+            }
+        )
 
     return dto
+
 
 
 @router.websocket("/ws/kds")
