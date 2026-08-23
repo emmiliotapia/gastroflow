@@ -268,6 +268,78 @@ def get_kds_orders(
     return filtered_orders
 
 
+@router.get(
+    "/api/v1/kds/history",
+    summary="Consultar historial de comandas despachadas en KDS",
+    description="Retorna el histórico de órdenes despachadas (DELIVERED) con métricas de tiempo de preparación."
+)
+def get_kds_history(
+    station: Optional[KDSStation] = Query(None, description="Filtrar por estación (KITCHEN o BAR)"),
+    limit: int = Query(50, ge=1, le=200, description="Cantidad máxima de órdenes a retornar"),
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user)
+):
+    stmt = (
+        select(Order)
+        .options(
+            joinedload(Order.items).joinedload(OrderItem.product),
+            joinedload(Order.machine),
+            joinedload(Order.created_by)
+        )
+        .where(Order.status == OrderStatus.DELIVERED)
+        .order_by(Order.updated_at.desc())
+        .limit(limit)
+    )
+
+    orders = db.execute(stmt).unique().scalars().all()
+
+    history = []
+    total_prep_minutes = 0.0
+    valid_prep_counts = 0
+
+    for o in orders:
+        matching_items = []
+        for it in o.items:
+            if not station or (it.product and it.product.destination_kds == station):
+                matching_items.append({
+                    "product_name": it.product.name if it.product else "Artículo",
+                    "quantity": float(it.quantity),
+                    "subtotal": float(it.subtotal)
+                })
+
+        if matching_items:
+            # Calcular tiempo transcurrido en minutos entre creación y entrega
+            prep_time_minutes = 0.0
+            if o.created_at and o.updated_at:
+                diff = (o.updated_at - o.created_at).total_seconds() / 60.0
+                prep_time_minutes = round(max(0.1, diff), 1)
+                total_prep_minutes += prep_time_minutes
+                valid_prep_counts += 1
+
+            history.append({
+                "id": str(o.id),
+                "order_number": o.order_number,
+                "status": o.status.value,
+                "machine_code": o.machine.asset_code if o.machine else "000",
+                "created_by": o.created_by.full_name if o.created_by else "Staff Piso",
+                "total_amount": float(o.total_amount),
+                "created_at": o.created_at.isoformat() if o.created_at else None,
+                "delivered_at": o.updated_at.isoformat() if o.updated_at else None,
+                "prep_time_minutes": prep_time_minutes,
+                "notes": o.notes,
+                "items": matching_items
+            })
+
+    avg_prep_time = round(total_prep_minutes / valid_prep_counts, 1) if valid_prep_counts > 0 else 0.0
+
+    return {
+        "count": len(history),
+        "avg_prep_time_minutes": avg_prep_time,
+        "orders": history
+    }
+
+
+
 @router.patch(
     "/api/v1/kds/orders/{order_id}/status",
     response_model=OrderRead,
