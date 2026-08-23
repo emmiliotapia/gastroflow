@@ -1,6 +1,5 @@
-version: '3.8'
-
 services:
+
   # Servidor de Base de Datos PostgreSQL con soporte nativo de pgvector
   db:
     image: pgvector/pgvector:pg16
