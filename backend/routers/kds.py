@@ -583,11 +583,13 @@ def cancel_order(
 
 
 @router.websocket("/ws/kds")
-
+@router.websocket("/api/v1/ws/kds")
+@router.websocket("/api/v1/kds/ws")
 async def websocket_kds_endpoint(
     websocket: WebSocket,
     station: str = Query("ALL", description="Filtro de suscripción (KITCHEN, BAR, WAITERS, ALL)")
 ):
+
     """
     Suscripción en tiempo real vía WebSocket para KDS, Barra y Meseros.
     """

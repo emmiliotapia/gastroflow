@@ -78,26 +78,51 @@ def _execute_notify_script(channel: str, title: str, message: str, payload: dict
     except Exception as e:
         logger.warning(f"[NOTIFY:n8n] Alerta HTTP a {target_url} omitida/error: {str(e)}")
 
-    # 2. Enviar HTTP Push a ntfy.sh
+    # 2. Enviar HTTP Push a ntfy (Servidor Privado / ntfy.sh) vía JSON
     try:
         topic_name = f"{NTFY_TOPIC_PREFIX}{channel}"
-        ntfy_url = f"{NTFY_SERVER}/{topic_name}"
-        msg_bytes = message.encode("utf-8")
-        
-        req_ntfy = urllib.request.Request(
-            ntfy_url,
-            data=msg_bytes,
-            headers={
-                "Title": title.encode("utf-8").decode("latin-1", "ignore"),
-                "Priority": priority,
-                "Tags": tags
-            },
-            method="POST"
-        )
-        with urllib.request.urlopen(req_ntfy, timeout=4) as resp_ntfy:
-            logger.info(f"[NOTIFY:ntfy.sh] Push enviado al topic '{topic_name}'. Status: {resp_ntfy.getcode()}")
+        ntfy_payload = {
+            "topic": topic_name,
+            "title": title,
+            "message": message,
+            "priority": int(priority) if str(priority).isdigit() else 4,
+            "tags": [t.strip() for t in tags.split(",") if t.strip()]
+        }
+        json_data = json.dumps(ntfy_payload).encode("utf-8")
+
+        # Lista de endpoints con fallback automático
+        endpoints = [
+            NTFY_SERVER.rstrip("/"),
+            "http://ntfy:80",
+            "https://ntfy.smartopsia.com"
+        ]
+        unique_endpoints = []
+        for ep in endpoints:
+            if ep and ep not in unique_endpoints:
+                unique_endpoints.append(ep)
+
+        ntfy_sent = False
+        for ep in unique_endpoints:
+            try:
+                req_ntfy = urllib.request.Request(
+                    ep,
+                    data=json_data,
+                    headers={"Content-Type": "application/json"},
+                    method="POST"
+                )
+                with urllib.request.urlopen(req_ntfy, timeout=3) as resp_ntfy:
+                    logger.info(f"[NOTIFY:ntfy] Push enviado al topic '{topic_name}' en {ep}. Status: {resp_ntfy.getcode()}")
+                    ntfy_sent = True
+                    break
+            except Exception as ep_err:
+                logger.debug(f"[NOTIFY:ntfy] Intento en {ep} falló: {ep_err}")
+                continue
+
+        if not ntfy_sent:
+            logger.warning(f"[NOTIFY:ntfy] No se pudo enviar push a ningún endpoint de ntfy ({unique_endpoints}).")
     except Exception as e:
-        logger.warning(f"[NOTIFY:ntfy.sh] Alerta push a ntfy.sh omitida/error: {str(e)}")
+        logger.warning(f"[NOTIFY:ntfy] Error al preparar push ntfy: {str(e)}")
+
 
     # 3. Invocar notify.sh si existe en el host
     script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "notify.sh"))

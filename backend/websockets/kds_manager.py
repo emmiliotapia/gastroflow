@@ -54,6 +54,10 @@ class KDSConnectionManager:
         """
         Acepta la conexión WebSocket y la registra en el pool de la estación correspondiente.
         """
+        try:
+            self._loop = asyncio.get_running_loop()
+        except RuntimeError:
+            pass
         await websocket.accept()
         station_key = station.upper()
         if station_key not in self.active_connections:
@@ -111,6 +115,11 @@ class KDSConnectionManager:
         Método seguro para emitir broadcasts hacia WebSockets desde endpoints síncronos
         o hilos del threadpool de FastAPI sin fallar por 'no current event loop'.
         """
+        station_key = station.upper()
+        active_cnt = len(self.active_connections.get(station_key, set())) + len(self.active_connections.get("ALL", set()))
+        if active_cnt == 0:
+            return
+
         loop = self.get_loop()
         if loop and loop.is_running():
             asyncio.run_coroutine_threadsafe(
@@ -118,7 +127,19 @@ class KDSConnectionManager:
                 loop
             )
         else:
+            try:
+                loop = asyncio.get_event_loop()
+                if loop and loop.is_running():
+                    self._loop = loop
+                    asyncio.run_coroutine_threadsafe(
+                        self.broadcast_to_station(station=station, message=message),
+                        loop
+                    )
+                    return
+            except Exception:
+                pass
             logger.warning(f"[WS] No se pudo encontrar loop de asyncio activo para emitir evento '{message.get('event')}' a estación '{station}'.")
+
 
 
 # Instancia singleton global del administrador de WebSockets KDS

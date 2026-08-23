@@ -265,17 +265,16 @@
   <!-- JAVASCRIPT LOGIC -->
   <script>
     // Configuración Dinámica de API y WebSocket
-    const proto = window.location.protocol === 'https:' ? 'https:' : 'http:';
+    const API_BASE = '';
     const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const API_BASE = window.location.port === '8001' || window.location.port === '8000' 
-      ? '' 
-      : `${proto}//${window.location.host}`;
     const WS_BASE = `${wsProto}//${window.location.host}`;
 
     let currentStation = localStorage.getItem('kds_station') || 'KITCHEN';
     let currentFilter = 'ALL';
     let ordersList = [];
     let ws = null;
+    let wsHeartbeatInterval = null;
+    let fallbackPollInterval = null;
     let reconnectTimeout = null;
     let reconnectDelay = 1000;
 
@@ -328,6 +327,12 @@
       setInterval(updateClock, 1000);
       setInterval(renderTimers, 1000); // Actualiza semáforos de tiempo cada segundo
 
+      // Polling de respaldo cada 6s para garantizar cero pérdida de comandas
+      if (fallbackPollInterval) clearInterval(fallbackPollInterval);
+      fallbackPollInterval = setInterval(() => {
+        loadKDSOrders(true); // silent refresh
+      }, 6000);
+
       // Cargar estación por defecto y conectar de inmediato
       applyStation(currentStation);
     });
@@ -346,7 +351,6 @@
       document.getElementById('station-modal').classList.add('hidden');
     }
 
-
     function selectStation(station) {
       currentStation = station;
       localStorage.setItem('kds_station', station);
@@ -360,8 +364,10 @@
         'BAR': 'BARRA',
         'ALL': 'SUPERVISIÓN GENERAL'
       };
-      document.getElementById('header-station-label').innerText = labelMap[station] || station;
-      document.getElementById('current-station-btn').innerText = `Estación: ${labelMap[station] || station}`;
+      const headerLabel = document.getElementById('header-station-label');
+      if (headerLabel) headerLabel.innerText = labelMap[station] || station;
+      const curBtn = document.getElementById('current-station-btn');
+      if (curBtn) curBtn.innerText = `Estación: ${labelMap[station] || station}`;
 
       loadKDSOrders();
       connectWS();
@@ -371,31 +377,44 @@
       currentFilter = filter;
       ['all', 'pending', 'preparing', 'ready'].forEach(f => {
         const el = document.getElementById(`filter-${f}`);
-        if (f.toUpperCase() === filter) {
-          el.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-gold-500 text-black transition';
-        } else {
-          el.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white transition';
+        if (el) {
+          if (f.toUpperCase() === filter) {
+            el.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-gold-500 text-black transition';
+          } else {
+            el.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white transition';
+          }
         }
       });
       renderOrders();
     }
 
     // Cargar órdenes por REST
-    async function loadKDSOrders() {
+    async function loadKDSOrders(silent = false) {
       try {
         const queryParam = currentStation === 'ALL' ? '' : `?station=${currentStation}`;
         const res = await fetch(`${API_BASE}/api/v1/kds/orders${queryParam}`);
         if (!res.ok) throw new Error('Error al consultar comanda');
-        ordersList = await res.json();
+        const freshOrders = await res.json();
+        
+        // Detectar si llegaron nuevas órdenes para disparar sonido si es silent refresh
+        if (silent && freshOrders.length > ordersList.length) {
+          const freshPending = freshOrders.filter(fo => !ordersList.some(ol => ol.id === fo.id));
+          if (freshPending.length > 0) {
+            playChimeSound();
+          }
+        }
+
+        ordersList = freshOrders;
         renderOrders();
       } catch (err) {
-        console.error('Falla consultando órdenes KDS:', err);
+        if (!silent) console.error('Falla consultando órdenes KDS:', err);
       }
     }
 
     // Renderizar Tablero de Comandas
     function renderOrders() {
       const board = document.getElementById('kds-board');
+      if (!board) return;
       board.innerHTML = '';
 
       // Filtrar según tab activa
@@ -405,10 +424,14 @@
       }
 
       // Actualizar contadores en el footer
-      document.getElementById('stat-total').innerHTML = `<span class="w-2 h-2 rounded-full bg-gold-400"></span> Total Activas: ${ordersList.length}`;
-      document.getElementById('stat-pending').innerHTML = `<span class="w-2 h-2 rounded-full bg-red-400"></span> En Cola: ${ordersList.filter(o=>o.status==='PENDING').length}`;
-      document.getElementById('stat-preparing').innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span> En Preparación: ${ordersList.filter(o=>o.status==='PREPARING').length}`;
-      document.getElementById('stat-ready').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Listas para Entrega: ${ordersList.filter(o=>o.status==='READY').length}`;
+      const stTotal = document.getElementById('stat-total');
+      if (stTotal) stTotal.innerHTML = `<span class="w-2 h-2 rounded-full bg-gold-400"></span> Total Activas: ${ordersList.length}`;
+      const stPend = document.getElementById('stat-pending');
+      if (stPend) stPend.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-400"></span> En Cola: ${ordersList.filter(o=>o.status==='PENDING').length}`;
+      const stPrep = document.getElementById('stat-preparing');
+      if (stPrep) stPrep.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span> En Preparación: ${ordersList.filter(o=>o.status==='PREPARING').length}`;
+      const stRdy = document.getElementById('stat-ready');
+      if (stRdy) stRdy.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Listas para Entrega: ${ordersList.filter(o=>o.status==='READY').length}`;
 
       if (filtered.length === 0) {
         board.innerHTML = `
@@ -564,7 +587,10 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: nextStatus })
         });
-        if (!res.ok) throw new Error('Error actualizando estatus');
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Error actualizando estatus');
+        }
 
         if (nextStatus === 'DELIVERED') {
           ordersList = ordersList.filter(o => o.id !== orderId);
@@ -580,44 +606,66 @@
       }
     }
 
-    // Conexión WebSocket Resiliente
+    // Conexión WebSocket Resiliente con Keep-Alive y Auto-Reconexión
     function connectWS() {
       if (ws) {
         try { ws.close(); } catch(e) {}
       }
+      if (wsHeartbeatInterval) clearInterval(wsHeartbeatInterval);
 
       const badge = document.getElementById('ws-badge');
       const wsUrl = `${WS_BASE}/ws/kds?station=${currentStation}`;
       console.log(`[WS] Conectando a ${wsUrl}`);
 
-      ws = new WebSocket(wsUrl);
+      try {
+        ws = new WebSocket(wsUrl);
+      } catch (err) {
+        console.warn('[WS] Error creando WebSocket:', err);
+        return;
+      }
 
       ws.onopen = () => {
         console.log('[WS] Conexión KDS establecida.');
-        badge.className = 'flex items-center gap-2 text-xs bg-emerald-950/60 text-emerald-400 border border-emerald-800/60 px-3.5 py-2 rounded-xl font-mono';
-        badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>En Línea</span>';
+        if (badge) {
+          badge.className = 'flex items-center gap-2 text-xs bg-emerald-950/60 text-emerald-400 border border-emerald-800/60 px-3.5 py-2 rounded-xl font-mono';
+          badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>En Línea</span>';
+        }
         reconnectDelay = 1000;
+
+        // Mantener conexión viva enviando ping cada 25s
+        wsHeartbeatInterval = setInterval(() => {
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send("ping");
+          }
+        }, 25000);
       };
 
       ws.onmessage = (event) => {
         try {
           const payload = JSON.parse(event.data);
-          console.log('[WS] Mensaje recibido:', payload);
+          if (payload.type === 'pong' || payload.type === 'ack') return;
+
+          console.log('[WS] Evento recibido en KDS:', payload);
 
           if (payload.event === 'NEW_ORDER') {
             playChimeSound();
-            // Verificar si aplica a esta estación
             const incoming = payload.order;
-            if (currentStation !== 'ALL') {
-              const matching = (incoming.items || []).filter(it => it.destination_kds === currentStation);
-              if (matching.length > 0) {
-                incoming.items = matching;
-                ordersList.push(incoming);
+            if (incoming) {
+              if (currentStation !== 'ALL') {
+                const matching = (incoming.items || []).filter(it => it.destination_kds === currentStation);
+                if (matching.length > 0) {
+                  incoming.items = matching;
+                  if (!ordersList.some(o => o.id === incoming.id)) {
+                    ordersList.push(incoming);
+                  }
+                  renderOrders();
+                }
+              } else {
+                if (!ordersList.some(o => o.id === incoming.id)) {
+                  ordersList.push(incoming);
+                }
                 renderOrders();
               }
-            } else {
-              ordersList.push(incoming);
-              renderOrders();
             }
           } else if (payload.event === 'STATUS_UPDATE') {
             if (payload.status === 'DELIVERED') {
@@ -631,6 +679,9 @@
               }
             }
             renderOrders();
+          } else if (payload.event === 'ORDER_CANCELLED') {
+            ordersList = ordersList.filter(o => o.id !== payload.order_id);
+            renderOrders();
           }
         } catch (err) {
           console.warn('[WS] Error parseando mensaje:', err);
@@ -639,8 +690,11 @@
 
       ws.onclose = () => {
         console.log('[WS] Conexión cerrada. Reconectando...');
-        badge.className = 'flex items-center gap-2 text-xs bg-red-950/60 text-red-400 border border-red-800/60 px-3.5 py-2 rounded-xl font-mono';
-        badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span><span>Reconectando...</span>';
+        if (wsHeartbeatInterval) clearInterval(wsHeartbeatInterval);
+        if (badge) {
+          badge.className = 'flex items-center gap-2 text-xs bg-red-950/60 text-red-400 border border-red-800/60 px-3.5 py-2 rounded-xl font-mono';
+          badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span><span>Reconectando...</span>';
+        }
 
         clearTimeout(reconnectTimeout);
         reconnectTimeout = setTimeout(connectWS, reconnectDelay);
@@ -649,9 +703,10 @@
 
       ws.onerror = (err) => {
         console.error('[WS] Error:', err);
-        ws.close();
+        try { ws.close(); } catch(e) {}
       };
     }
+
 
     // =========================================================================
     // MODAL HISTORIAL DE DESPACHADOS

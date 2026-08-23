@@ -67,14 +67,13 @@ if command -v curl &> /dev/null; then
     --max-time 4 > /dev/null 2>&1 &
 fi
 
-# 2. Enviar a ntfy.sh (Push Notification instantánea)
+# 2. Enviar a ntfy (Push Notification instantánea)
 if command -v curl &> /dev/null; then
-  curl -s -X POST "${NTFY_SERVER}/${NTFY_TOPIC}" \
-    -H "Title: $TITLE" \
-    -H "Priority: $NTFY_PRIORITY" \
-    -H "Tags: $NTFY_TAGS" \
-    -d "$MESSAGE" \
+  curl -s -X POST "${NTFY_SERVER}" \
+    -H "Content-Type: application/json" \
+    -d "{\"topic\":\"$NTFY_TOPIC\",\"title\":\"$TITLE\",\"message\":\"$MESSAGE\",\"priority\":$NTFY_PRIORITY,\"tags\":[\"$NTFY_TAGS\"]}" \
     --max-time 4 > /dev/null 2>&1 &
 fi
+
 
 exit 0
