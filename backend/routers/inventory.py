@@ -106,8 +106,45 @@ def record_waste_log(
     return WasteLogRead.model_validate(waste_entry)
 
 
+@router.get(
+
+    "/waste",
+    response_model=List[WasteLogRead],
+    summary="Listar historial de mermas y desperdicios valorizados",
+    description="Retorna el histórico de pérdidas registradas en cocina, barra o almacén."
+)
+def get_waste_logs(
+    location: Optional[StockLocation] = Query(None, description="Filtrar por ubicación"),
+    limit: int = Query(50, ge=1, le=200),
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user)
+) -> List[WasteLogRead]:
+    stmt = (
+        select(WasteLog)
+        .options(
+            joinedload(WasteLog.ingredient),
+            joinedload(WasteLog.product),
+            joinedload(WasteLog.recorded_by)
+        )
+    )
+    if location:
+        stmt = stmt.where(WasteLog.location == location)
+    
+    stmt = stmt.order_by(WasteLog.created_at.desc()).limit(limit)
+    logs = db.execute(stmt).scalars().all()
+    
+    res = []
+    for l in logs:
+        dto = WasteLogRead.model_validate(l)
+        dto.ingredient_name = l.ingredient.name if l.ingredient else None
+        dto.product_name = l.product.name if l.product else None
+        dto.recorded_by_name = l.recorded_by.full_name if l.recorded_by else "Staff Cocina"
+        res.append(dto)
+    return res
+
 
 @router.post(
+
     "/portion",
     summary="Porcionar / Convertir insumos macro a micro",
     description="Descuenta insumos macro de volumen (ej. KG de Carne) y genera porciones micro (ej. porciones de 200g)."

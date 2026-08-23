@@ -134,3 +134,21 @@ El ecosistema integra un servidor autoalojado de **`ntfy`** (`binwiederhier/ntfy
 │ (Meseros, Runners, Cocineros y Técnicos de Sistemas)   │
 └────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## 9. Cierre Financiero, Arqueo de Turno (Reporte Z) y Auditoría E2E
+
+El módulo de Caja y Alimentos & Bebidas integra un motor de consolidación financiera en tiempo real:
+
+1. **Arqueo y Reporte Z (`GET /api/v1/cashier/corte-caja`)**:
+   - Totaliza los ingresos segregados por método de pago (`CASH`, `CARD`, `COURTESY`).
+   - Consolida el total de desperdicios valorizados del turno (`WasteLog`).
+   - Determina el Balance Neto en Caja: `Balance = Ventas (Efectivo + Tarjeta) - Mermas`.
+   - Desglosa el volumen y valor de platillos/bebidas despachadas para el control de inventario físico vs teórico.
+
+2. **Auditoría e Historial de Tickets (`GET /api/v1/cashier/history`)**:
+   - Trazabilidad total de cada comanda con sello de emisor, terminal de juego asignada (`machine_id`), estatus de pago y desglose detallado de ítems.
+
+3. **Bitácora de Mermas y Ajustes de Cocina (`GET & POST /api/v1/inventory/waste`)**:
+   - Registro visual e inmediato de pérdidas imprevistas con justificación monetaria y descuento atómico directo de stock.

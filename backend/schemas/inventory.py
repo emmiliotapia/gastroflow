@@ -74,14 +74,19 @@ class WasteLogCreate(BaseModel):
 class WasteLogRead(BaseModel):
     id: uuid.UUID
     ingredient_id: Optional[uuid.UUID] = None
+    ingredient_name: Optional[str] = None
     product_id: Optional[uuid.UUID] = None
+    product_name: Optional[str] = None
     location: StockLocation
     quantity: Decimal
     reason: str
     total_cost: Decimal = Field(..., description="Costo valorizado de la pérdida")
+    recorded_by_id: Optional[uuid.UUID] = None
+    recorded_by_name: Optional[str] = None
     created_at: Any
 
     model_config = ConfigDict(from_attributes=True)
+
 
 
 class LowStockAlertRead(BaseModel):

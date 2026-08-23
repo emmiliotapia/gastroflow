@@ -234,7 +234,37 @@
             <div id="kitchen-stock-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Loaded dynamically -->
             </div>
+
+            <!-- Bitácora de Mermas Registradas Table -->
+            <div class="mt-8 space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-outfit text-base font-bold text-white flex items-center gap-2">
+                        <i data-lucide="trash-2" class="w-4 h-4 text-red-400"></i> Bitácora de Mermas y Desperdicios Valorizados
+                    </h3>
+                    <span class="text-xs font-mono text-gray-400" id="waste-history-count">0 registros</span>
+                </div>
+
+                <div class="glass-card rounded-2xl overflow-hidden shadow-xl">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-obsidian border-b border-obsidian-border text-gray-400 uppercase font-mono">
+                            <tr>
+                                <th class="p-3.5">Insumo / Producto</th>
+                                <th class="p-3.5">Ubicación</th>
+                                <th class="p-3.5">Cantidad</th>
+                                <th class="p-3.5 text-right">Pérdida Monetaria</th>
+                                <th class="p-3.5">Motivo / Justificación</th>
+                                <th class="p-3.5">Responsable</th>
+                                <th class="p-3.5 text-right">Fecha / Hora</th>
+                            </tr>
+                        </thead>
+                        <tbody id="waste-history-table-body" class="divide-y divide-obsidian-border font-mono text-gray-300">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </section>
+
 
         <!-- =================================================================== -->
         <!-- TAB 4: TABULADOR VIP & CORTESÍAS -->
@@ -515,7 +545,8 @@
                 loadIngredients(),
                 loadProducts(),
                 loadKitchenStock(),
-                loadVIPRules()
+                loadVIPRules(),
+                loadWasteHistory()
             ]);
         }
 
@@ -573,6 +604,48 @@
             }
         }
 
+        // Cargar Historial de Mermas
+        async function loadWasteHistory() {
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/inventory/waste`);
+                if (!res.ok) return;
+                const logs = await res.json();
+                renderWasteHistory(logs);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderWasteHistory(logs) {
+            const tbody = document.getElementById('waste-history-table-body');
+            const countLabel = document.getElementById('waste-history-count');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            countLabel.innerText = `${logs.length} registros`;
+
+            if (logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-gray-500 italic">No se han registrado mermas en este turno</td></tr>';
+                return;
+            }
+
+            logs.forEach(w => {
+                const name = w.ingredient_name || w.product_name || 'Insumo';
+                const dateStr = w.created_at ? new Date(w.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--';
+                tbody.innerHTML += `
+                    <tr class="hover:bg-obsidian-light/30 transition">
+                        <td class="p-3.5 font-bold text-white">${name}</td>
+                        <td class="p-3.5"><span class="px-2 py-0.5 rounded bg-obsidian text-[10px] text-gray-400 font-bold border border-obsidian-border">${w.location}</span></td>
+                        <td class="p-3.5 font-bold text-gray-300">${parseFloat(w.quantity).toFixed(2)}</td>
+                        <td class="p-3.5 text-right font-bold text-red-400">-$${parseFloat(w.total_cost).toFixed(2)}</td>
+                        <td class="p-3.5 text-gray-300">${w.reason}</td>
+                        <td class="p-3.5 text-gray-400">${w.recorded_by_name || 'Staff Cocina'}</td>
+                        <td class="p-3.5 text-right text-gray-500">${dateStr}</td>
+                    </tr>
+                `;
+            });
+            lucide.createIcons();
+        }
+
         // Cargar Tabulador VIP
         async function loadVIPRules() {
             try {
@@ -584,6 +657,7 @@
                 console.error(err);
             }
         }
+
 
         // =====================================================================
         // RENDER: FICHAS TÉCNICAS (CON EDITAR Y ELIMINAR)
@@ -1219,10 +1293,12 @@
                 closeWasteModal();
                 loadKitchenStock();
                 loadIngredients();
+                loadWasteHistory();
             } catch (err) {
                 alert(err.message);
             }
         }
+
     </script>
 </body>
 </html>

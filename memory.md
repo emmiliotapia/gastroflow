@@ -67,6 +67,22 @@
   - `https://ntfy.smartopsia.com/prestige-sistemas` (Fallas técnicas en slots y tickets).
 - **Scripts y n8n Actualizados:** `notify.sh`, `backend/utils/n8n.py` y `n8n_workflow_prestige.json` apuntan por defecto a `https://ntfy.smartopsia.com`.
 
+## Cierre de Operación Restaurante & Suite de Pruebas E2E - 2026-08-23
+- **Corte de Caja / Reporte Z (`GET /api/v1/cashier/corte-caja`):**
+  - Módulo financiero para liquidar el turno con desglose segregado de ingresos (`CASH`, `CARD`, `COURTESY`).
+  - Totalización de mermas y balance neto en caja (`Balance = Ventas - Mermas`).
+  - Modal interactivo con opción de impresión en `frontend/cashier.html`.
+- **Historial y Auditoría de Comandas (`GET /api/v1/cashier/history`):**
+  - Permite auditar en tiempo real qué usuario emitió cada orden, en qué máquina/slot y el desglose de productos despachados con estado de pago.
+- **Bitácora Gráfica de Mermas (`GET & POST /api/v1/inventory/waste`):**
+  - Interfaz visual en `frontend/catalogo.html` para la bitácora de pérdidas valorizadas en Cocina/Barra, asegurando el descuento atómico de stock.
+- **Suite de Pruebas Automatizadas End-to-End (`tests/test_restaurant_e2e.py`):**
+  - Validación automatizada completa de Flujo 1 (Comanda QR -> KDS FIFO -> Cashier -> Pago Efectivo/Cortesía PIN -> Descuento atómico -> Arqueo Reporte Z).
+  - Validación automatizada de Flujo 2 (Asistencia Runners `🟡 Pedir Saldo`, Meseros y Falla Técnica Sistemas hacia `ntfy`).
+  - Validación de Flujo 3 (Merma valorizada y balance neto en corte de turno).
+  - Resultado: 100% de éxito en todas las pruebas.
+
+
 
 
 

@@ -30,6 +30,10 @@
   - [x] Implementar validación de niveles de clientes y sistema de cortesías con NIP.
   - [x] Crear endpoints de tickets de sistemas con los 4 estados (`PENDIENTE`, `EN_PROCESO`, `HOLD`, `FINALIZADO`).
   - [x] Crear endpoints de Caja y Control de Cuentas Pendientes (`cashier.py`).
+  - [x] Crear endpoint de Corte de Caja / Reporte Z (`GET /api/v1/cashier/corte-caja`) con segregación de cobros, cortesías y deducción de mermas.
+  - [x] Crear endpoint de Historial y Auditoría de Comandas (`GET /api/v1/cashier/history`).
+  - [x] Crear endpoint de Bitácora de Mermas Valorizadas (`GET /api/v1/inventory/waste`).
+  - [x] Construir Suite de Pruebas Automatizadas End-to-End (`tests/test_restaurant_e2e.py`) con 100% de cobertura de flujos de comanda, KDS, asistencia y arqueo.
 
 ## Fase 3: Automatizaciones y Sistema Nervioso (n8n & ntfy)
 - [x] Configurar webhooks en FastAPI hacia n8n.
@@ -46,9 +50,10 @@
 - [x] Desarrollar PWA KDS (`kds.html`) (Pantalla táctil de cocina/barra, conexión WebSocket con semáforo de tiempos y timbres sonoros).
 - [x] Implementar infraestructura PWA (`manifest.json` y Service Worker `sw.js` para modo offline/standalone).
 - [x] Desarrollar PWA Staff (`staff.html`) (Tickets de sistemas y autorización por PIN).
-- [x] Desarrollar Portal de Caja / Barra (`cashier.html`).
-- [x] Desarrollar Centro de Catálogo y Fichas Técnicas (`catalogo.html`).
+- [x] Desarrollar Portal de Caja / Barra (`cashier.html`) con módulo de Arqueo / Reporte Z e Historial de Auditoría.
+- [x] Desarrollar Centro de Catálogo y Fichas Técnicas (`catalogo.html`) con Bitácora Gráfica de Mermas y Desperdicios.
 - [x] Desarrollar Launchpad Central de Módulos (`index.html`).
+
 
 
 ## Fase 5: Inteligencia Artificial, RAG y Servidor MCP SmartOpsia

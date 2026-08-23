@@ -61,13 +61,14 @@ class Ticket(Base, TimestampMixin):
         comment="Estado actual del ticket (PENDIENTE, EN_PROCESO, HOLD, FINALIZADO)"
     )
 
-    created_by_id: Mapped[uuid.UUID] = mapped_column(
+    created_by_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("users.id", ondelete="RESTRICT"),
-        nullable=False,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
         index=True,
-        comment="Usuario (Staff o Mesero) que reportó el incidente"
+        comment="Usuario (Staff o Mesero) que reportó el incidente (o NULL si es reporte de cliente por QR)"
     )
+
 
     assigned_to_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),

@@ -110,9 +110,17 @@
         </div>
 
         <div class="flex items-center gap-3">
+            <button onclick="openCorteCajaModal()" class="px-3.5 py-2 rounded-xl bg-gold-500/10 border border-gold-500/30 hover:bg-gold-500/20 text-xs font-bold text-gold-400 flex items-center gap-2 transition">
+                <i data-lucide="calculator" class="w-4 h-4"></i>
+                <span>Corte de Turno</span>
+            </button>
+            <button onclick="openHistoryModal()" class="px-3.5 py-2 rounded-xl bg-obsidian border border-obsidian-border hover:border-gold-500/40 text-xs font-bold text-gray-300 hover:text-gold-400 flex items-center gap-2 transition">
+                <i data-lucide="history" class="w-4 h-4 text-gold-400"></i>
+                <span>Historial</span>
+            </button>
             <button onclick="openBarStockModal()" class="px-3.5 py-2 rounded-xl bg-obsidian border border-obsidian-border hover:border-gold-500/40 text-xs font-bold text-gray-300 hover:text-gold-400 flex items-center gap-2 transition">
                 <i data-lucide="wine" class="w-4 h-4 text-gold-400"></i>
-                <span>Stock Barra</span>
+                <span class="hidden sm:inline">Stock Barra</span>
             </button>
             <button onclick="loadPendingOrders()" class="p-2 rounded-xl bg-obsidian border border-obsidian-border hover:border-gold-500/40 text-gray-400 hover:text-gold-400 transition" title="Refrescar Cuentas">
                 <i data-lucide="refresh-cw" class="w-4 h-4"></i>
@@ -122,6 +130,7 @@
             </div>
         </div>
     </header>
+
 
     <!-- MAIN TWO-COLUMN WORKSPACE -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -270,8 +279,131 @@
         </div>
     </div>
 
+    <!-- CORTE DE CAJA / REPORTE Z MODAL -->
+    <div id="corte-caja-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-card bg-obsidian-card p-6 rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto flex flex-col gap-5 border border-obsidian-border shadow-2xl">
+            <div class="flex justify-between items-center border-b border-obsidian-border pb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400">
+                        <i data-lucide="calculator" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-outfit text-lg font-bold text-white">Arqueo Financiero & Corte de Turno (Reporte Z)</h3>
+                        <p class="text-xs text-gray-400 font-mono" id="corte-date-label">Generando reporte...</p>
+                    </div>
+                </div>
+                <button onclick="closeCorteCajaModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <!-- Financial Metric Cards Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div class="bg-obsidian p-3.5 rounded-2xl border border-obsidian-border flex flex-col justify-between">
+                    <span class="text-[10px] uppercase font-mono text-gray-400">Total Venta Neta</span>
+                    <span class="text-lg font-mono font-extrabold text-emerald-400 mt-1" id="corte-total-sales">$0.00</span>
+                </div>
+                <div class="bg-obsidian p-3.5 rounded-2xl border border-obsidian-border flex flex-col justify-between">
+                    <span class="text-[10px] uppercase font-mono text-gray-400">Efectivo (CASH)</span>
+                    <span class="text-lg font-mono font-extrabold text-white mt-1" id="corte-cash">$0.00</span>
+                </div>
+                <div class="bg-obsidian p-3.5 rounded-2xl border border-obsidian-border flex flex-col justify-between">
+                    <span class="text-[10px] uppercase font-mono text-gray-400">Tarjeta (CARD)</span>
+                    <span class="text-lg font-mono font-extrabold text-white mt-1" id="corte-card">$0.00</span>
+                </div>
+                <div class="bg-obsidian p-3.5 rounded-2xl border border-obsidian-border flex flex-col justify-between">
+                    <span class="text-[10px] uppercase font-mono text-gray-400">Cortesías VIP</span>
+                    <span class="text-lg font-mono font-extrabold text-gold-400 mt-1" id="corte-courtesy">$0.00</span>
+                </div>
+                <div class="bg-obsidian p-3.5 rounded-2xl border border-obsidian-border flex flex-col justify-between">
+                    <span class="text-[10px] uppercase font-mono text-gray-400">Mermas Turno</span>
+                    <span class="text-lg font-mono font-extrabold text-red-400 mt-1" id="corte-waste">$0.00</span>
+                </div>
+                <div class="bg-obsidian p-3.5 rounded-2xl border border-emerald-800/40 bg-emerald-950/20 flex flex-col justify-between">
+                    <span class="text-[10px] uppercase font-mono text-emerald-400 font-bold">Balance en Caja</span>
+                    <span class="text-lg font-mono font-extrabold text-emerald-300 mt-1" id="corte-net">$0.00</span>
+                </div>
+            </div>
+
+            <!-- Stats Counts Row -->
+            <div class="flex flex-wrap gap-4 text-xs font-mono bg-obsidian/60 p-3 rounded-2xl border border-obsidian-border text-gray-300">
+                <span id="corte-paid-count">✅ Pagadas: 0</span>
+                <span id="corte-comp-count">🟡 Cortesías: 0</span>
+                <span id="corte-pend-count">⏳ Pendientes: 0</span>
+                <span id="corte-waste-count">🗑️ Mermas: 0 reg.</span>
+            </div>
+
+            <!-- Items Breakdown Table -->
+            <div class="space-y-2">
+                <h4 class="font-outfit text-sm font-bold text-gold-400 flex items-center gap-1.5">
+                    <i data-lucide="layers" class="w-4 h-4"></i> Desglose de Productos Despachados
+                </h4>
+                <div class="bg-obsidian rounded-2xl overflow-hidden border border-obsidian-border max-h-44 overflow-y-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-obsidian-deep text-gray-400 font-mono text-[10px] uppercase">
+                            <tr>
+                                <th class="p-2.5">Producto</th>
+                                <th class="p-2.5 text-center">Unidades</th>
+                                <th class="p-2.5 text-right">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corte-items-table" class="divide-y divide-obsidian-border text-gray-300 font-mono">
+                            <!-- Items -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-3 border-t border-obsidian-border">
+                <button type="button" onclick="printCorteCaja()" class="px-4 py-2 rounded-xl bg-obsidian hover:bg-obsidian-light border border-obsidian-border text-white text-xs font-bold flex items-center gap-2 transition">
+                    <i data-lucide="printer" class="w-4 h-4 text-gold-400"></i> Imprimir Reporte Z
+                </button>
+                <button type="button" onclick="closeCorteCajaModal()" class="btn-gold px-6 py-2 rounded-xl font-bold text-xs">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUDITORÍA E HISTORIAL DE COMANDAS MODAL -->
+    <div id="history-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-card bg-obsidian-card p-6 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col gap-5 border border-obsidian-border shadow-2xl">
+            <div class="flex justify-between items-center border-b border-obsidian-border pb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400">
+                        <i data-lucide="history" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-outfit text-lg font-bold text-white">Auditoría e Historial de Comandas</h3>
+                        <p class="text-xs text-gray-400 font-mono">Consulta de comandas pagadas, cortesías y detalle de emisión</p>
+                    </div>
+                </div>
+                <button onclick="closeHistoryModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+                <div class="relative w-full sm:w-72">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-gray-500"></i>
+                    <input type="text" id="hist-search" oninput="filterCashierHistory()" placeholder="Buscar por folio o máquina..." class="w-full bg-obsidian border border-obsidian-border rounded-xl py-2 pl-9 pr-3 text-xs text-white focus:outline-none focus:border-gold-500">
+                </div>
+
+                <div class="bg-obsidian rounded-xl p-1 border border-obsidian-border flex gap-1 text-xs">
+                    <button onclick="setHistoryStatusFilter('ALL')" id="hist-btn-all" class="px-3 py-1.5 rounded-lg font-bold bg-obsidian-light text-white transition">Todas</button>
+                    <button onclick="setHistoryStatusFilter('PAID')" id="hist-btn-paid" class="px-3 py-1.5 rounded-lg text-gray-400 hover:text-white transition">Pagadas</button>
+                    <button onclick="setHistoryStatusFilter('COMPLIMENTARY')" id="hist-btn-comp" class="px-3 py-1.5 rounded-lg text-gray-400 hover:text-white transition">Cortesías</button>
+                    <button onclick="setHistoryStatusFilter('PENDING')" id="hist-btn-pend" class="px-3 py-1.5 rounded-lg text-gray-400 hover:text-white transition">Pendientes</button>
+                </div>
+            </div>
+
+            <!-- History Cards Grid -->
+            <div id="history-orders-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1">
+                <!-- Loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
     <!-- JAVASCRIPT LOGIC -->
     <script>
+
         const proto = window.location.protocol === 'https:' ? 'https:' : 'http:';
         const API_BASE = window.location.port === '8001' || window.location.port === '8000' ? '' : `${proto}//${window.location.host}`;
 
@@ -655,6 +787,176 @@
         function closeBarStockModal() {
             document.getElementById('bar-stock-modal').classList.add('hidden');
         }
+
+        // =====================================================================
+        // CORTE DE CAJA / REPORTE Z
+        // =====================================================================
+
+        async function openCorteCajaModal() {
+            document.getElementById('corte-caja-modal').classList.remove('hidden');
+            await loadCorteCajaData();
+        }
+
+        function closeCorteCajaModal() {
+            document.getElementById('corte-caja-modal').classList.add('hidden');
+        }
+
+        async function loadCorteCajaData() {
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/cashier/corte-caja`);
+                if (!res.ok) throw new Error('Error al consultar corte de caja');
+                const data = await res.json();
+
+                document.getElementById('corte-date-label').innerText = `Turno Fecha: ${data.shift_date} • Generado: ${data.generated_at}`;
+                document.getElementById('corte-total-sales').innerText = `$${data.total_sales_amount.toFixed(2)}`;
+                document.getElementById('corte-cash').innerText = `$${data.cash_total.toFixed(2)}`;
+                document.getElementById('corte-card').innerText = `$${data.card_total.toFixed(2)}`;
+                document.getElementById('corte-courtesy').innerText = `$${data.courtesy_total.toFixed(2)}`;
+                document.getElementById('corte-waste').innerText = `$${data.total_waste_cost.toFixed(2)}`;
+                document.getElementById('corte-net').innerText = `$${data.net_revenue.toFixed(2)}`;
+
+                document.getElementById('corte-paid-count').innerText = `✅ Pagadas: ${data.paid_orders_count}`;
+                document.getElementById('corte-comp-count').innerText = `🟡 Cortesías: ${data.complimentary_orders_count}`;
+                document.getElementById('corte-pend-count').innerText = `⏳ Pendientes: ${data.pending_orders_count}`;
+                document.getElementById('corte-waste-count').innerText = `🗑️ Mermas: ${data.waste_records_count} reg.`;
+
+                const tbody = document.getElementById('corte-items-table');
+                tbody.innerHTML = '';
+                if (!data.items_breakdown || data.items_breakdown.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-gray-500 italic">Sin productos liquidados en este turno</td></tr>';
+                } else {
+                    data.items_breakdown.forEach(it => {
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-obsidian-light/40 transition">
+                                <td class="p-2.5 font-bold text-white">${it.name}</td>
+                                <td class="p-2.5 text-center font-bold text-gold-400">${it.quantity}</td>
+                                <td class="p-2.5 text-right font-bold text-emerald-400">$${it.total.toFixed(2)}</td>
+                            </tr>
+                        `;
+                    });
+                }
+                lucide.createIcons();
+            } catch (err) {
+                console.error(err);
+                alert('No se pudo cargar el corte de caja.');
+            }
+        }
+
+        function printCorteCaja() {
+            window.print();
+        }
+
+        // =====================================================================
+        // HISTORIAL DE COMANDAS & AUDITORÍA
+        // =====================================================================
+
+        let historyOrdersList = [];
+        let historyStatusFilter = 'ALL';
+
+        async function openHistoryModal() {
+            document.getElementById('history-modal').classList.remove('hidden');
+            await loadCashierHistory();
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('history-modal').classList.add('hidden');
+        }
+
+        function setHistoryStatusFilter(st) {
+            historyStatusFilter = st;
+            ['all', 'paid', 'comp', 'pend'].forEach(k => {
+                const btn = document.getElementById(`hist-btn-${k}`);
+                if (btn) btn.className = 'px-3 py-1.5 rounded-lg text-gray-400 hover:text-white transition';
+            });
+            const activeBtn = document.getElementById(st === 'ALL' ? 'hist-btn-all' : st === 'PAID' ? 'hist-btn-paid' : st === 'COMPLIMENTARY' ? 'hist-btn-comp' : 'hist-btn-pend');
+            if (activeBtn) activeBtn.className = 'px-3 py-1.5 rounded-lg font-bold bg-obsidian-light text-white transition';
+            renderCashierHistory();
+        }
+
+        async function loadCashierHistory() {
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/cashier/history`);
+                if (!res.ok) throw new Error('Error al consultar historial');
+                historyOrdersList = await res.json();
+                renderCashierHistory();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function filterCashierHistory() {
+            renderCashierHistory();
+        }
+
+        function renderCashierHistory() {
+            const query = document.getElementById('hist-search').value.toLowerCase().trim();
+            const container = document.getElementById('history-orders-grid');
+            container.innerHTML = '';
+
+            const filtered = historyOrdersList.filter(o => {
+                const matchStatus = historyStatusFilter === 'ALL' || o.payment_status === historyStatusFilter;
+                const matchQuery = o.order_number.toLowerCase().includes(query) || (o.machine_code && o.machine_code.toLowerCase().includes(query));
+                return matchStatus && matchQuery;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="col-span-2 text-center py-10 text-xs text-gray-500 italic">No se encontraron comandas con los filtros seleccionados</div>';
+                return;
+            }
+
+            filtered.forEach(o => {
+                const total = parseFloat(o.total_amount || 0);
+                const isPaid = o.payment_status === 'PAID';
+                const isComp = o.payment_status === 'COMPLIMENTARY';
+
+                const badgeColor = isPaid 
+                    ? 'bg-emerald-950/60 text-emerald-300 border-emerald-800/60' 
+                    : isComp 
+                    ? 'bg-amber-950/60 text-amber-300 border-amber-800/60' 
+                    : 'bg-red-950/60 text-red-300 border-red-800/60';
+
+                let itemsHtml = (o.items || []).map(it => `
+                    <div class="flex justify-between text-[11px] text-gray-300 py-0.5">
+                        <span>${parseInt(it.quantity)}x ${it.product_name}</span>
+                        <span class="font-mono text-gray-400">$${parseFloat(it.subtotal).toFixed(2)}</span>
+                    </div>
+                `).join('');
+
+                const createdDate = o.created_at ? new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--';
+
+                container.innerHTML += `
+                    <div class="bg-obsidian p-4 rounded-2xl border border-obsidian-border flex flex-col justify-between gap-3 shadow-lg">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-mono font-bold text-xs text-gold-400 px-2 py-0.5 rounded bg-gold-500/10 border border-gold-500/20">${o.order_number}</span>
+                                    <span class="font-mono text-xs font-bold text-white px-2 py-0.5 rounded bg-obsidian-light border border-obsidian-border">${o.machine_code || '000'}</span>
+                                </div>
+                                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${badgeColor}">
+                                    ${o.payment_status} (${o.payment_method || 'PEND'})
+                                </span>
+                            </div>
+
+                            <div class="text-[11px] text-gray-400 mt-1.5 flex items-center gap-1">
+                                <i data-lucide="user" class="w-3 h-3 text-gray-500"></i>
+                                <span>Emisor: ${o.created_by_name || 'Staff'} • Hora: ${createdDate}</span>
+                            </div>
+
+                            <div class="bg-obsidian-deep/80 p-2.5 rounded-xl border border-obsidian-border/50 my-2 max-h-24 overflow-y-auto">
+                                ${itemsHtml || '<span class="text-[10px] text-gray-500 italic">Sin detalle</span>'}
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center pt-2 border-t border-obsidian-border/50 font-mono text-xs">
+                            <span class="text-gray-400">Total Liquidado:</span>
+                            <span class="font-bold text-emerald-400 text-sm">$${total.toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
     </script>
 </body>
 </html>
+

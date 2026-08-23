@@ -434,3 +434,175 @@ def get_bar_stock(
     """Retorna las existencias físicas en la bodega de Barra (BAR)."""
     return InventoryService.get_stock_by_location(db=db, location=StockLocation.BAR)
 
+
+# ------------------------------------------------------------------------------
+# 6. CORTE DE CAJA / REPORTE Z Y AUDITORÍA FINANCIERA
+# ------------------------------------------------------------------------------
+
+from datetime import date, datetime, time
+from backend.models.waste import WasteLog
+
+class CorteCajaSummary(BaseModel):
+    shift_date: str
+    generated_at: str
+    total_sales_amount: float
+    cash_total: float
+    card_total: float
+    courtesy_total: float
+    paid_orders_count: int
+    complimentary_orders_count: int
+    pending_orders_count: int
+    total_orders_count: int
+    total_waste_cost: float
+    waste_records_count: int
+    net_revenue: float
+    items_breakdown: List[dict]
+
+
+@router.get(
+    "/corte-caja",
+    response_model=CorteCajaSummary,
+    summary="Generar Corte de Caja / Reporte Z del Turno",
+    description="Calcula el arqueo financiero del turno segregado por método de pago (CASH, CARD, COURTESY), cuentas liquidadas y valorización de mermas."
+)
+def get_corte_caja(
+    target_date: Optional[str] = Query(None, description="Fecha en formato YYYY-MM-DD (por defecto hoy)"),
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user)
+) -> CorteCajaSummary:
+    now = datetime.now()
+    if target_date:
+        try:
+            day_obj = datetime.strptime(target_date, "%Y-%m-%d").date()
+        except ValueError:
+            day_obj = now.date()
+    else:
+        day_obj = now.date()
+
+    start_day = datetime.combine(day_obj, time.min)
+    end_day = datetime.combine(day_obj, time.max)
+
+    # 1. Consultar comandas del día
+    stmt_orders = (
+        select(Order)
+        .options(
+            joinedload(Order.items).joinedload(OrderItem.product),
+            joinedload(Order.machine),
+            joinedload(Order.created_by)
+        )
+        .where(Order.created_at >= start_day, Order.created_at <= end_day)
+    )
+    orders = db.execute(stmt_orders).unique().scalars().all()
+
+    cash_total = Decimal("0.00")
+    card_total = Decimal("0.00")
+    courtesy_total = Decimal("0.00")
+    paid_orders_count = 0
+    complimentary_orders_count = 0
+    pending_orders_count = 0
+
+    items_dict = {}
+
+    for o in orders:
+        if o.payment_status == PaymentStatus.PAID:
+            paid_orders_count += 1
+            if o.payment_method == "CASH":
+                cash_total += o.total_amount
+            elif o.payment_method == "CARD":
+                card_total += o.total_amount
+            else:
+                cash_total += o.total_amount
+        elif o.payment_status == PaymentStatus.COMPLIMENTARY:
+            complimentary_orders_count += 1
+            for it in o.items:
+                orig_price = it.product.price if it.product else Decimal("0.00")
+                courtesy_total += orig_price * it.quantity
+        elif o.payment_status == PaymentStatus.PENDING:
+            pending_orders_count += 1
+
+        # Sumar ítems vendidos
+        for it in o.items:
+            p_name = it.product.name if it.product else "Artículo"
+            if p_name not in items_dict:
+                items_dict[p_name] = {"name": p_name, "quantity": 0.0, "total": 0.0}
+            items_dict[p_name]["quantity"] += float(it.quantity)
+            items_dict[p_name]["total"] += float(it.subtotal)
+
+    total_sales = cash_total + card_total
+
+    # 2. Consultar mermas del día
+    stmt_waste = (
+        select(WasteLog)
+        .where(WasteLog.created_at >= start_day, WasteLog.created_at <= end_day)
+    )
+    waste_logs = db.execute(stmt_waste).scalars().all()
+    total_waste_cost = sum([w.total_cost for w in waste_logs], Decimal("0.00"))
+
+    return CorteCajaSummary(
+        shift_date=day_obj.isoformat(),
+        generated_at=now.strftime("%Y-%m-%d %H:%M:%S"),
+        total_sales_amount=float(total_sales),
+        cash_total=float(cash_total),
+        card_total=float(card_total),
+        courtesy_total=float(courtesy_total),
+        paid_orders_count=paid_orders_count,
+        complimentary_orders_count=complimentary_orders_count,
+        pending_orders_count=pending_orders_count,
+        total_orders_count=len(orders),
+        total_waste_cost=float(total_waste_cost),
+        waste_records_count=len(waste_logs),
+        net_revenue=float(total_sales - total_waste_cost),
+        items_breakdown=list(items_dict.values())
+    )
+
+
+# ------------------------------------------------------------------------------
+# 7. HISTORIAL GENERAL Y AUDITORÍA DE COMANDAS DE CAJA
+# ------------------------------------------------------------------------------
+
+@router.get(
+    "/history",
+    response_model=List[OrderRead],
+    summary="Historial general y auditoría de comandas de caja",
+    description="Permite consultar comandas pasadas (pagadas, cortesías, pendientes) con filtros de fecha, máquina o folio."
+)
+def get_cashier_history(
+    target_date: Optional[str] = Query(None, description="Fecha YYYY-MM-DD"),
+    payment_status: Optional[PaymentStatus] = Query(None, description="Filtrar por estado de pago"),
+    machine_code: Optional[str] = Query(None, description="Filtrar por máquina"),
+    limit: int = Query(100, ge=1, le=500),
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user)
+) -> List[OrderRead]:
+    stmt = (
+        select(Order)
+        .options(
+            joinedload(Order.items).joinedload(OrderItem.product),
+            joinedload(Order.machine),
+            joinedload(Order.created_by)
+        )
+    )
+
+    if target_date:
+        try:
+            day_obj = datetime.strptime(target_date, "%Y-%m-%d").date()
+            start_day = datetime.combine(day_obj, time.min)
+            end_day = datetime.combine(day_obj, time.max)
+            stmt = stmt.where(Order.created_at >= start_day, Order.created_at <= end_day)
+        except ValueError:
+            pass
+
+    if payment_status:
+        stmt = stmt.where(Order.payment_status == payment_status)
+
+    if machine_code:
+        stmt = stmt.join(Order.machine, isouter=True).where(
+            (Machine.asset_code.ilike(f"%{machine_code}%")) |
+            (Order.notes.ilike(f"%{machine_code}%"))
+        )
+
+    stmt = stmt.order_by(Order.created_at.desc()).limit(limit)
+    orders = db.execute(stmt).unique().scalars().all()
+    return [_build_cashier_order_dto(o) for o in orders]
+
+
