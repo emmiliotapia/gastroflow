@@ -1,7 +1,7 @@
 """
 Punto de Entrada Principal - FastAPI Core Backend
 ================================================
-Este módulo inicializa la aplicación FastAPI para el Casino Intelligent Hub,
+Este módulo inicializa la aplicación FastAPI para GastroFlow,
 configura middlewares, routers y el health check de infraestructura.
 """
 
@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Casino Intelligent Hub - Core API",
+    title="GastroFlow - Core API",
     description="API REST modular para gestión de AyB, KDS, Tickets de Mantenimiento y Servidor MCP SmartOpsia.",
     version="1.0.0",
     docs_url="/docs",
@@ -36,10 +36,12 @@ app = FastAPI(
 )
 
 
-# Configuración CORS White-Label
+# Configuración CORS: orígenes explícitos + regex de subdominios (definidos en .env)
+from backend.core.config import settings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()],
+    allow_origin_regex=settings.CORS_ORIGIN_REGEX or None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -161,6 +163,18 @@ def get_alerts_page():
 def get_index_page():
     """Sirve el Launchpad principal directamente."""
     return _get_html_file("index.html")
+
+
+@app.get("/manifest.json", include_in_schema=False)
+def get_manifest():
+    """Sirve el manifiesto PWA desde la raíz (las páginas lo referencian con ruta relativa)."""
+    return _get_html_file("manifest.json")
+
+
+@app.get("/sw.js", include_in_schema=False)
+def get_service_worker():
+    """Sirve el Service Worker desde la raíz para que su scope cubra todo el sitio."""
+    return _get_html_file("sw.js")
 
 
 

@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     """
     Configuración global del sistema cargada desde variables de entorno o archivo .env.
     """
-    PROJECT_NAME: str = "Casino Intelligent Hub ERP"
+    PROJECT_NAME: str = "GastroFlow"
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
 
@@ -29,7 +29,12 @@ class Settings(BaseSettings):
     # Seguridad JWT
     SECRET_KEY: str = "super_secret_jwt_key_casino_hub_2026_change_in_production"
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 480  # 8 horas de turno de casino
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 480  # 8 horas de turno
+
+    # CORS: lista de orígenes separados por coma y/o regex de orígenes permitidos.
+    # Por defecto solo se aceptan subdominios HTTPS de smartopsia.com y localhost.
+    CORS_ORIGINS: str = "http://localhost:8000,http://localhost:8002,http://127.0.0.1:8000"
+    CORS_ORIGIN_REGEX: str = r"^https://([a-z0-9-]+\.)*smartopsia\.com$"
 
     model_config = SettingsConfigDict(
         env_file=".env",

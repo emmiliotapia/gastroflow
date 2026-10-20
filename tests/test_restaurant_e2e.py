@@ -1,7 +1,7 @@
 """
 Suite de Pruebas de Integración End-to-End (E2E) - Flujo Restaurante A&B
 ========================================================================
-Casino Intelligent Hub (PRESTIGE)
+GastroFlow (PRESTIGE)
 
 Valida los siguientes flujos de principio a fin:
 - Flujo 1: Pedido completo desde Catálogo QR, enrutamiento a KDS, cuenta abierta en Cashier,

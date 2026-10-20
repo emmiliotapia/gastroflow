@@ -52,3 +52,6 @@ pgdata_casino/
 # Logs
 *.log
 logs/
+
+*.tar
+*.tar.gz

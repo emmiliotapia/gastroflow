@@ -1,46 +1,49 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Script de Despliegue Automatizado - Casino Intelligent Hub
-# Ruta VPS: /opt/smartops/casino-erp
+# Script de Despliegue Automatizado - GastroFlow
+# Ruta VPS: /opt/smartops/gastroflow
+# Uso: ./deploy.sh [directorio_proyecto] [--seed]
 # ==============================================================================
 
-set -e
+set -euo pipefail
 
-echo "[INFO] Iniciando despliegue de Casino Intelligent Hub..."
+PROJECT_DIR="${1:-/opt/smartops/gastroflow}"
+COMPOSE="docker compose -f docker-compose.gastroflow.yml"
 
-# Ir al directorio del proyecto en el VPS (o directorio actual)
-PROJECT_DIR="${1:-/opt/smartops/casino-erp}"
-
-if [ -d "$PROJECT_DIR" ]; then
-    echo "[INFO] Cambiando al directorio del proyecto: $PROJECT_DIR"
-    cd "$PROJECT_DIR"
-fi
+echo "[INFO] Iniciando despliegue de GastroFlow en $PROJECT_DIR..."
+cd "$PROJECT_DIR"
 
 # 1. Obtener última versión desde Git
 echo "[INFO] Actualizando código desde repositorio remoto..."
 git pull origin main || git pull origin master
 
-# 2. Verificar o crear archivo .env si no existe
+# 2. El .env es obligatorio (contiene credenciales; nunca se genera con valores por defecto)
 if [ ! -f .env ]; then
-    echo "[WARN] Archivo .env no encontrado. Copiando desde .env.example..."
-    cp .env.example .env
+    echo "[ERROR] Falta .env. Copia .env.gastroflow.example a .env y define credenciales seguras."
+    exit 1
 fi
 
-# 3. Construir imágenes e iniciar contenedores
-echo "[INFO] Reconstruyendo contenedores Docker sin caché..."
-docker-compose build --no-cache
+# 3. Reconstruir imagen y levantar servicios
+echo "[INFO] Reconstruyendo y levantando contenedores..."
+$COMPOSE up -d --build
 
-echo "[INFO] Levantando servicios en segundo plano..."
-docker-compose up -d
+# 4. Esperar a que el backend responda
+echo "[INFO] Esperando health check del backend..."
+PORT="$(grep -E '^BACKEND_PORT_HOST=' .env | cut -d= -f2 || true)"
+PORT="${PORT:-8002}"
+for i in $(seq 1 30); do
+    if curl -fs "http://localhost:${PORT}/health" > /dev/null; then
+        echo "[INFO] Backend saludable."
+        break
+    fi
+    sleep 2
+done
 
-# 4. Esperar a que la base de datos PostgreSQL esté lista
-echo "[INFO] Esperando inicialización de base de datos..."
-sleep 5
+# 5. Seeder opcional
+if [[ " $* " == *" --seed "* ]]; then
+    echo "[INFO] Ejecutando seeder de recetas..."
+    $COMPOSE exec -T backend python -m backend.db.seed_recipes || echo "[WARN] Seeder ya ejecutado o con errores."
+fi
 
-# 5. Ejecutar seeder automático con las fichas técnicas reales
-echo "[INFO] Poblando catálogo de insumos, roles y recetas de AyB reales..."
-docker-compose exec -T backend python -m backend.db.seed_recipes || echo "[WARN] Seeder ejecutado previamente o pendiente."
-
-# 6. Estado final de los contenedores
-echo "[SUCCESS] Despliegue completado exitosamente. Estado de los contenedores:"
-docker-compose ps
+echo "[SUCCESS] Despliegue completado:"
+$COMPOSE ps

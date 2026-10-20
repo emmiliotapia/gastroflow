@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # notify.sh - Despachador de Alertas y Notificaciones Segregadas
-# Casino Intelligent Hub (ERP Modular)
+# GastroFlow (ERP Modular)
 # Canales soportados: runners | meseros | kds | sistemas | alertas
 # Uso: ./notify.sh <canal> <asunto/titulo> <mensaje> [json_payload_opcional]
 # ==============================================================================

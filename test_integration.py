@@ -1,5 +1,5 @@
 """
-Test Suite de Integración para Casino Intelligent Hub ERP
+Test Suite de Integración para GastroFlow
 ==========================================================
 Verifica el correcto funcionamiento de:
 1. KDS Manager WebSocket loop y broadcast_sync.
