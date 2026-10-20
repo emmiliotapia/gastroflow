@@ -12,15 +12,19 @@ from sqlalchemy.orm import Session, sessionmaker
 from backend.core.config import settings
 
 # Motor de conexión SQLAlchemy adaptativo (PostgreSQL / SQLite)
+db_url = settings.DATABASE_URL
+if db_url.startswith("postgresql://"):
+    db_url = db_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+
 engine_kwargs = {"echo": False}
-if "sqlite" in settings.DATABASE_URL:
+if "sqlite" in db_url:
     engine_kwargs["connect_args"] = {"check_same_thread": False}
 else:
     engine_kwargs["pool_pre_ping"] = True
     engine_kwargs["pool_size"] = 10
     engine_kwargs["max_overflow"] = 20
 
-engine = create_engine(settings.DATABASE_URL, **engine_kwargs)
+engine = create_engine(db_url, **engine_kwargs)
 
 
 # Fábrica de sesiones ORM
