@@ -22,8 +22,11 @@
         extend: {
           colors: {
             brand: {
+              50: '#fff7ed',
+              100: '#ffedd5',
               500: '#f97316',
               600: '#ea580c',
+              700: '#c2410c',
             }
           },
           fontFamily: {
@@ -42,9 +45,17 @@
       color: #0f172a;
       font-family: 'Plus Jakarta Sans', sans-serif;
     }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
+      border-radius: 9999px;
+    }
   </style>
 </head>
-<body class="min-h-screen pb-12 flex flex-col select-none">
+<body class="min-h-screen pb-12 flex flex-col">
 
   <!-- HEADER -->
   <header class="bg-white border-b border-slate-200 px-6 py-4 sticky top-0 z-30 shadow-xs">
@@ -58,7 +69,7 @@
             Gastro<span class="text-brand-500">Kitchen</span>
             <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200">ESCANDALLOS</span>
           </h1>
-          <p class="text-xs text-slate-500">Recetas maestras, costeo de ingredientes y margen bruto</p>
+          <p class="text-xs text-slate-500">Recetas maestras, costeo de ingredientes, fotos y márgenes de utilidad</p>
         </div>
       </div>
 
@@ -71,189 +82,1041 @@
           <i data-lucide="box" class="w-3.5 h-3.5"></i> Catálogo de Insumos
         </button>
         <button onclick="switchTab('stock')" id="tab-stock" class="px-4 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
-          <i data-lucide="scale" class="w-3.5 h-3.5"></i> Stock & Mermas
+          <i data-lucide="scale" class="w-3.5 h-3.5"></i> Stock & Inventario
         </button>
       </div>
     </div>
   </header>
 
-  <!-- MAIN -->
+  <!-- MAIN CONTAINER -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 flex-1 w-full space-y-6">
-    
-    <!-- Top Bar Controls -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-      <div>
-        <h2 class="font-outfit text-xl font-bold text-slate-900 flex items-center gap-2">
-          <i data-lucide="clipboard-list" class="w-5 h-5 text-brand-500"></i> Recetario & Escandallos de Cocina
-        </h2>
-        <p class="text-xs text-slate-500">Control de materia prima, porciones exactas y costo real por comanda</p>
-      </div>
-      <button onclick="newRecipePrompt()" class="px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold flex items-center gap-2 shadow-xs transition active:scale-95">
-        <i data-lucide="plus" class="w-4 h-4"></i>
-        <span>Nueva Ficha Técnica</span>
-      </button>
-    </div>
 
-    <!-- Grid de Fichas Técnicas con Escandallos Calculados -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      
-      <!-- Ficha 1 -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+    <!-- TAB 1: FICHAS TÉCNICAS & RECETAS -->
+    <section id="section-recipes" class="space-y-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <div class="flex justify-between items-start mb-3">
-            <span class="text-[10px] font-mono font-bold text-brand-600 uppercase bg-orange-50 px-2 py-0.5 rounded border border-orange-200">Hamburguesas</span>
-            <span class="text-xs font-mono font-bold text-slate-400">SKU: HAM-01</span>
-          </div>
-          <h3 class="font-outfit text-lg font-bold text-slate-900">Hamburguesa Smash Trufada</h3>
-          <p class="text-xs text-slate-500 mt-1">Carne angus 180g, queso cheddar madurado, brioche artesanal y salsa trufada.</p>
-
-          <!-- Ingredientes & Costos -->
-          <div class="mt-4 pt-3 border-t border-slate-100 space-y-2 text-xs">
-            <div class="flex justify-between text-slate-600">
-              <span>• Carne Molida Angus (180g)</span>
-              <span class="font-mono font-semibold">$38.50</span>
-            </div>
-            <div class="flex justify-between text-slate-600">
-              <span>• Pan Brioche con Ajonjolí (1 pza)</span>
-              <span class="font-mono font-semibold">$9.00</span>
-            </div>
-            <div class="flex justify-between text-slate-600">
-              <span>• Queso Cheddar Madurado (40g)</span>
-              <span class="font-mono font-semibold">$11.20</span>
-            </div>
-            <div class="flex justify-between text-slate-600">
-              <span>• Salsa Trufada + Empaque</span>
-              <span class="font-mono font-semibold">$6.80</span>
-            </div>
-          </div>
+          <h2 class="font-outfit text-xl font-bold text-slate-900 flex items-center gap-2">
+            <i data-lucide="clipboard-list" class="w-5 h-5 text-brand-500"></i> Fichas Técnicas & Escandallos de Producción
+          </h2>
+          <p class="text-xs text-slate-500">Cálculo de materia prima, porciones, costo total de producción y margen de carta</p>
         </div>
-
-        <div class="mt-6 pt-4 border-t border-slate-100 bg-slate-50 -mx-5 -mb-5 p-4 rounded-b-2xl flex justify-between items-center text-xs">
-          <div>
-            <span class="text-[10px] text-slate-500 block uppercase font-mono">Costo Materia Prima</span>
-            <span class="font-mono font-bold text-slate-800 text-sm">$65.50</span>
-          </div>
-          <div>
-            <span class="text-[10px] text-slate-500 block uppercase font-mono">Precio Carta</span>
-            <span class="font-mono font-black text-slate-900 text-sm">$185.00</span>
-          </div>
-          <div class="text-right">
-            <span class="text-[10px] text-slate-500 block uppercase font-mono">Margen Bruto</span>
-            <span class="font-mono font-black text-emerald-600 text-sm">64.6%</span>
-          </div>
+        <div class="flex gap-2">
+          <button onclick="openProductModal()" class="px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold flex items-center gap-2 shadow-xs transition active:scale-95">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Nuevo Platillo / Ficha</span>
+          </button>
         </div>
       </div>
 
-      <!-- Ficha 2 -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+      <!-- Barra de Filtros -->
+      <div class="flex gap-3 items-center">
+        <div class="relative flex-1 max-w-md">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3 text-slate-400"></i>
+          <input type="text" id="recipe-search" oninput="renderRecipes()" placeholder="Buscar platillo por nombre o SKU..." class="w-full bg-white border border-slate-200 rounded-xl py-2 pl-10 pr-4 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-brand-500">
+        </div>
+        <select id="recipe-cat-filter" onchange="renderRecipes()" class="bg-white border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-700 font-bold focus:outline-none">
+          <option value="ALL">Todas las Categorías</option>
+        </select>
+      </div>
+
+      <!-- Grid de Fichas Técnicas -->
+      <div id="recipes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Render dinámico -->
+      </div>
+    </section>
+
+    <!-- TAB 2: CATÁLOGO DE INSUMOS -->
+    <section id="section-ingredients" class="space-y-6 hidden">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <div class="flex justify-between items-start mb-3">
-            <span class="text-[10px] font-mono font-bold text-blue-600 uppercase bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Pizzas</span>
-            <span class="text-xs font-mono font-bold text-slate-400">SKU: PIZ-01</span>
-          </div>
-          <h3 class="font-outfit text-lg font-bold text-slate-900">Pizza Margherita Napolitana</h3>
-          <p class="text-xs text-slate-500 mt-1">Masa madre 48h, salsa pomodoro San Marzano, mozzarella fior di latte y albahaca.</p>
-
-          <div class="mt-4 pt-3 border-t border-slate-100 space-y-2 text-xs">
-            <div class="flex justify-between text-slate-600">
-              <span>• Masa Madre Artesanal (280g)</span>
-              <span class="font-mono font-semibold">$8.00</span>
-            </div>
-            <div class="flex justify-between text-slate-600">
-              <span>• Salsa Pomodoro Italiana (90g)</span>
-              <span class="font-mono font-semibold">$7.50</span>
-            </div>
-            <div class="flex justify-between text-slate-600">
-              <span>• Mozzarella Fior di Latte (140g)</span>
-              <span class="font-mono font-semibold">$24.00</span>
-            </div>
-            <div class="flex justify-between text-slate-600">
-              <span>• Albahaca + Aceite Oliva EV</span>
-              <span class="font-mono font-semibold">$5.00</span>
-            </div>
-          </div>
+          <h2 class="font-outfit text-xl font-bold text-slate-900 flex items-center gap-2">
+            <i data-lucide="box" class="w-5 h-5 text-purple-600"></i> Catálogo Maestro de Insumos & Materia Prima
+          </h2>
+          <p class="text-xs text-slate-500">Gramajes, unidades de medida y costo unitario base para recetas</p>
         </div>
-
-        <div class="mt-6 pt-4 border-t border-slate-100 bg-slate-50 -mx-5 -mb-5 p-4 rounded-b-2xl flex justify-between items-center text-xs">
-          <div>
-            <span class="text-[10px] text-slate-500 block uppercase font-mono">Costo Materia Prima</span>
-            <span class="font-mono font-bold text-slate-800 text-sm">$44.50</span>
-          </div>
-          <div>
-            <span class="text-[10px] text-slate-500 block uppercase font-mono">Precio Carta</span>
-            <span class="font-mono font-black text-slate-900 text-sm">$210.00</span>
-          </div>
-          <div class="text-right">
-            <span class="text-[10px] text-slate-500 block uppercase font-mono">Margen Bruto</span>
-            <span class="font-mono font-black text-emerald-600 text-sm">78.8%</span>
-          </div>
-        </div>
+        <button onclick="openIngredientModal()" class="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center gap-2 shadow-xs transition active:scale-95">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>Nuevo Insumo</span>
+        </button>
       </div>
 
-      <!-- Ficha 3 -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+      <!-- Tabla de Insumos -->
+      <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+        <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+          <input type="text" id="ing-search" oninput="renderIngredientsTable()" placeholder="Buscar insumo..." class="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none w-64">
+          <span class="text-xs font-mono text-slate-400" id="ing-count-badge">0 insumos</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-slate-200 bg-slate-50 text-slate-600 uppercase font-mono text-[10px]">
+                <th class="py-3 px-4 font-bold">Código</th>
+                <th class="py-3 px-4 font-bold">Insumo</th>
+                <th class="py-3 px-4 font-bold">Categoría</th>
+                <th class="py-3 px-4 font-bold">Unidad</th>
+                <th class="py-3 px-4 font-bold">Costo Unitario</th>
+                <th class="py-3 px-4 font-bold">Stock Actual</th>
+                <th class="py-3 px-4 font-bold text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="ingredients-table-body" class="divide-y divide-slate-100">
+              <!-- Render dinámico -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: STOCK & INVENTARIO -->
+    <section id="section-stock" class="space-y-6 hidden">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <div class="flex justify-between items-start mb-3">
-            <span class="text-[10px] font-mono font-bold text-emerald-600 uppercase bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Coctelería</span>
-            <span class="text-xs font-mono font-bold text-slate-400">SKU: BEB-01</span>
-          </div>
-          <h3 class="font-outfit text-lg font-bold text-slate-900">Gin Tonic Frutos Rojos</h3>
-          <p class="text-xs text-slate-500 mt-1">Ginebra premium 2oz, infusión botánica de frutos del bosque y agua tónica 200ml.</p>
-
-          <div class="mt-4 pt-3 border-t border-slate-100 space-y-2 text-xs">
-            <div class="flex justify-between text-slate-600">
-              <span>• Ginebra London Dry (60ml)</span>
-              <span class="font-mono font-semibold">$18.00</span>
-            </div>
-            <div class="flex justify-between text-slate-600">
-              <span>• Agua Tónica Premium (200ml)</span>
-              <span class="font-mono font-semibold">$10.50</span>
-            </div>
-            <div class="flex justify-between text-slate-600">
-              <span>• Frutos Rojos Liofilizados + Hielo</span>
-              <span class="font-mono font-semibold">$6.00</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-6 pt-4 border-t border-slate-100 bg-slate-50 -mx-5 -mb-5 p-4 rounded-b-2xl flex justify-between items-center text-xs">
-          <div>
-            <span class="text-[10px] text-slate-500 block uppercase font-mono">Costo Materia Prima</span>
-            <span class="font-mono font-bold text-slate-800 text-sm">$34.50</span>
-          </div>
-          <div>
-            <span class="text-[10px] text-slate-500 block uppercase font-mono">Precio Carta</span>
-            <span class="font-mono font-black text-slate-900 text-sm">$140.00</span>
-          </div>
-          <div class="text-right">
-            <span class="text-[10px] text-slate-500 block uppercase font-mono">Margen Bruto</span>
-            <span class="font-mono font-black text-emerald-600 text-sm">75.4%</span>
-          </div>
+          <h2 class="font-outfit text-xl font-bold text-slate-900 flex items-center gap-2">
+            <i data-lucide="scale" class="w-5 h-5 text-emerald-600"></i> Control de Stock, Insumos Críticos & Ajustes
+          </h2>
+          <p class="text-xs text-slate-500">Monitoreo de existencias en almacén central, cocina y barra</p>
         </div>
       </div>
 
-    </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+          <div class="text-[10px] uppercase font-mono text-slate-400 font-bold">Total Insumos Registrados</div>
+          <div class="text-2xl font-mono font-black text-slate-900 mt-1" id="stat-total-ings">0</div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+          <div class="text-[10px] uppercase font-mono text-amber-500 font-bold">Insumos Bajo Mínimo</div>
+          <div class="text-2xl font-mono font-black text-amber-600 mt-1" id="stat-low-stock">0</div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+          <div class="text-[10px] uppercase font-mono text-emerald-500 font-bold">Platillos con Receta Activa</div>
+          <div class="text-2xl font-mono font-black text-emerald-600 mt-1" id="stat-recipes-count">0</div>
+        </div>
+      </div>
+
+      <!-- Tabla de Stock con edición rápida -->
+      <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+        <div class="p-3 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+          <span class="text-xs font-bold text-slate-700">Ajuste Rápido de Inventario</span>
+          <span class="text-[11px] text-slate-400">Haz clic en "Ajustar" para sumar/restar existencias</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-slate-200 bg-slate-50 text-slate-600 uppercase font-mono text-[10px]">
+                <th class="py-3 px-4 font-bold">Código</th>
+                <th class="py-3 px-4 font-bold">Insumo</th>
+                <th class="py-3 px-4 font-bold">Unidad</th>
+                <th class="py-3 px-4 font-bold">Stock Mínimo</th>
+                <th class="py-3 px-4 font-bold">Stock Actual</th>
+                <th class="py-3 px-4 font-bold">Estado</th>
+                <th class="py-3 px-4 font-bold text-right">Ajuste</th>
+              </tr>
+            </thead>
+            <tbody id="stock-table-body" class="divide-y divide-slate-100">
+              <!-- Render dinámico -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
   </main>
 
+  <!-- ============================================================================== -->
+  <!-- MODAL: CREAR / EDITAR PLATILLO (PRODUCTO)                                       -->
+  <!-- ============================================================================== -->
+  <div id="product-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl w-full max-w-xl max-h-[90vh] overflow-hidden flex flex-col border border-slate-200 shadow-2xl">
+      <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div>
+          <h3 class="font-outfit text-base font-bold text-slate-900" id="product-modal-title">Nuevo Platillo / Producto</h3>
+          <p class="text-xs text-slate-500">Datos generales y precio de venta en carta</p>
+        </div>
+        <button onclick="closeProductModal()" class="text-slate-400 hover:text-slate-700 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <form id="product-form" onsubmit="saveProduct(event)" class="p-6 overflow-y-auto space-y-4 flex-1 custom-scrollbar">
+        <input type="hidden" id="prod-id">
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">SKU / Clave *</label>
+            <input type="text" id="prod-sku" required placeholder="ej. HAM-05" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono uppercase focus:outline-none focus:border-brand-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Categoría *</label>
+            <input type="text" id="prod-category" required placeholder="ej. Hamburguesas Gourmet" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Nombre del Platillo *</label>
+          <input type="text" id="prod-name" required placeholder="ej. Hamburguesa Doble Queso" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500 font-semibold">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Descripción para Menú / Carta</label>
+          <textarea id="prod-description" rows="2" placeholder="Ingredientes principales, preparación o notas..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500"></textarea>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Precio Carta ($) *</label>
+            <input type="number" step="0.01" id="prod-price" required placeholder="180.00" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono font-bold focus:outline-none focus:border-brand-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Estación KDS *</label>
+            <select id="prod-kds" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-bold focus:outline-none focus:border-brand-500">
+              <option value="KITCHEN">Cocina</option>
+              <option value="BAR">Barra</option>
+              <option value="SNACK_BAR">Snack Bar</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Tipo Producto *</label>
+            <select id="prod-type" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-bold focus:outline-none focus:border-brand-500">
+              <option value="PREPARED">Preparado (Receta)</option>
+              <option value="DIRECT">Directo (Reventa)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-slate-100 flex justify-end gap-2">
+          <button type="button" onclick="closeProductModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-xs">Guardar Platillo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================================== -->
+  <!-- MODAL: FICHA TÉCNICA / ESCANDALLO (EDITAR RECETA DEL PRODUCTO)                  -->
+  <!-- ============================================================================== -->
+  <div id="recipe-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col border border-slate-200 shadow-2xl">
+      <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div>
+          <span class="text-[10px] font-mono font-bold text-brand-600 uppercase" id="recipe-modal-sku">SKU: ---</span>
+          <h3 class="font-outfit text-base font-bold text-slate-900" id="recipe-modal-title">Ficha Técnica & Escandallo</h3>
+          <p class="text-xs text-slate-500">Agrega o elimina insumos y ajusta la porción por comanda</p>
+        </div>
+        <button onclick="closeRecipeModal()" class="text-slate-400 hover:text-slate-700 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-4 flex-1 custom-scrollbar">
+        <!-- Formulario para agregar insumo a la receta -->
+        <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-3">
+          <span class="text-[11px] font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-brand-500"></i> Agregar Insumo a la Ficha
+          </span>
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+            <div class="sm:col-span-6">
+              <select id="recipe-add-ing-select" onchange="onSelectIngredientForRecipe()" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:outline-none focus:border-brand-500 font-semibold">
+                <option value="">-- Seleccionar Insumo --</option>
+              </select>
+            </div>
+            <div class="sm:col-span-3">
+              <input type="number" step="0.001" id="recipe-add-qty" placeholder="Cantidad" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-brand-500">
+            </div>
+            <div class="sm:col-span-3">
+              <button onclick="addIngredientToRecipeDraft()" class="w-full py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-1 transition">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i> Añadir
+              </button>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 flex justify-between font-mono" id="recipe-add-ing-preview">
+            <span>Unidad: -</span>
+            <span>Costo Unitario: $0.00</span>
+          </div>
+        </div>
+
+        <!-- Lista de insumos de la receta actual -->
+        <div>
+          <h4 class="text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Insumos de la Receta</h4>
+          <div class="border border-slate-200 rounded-xl overflow-hidden">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-mono text-[10px] uppercase">
+                <tr>
+                  <th class="py-2.5 px-3">Insumo</th>
+                  <th class="py-2.5 px-3">Porción</th>
+                  <th class="py-2.5 px-3">Costo Unit.</th>
+                  <th class="py-2.5 px-3">Subtotal</th>
+                  <th class="py-2.5 px-3 text-right">Quitar</th>
+                </tr>
+              </thead>
+              <tbody id="recipe-items-tbody" class="divide-y divide-slate-100">
+                <!-- Insumos agregados -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Resumen de Costeo y Margen -->
+        <div class="bg-slate-900 text-white p-4 rounded-2xl flex justify-between items-center font-mono">
+          <div>
+            <div class="text-[10px] text-slate-400 uppercase">Costo Producción</div>
+            <div class="text-base font-bold text-brand-400" id="recipe-calc-cost">$0.00</div>
+          </div>
+          <div>
+            <div class="text-[10px] text-slate-400 uppercase">Precio Carta</div>
+            <div class="text-base font-bold text-white" id="recipe-calc-price">$0.00</div>
+          </div>
+          <div class="text-right">
+            <div class="text-[10px] text-slate-400 uppercase">Margen Bruto</div>
+            <div class="text-base font-black text-emerald-400" id="recipe-calc-margin">0.0%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
+        <button type="button" onclick="closeRecipeModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200 transition">Cancelar</button>
+        <button type="button" onclick="saveProductRecipe()" class="px-5 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-xs transition active:scale-95">Guardar Ficha Técnica</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================================== -->
+  <!-- MODAL: SUBIR FOTOGRAFÍA                                                        -->
+  <!-- ============================================================================== -->
+  <div id="photo-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl w-full max-w-sm overflow-hidden flex flex-col border border-slate-200 shadow-2xl">
+      <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div>
+          <h3 class="font-outfit text-base font-bold text-slate-900">Subir Fotografía</h3>
+          <p class="text-xs text-slate-500" id="photo-modal-product-name">Para el menú y POS</p>
+        </div>
+        <button onclick="closePhotoModal()" class="text-slate-400 hover:text-slate-700 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div id="photo-preview-box" class="w-full h-44 bg-slate-100 rounded-2xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center overflow-hidden">
+          <img id="photo-preview-img" src="" class="w-full h-full object-cover hidden">
+          <div id="photo-preview-placeholder" class="text-center p-4 text-slate-400">
+            <i data-lucide="image" class="w-8 h-8 mx-auto mb-2 text-slate-400"></i>
+            <span class="text-xs block">Selecciona una imagen PNG, JPG o WEBP</span>
+          </div>
+        </div>
+
+        <input type="file" id="photo-file-input" accept="image/*" onchange="onPhotoSelected(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-brand-50 file:text-brand-600 hover:file:bg-brand-100 cursor-pointer">
+      </div>
+
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
+        <button type="button" onclick="closePhotoModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200">Cancelar</button>
+        <button type="button" onclick="uploadSelectedPhoto()" id="btn-upload-photo" class="px-5 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-xs">Subir Foto</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================================== -->
+  <!-- MODAL: CREAR / EDITAR INSUMO                                                    -->
+  <!-- ============================================================================== -->
+  <div id="ingredient-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden flex flex-col border border-slate-200 shadow-2xl">
+      <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div>
+          <h3 class="font-outfit text-base font-bold text-slate-900" id="ingredient-modal-title">Nuevo Insumo</h3>
+          <p class="text-xs text-slate-500">Materia prima para cocina y barra</p>
+        </div>
+        <button onclick="closeIngredientModal()" class="text-slate-400 hover:text-slate-700 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <form id="ingredient-form" onsubmit="saveIngredient(event)" class="p-6 space-y-4">
+        <input type="hidden" id="ing-id">
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Código *</label>
+            <input type="text" id="ing-code" required placeholder="ej. ING-ANGUS" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono uppercase focus:outline-none focus:border-purple-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Categoría</label>
+            <input type="text" id="ing-category" placeholder="ej. Carnes, Lácteos" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Nombre del Insumo *</label>
+          <input type="text" id="ing-name" required placeholder="ej. Carne Molida Angus" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-purple-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Unidad de Medida *</label>
+            <select id="ing-unit" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-purple-500">
+              <option value="KG">Kilogramos (KG)</option>
+              <option value="G">Gramos (G)</option>
+              <option value="LT">Litros (LT)</option>
+              <option value="ML">Mililitros (ML)</option>
+              <option value="PZA">Pieza (PZA)</option>
+              <option value="OZ">Onzas (OZ)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Costo Unitario ($) *</label>
+            <input type="number" step="0.0001" id="ing-cost" required placeholder="0.2100" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono font-bold focus:outline-none focus:border-purple-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Stock Actual</label>
+            <input type="number" step="0.001" id="ing-stock" placeholder="10.00" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:border-purple-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Stock Mínimo</label>
+            <input type="number" step="0.001" id="ing-min-stock" placeholder="2.00" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:border-purple-500">
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+          <button type="button" onclick="closeIngredientModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-xs">Guardar Insumo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT APP LOGIC -->
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    const proto = window.location.protocol === 'https:' ? 'https:' : 'http:';
+    const API_BASE = window.location.port === '8001' || window.location.port === '8000' || window.location.port === '8002' ? '' : `${proto}//${window.location.host}`;
+
+    let allProducts = [];
+    let allIngredients = [];
+    let activeRecipeProduct = null;
+    let draftRecipeItems = [];
+    let photoTargetProductId = null;
+    let selectedPhotoFile = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
       lucide.createIcons();
+      await fetchAllData();
     });
 
     function switchTab(tab) {
       ['recipes', 'ingredients', 'stock'].forEach(t => {
         const btn = document.getElementById(`tab-${t}`);
+        const sec = document.getElementById(`section-${t}`);
         if (t === tab) {
           btn.className = 'px-4 py-2 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-xs transition flex items-center gap-1.5';
+          sec.classList.remove('hidden');
         } else {
           btn.className = 'px-4 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5';
+          sec.classList.add('hidden');
         }
+      });
+      lucide.createIcons();
+    }
+
+    async function fetchAllData() {
+      try {
+        const [prodRes, ingRes] = await Promise.all([
+          fetch(`${API_BASE}/api/v1/products`),
+          fetch(`${API_BASE}/api/v1/ingredients`)
+        ]);
+
+        if (prodRes.ok) allProducts = await prodRes.json();
+        if (ingRes.ok) allIngredients = await ingRes.json();
+
+        updateCategoryFilterOptions();
+        renderRecipes();
+        renderIngredientsTable();
+        renderStockTable();
+        updateStats();
+      } catch (err) {
+        console.error("Error al cargar datos del catálogo:", err);
+      }
+    }
+
+    function updateStats() {
+      document.getElementById('stat-total-ings').innerText = allIngredients.length;
+      const low = allIngredients.filter(i => parseFloat(i.current_stock || 0) <= parseFloat(i.minimum_stock || 0)).length;
+      document.getElementById('stat-low-stock').innerText = low;
+      const withRecipes = allProducts.filter(p => p.recipe_items && p.recipe_items.length > 0).length;
+      document.getElementById('stat-recipes-count').innerText = withRecipes;
+    }
+
+    function updateCategoryFilterOptions() {
+      const cats = ['ALL', ...new Set(allProducts.map(p => p.category).filter(Boolean))];
+      const sel = document.getElementById('recipe-cat-filter');
+      sel.innerHTML = '';
+      cats.forEach(c => {
+        sel.innerHTML += `<option value="${c}">${c === 'ALL' ? 'Todas las Categorías' : c}</option>`;
       });
     }
 
-    function newRecipePrompt() {
-      alert("Formulario de Escandallo: Permite seleccionar ingredientes del catálogo, definir gramajes de porción y calcular el precio de venta sugerido según el margen objetivo (ej. 70%).");
+    // =========================================================================
+    // RENDER FICHAS TÉCNICAS (RECETAS)
+    // =========================================================================
+    function renderRecipes() {
+      const q = document.getElementById('recipe-search').value.toLowerCase().trim();
+      const cat = document.getElementById('recipe-cat-filter').value;
+      const container = document.getElementById('recipes-grid');
+      container.innerHTML = '';
+
+      const filtered = allProducts.filter(p => {
+        const matchCat = cat === 'ALL' || p.category === cat;
+        const matchQ = p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q);
+        return matchCat && matchQ;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 text-xs italic">No se encontraron fichas técnicas que coincidan con la búsqueda.</div>`;
+        return;
+      }
+
+      filtered.forEach(p => {
+        const price = parseFloat(p.price || 0);
+        const cost = parseFloat(p.total_production_cost || 0);
+        const margin = price > 0 ? (((price - cost) / price) * 100).toFixed(1) : 0;
+        const recipeCount = p.recipe_items ? p.recipe_items.length : 0;
+
+        let itemsHtml = '';
+        if (p.recipe_items && p.recipe_items.length > 0) {
+          itemsHtml = p.recipe_items.slice(0, 4).map(it => `
+            <div class="flex justify-between text-slate-600 text-xs">
+              <span class="truncate pr-2">• ${it.ingredient_name || it.ingredient_code} (${it.quantity} ${it.unit_of_measure})</span>
+              <span class="font-mono font-semibold text-slate-800">$${parseFloat(it.subtotal_cost || 0).toFixed(2)}</span>
+            </div>
+          `).join('');
+          if (p.recipe_items.length > 4) {
+            itemsHtml += `<div class="text-[11px] text-slate-400 font-bold">+ ${p.recipe_items.length - 4} insumos más...</div>`;
+          }
+        } else {
+          itemsHtml = `<div class="text-xs text-amber-600 bg-amber-50 p-2.5 rounded-xl border border-amber-200">Sin escandallo configurado. Haz clic en "Ficha Técnica".</div>`;
+        }
+
+        const imgBlock = p.image_url ? `
+          <div class="w-full h-36 bg-slate-100 rounded-xl mb-3 overflow-hidden border border-slate-200 relative group/img">
+            <img src="${p.image_url}" alt="${p.name}" class="w-full h-full object-cover">
+            <button onclick="openPhotoModal('${p.id}', '${p.name.replace(/'/g, "\\'")}')" class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover/img:opacity-100 transition flex items-center justify-center text-white text-xs font-bold gap-1.5 backdrop-blur-xs">
+              <i data-lucide="camera" class="w-4 h-4"></i> Cambiar Foto
+            </button>
+          </div>
+        ` : `
+          <div class="w-full h-24 bg-slate-50 border border-dashed border-slate-200 rounded-xl mb-3 flex items-center justify-center gap-2 text-slate-400 hover:border-brand-400 hover:text-brand-600 cursor-pointer transition" onclick="openPhotoModal('${p.id}', '${p.name.replace(/'/g, "\\'")}')">
+            <i data-lucide="image-plus" class="w-5 h-5"></i>
+            <span class="text-xs font-semibold">Subir Foto</span>
+          </div>
+        `;
+
+        container.innerHTML += `
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition">
+            <div>
+              ${imgBlock}
+              <div class="flex justify-between items-start mb-2">
+                <span class="text-[10px] font-mono font-bold text-brand-600 uppercase bg-orange-50 px-2 py-0.5 rounded border border-orange-200">${p.category || 'General'}</span>
+                <span class="text-xs font-mono font-bold text-slate-400">SKU: ${p.sku}</span>
+              </div>
+              <h3 class="font-outfit text-base font-bold text-slate-900 leading-snug">${p.name}</h3>
+              <p class="text-xs text-slate-500 mt-1 line-clamp-2">${p.description || 'Sin descripción en catálogo.'}</p>
+
+              <!-- Insumos & Costos -->
+              <div class="mt-4 pt-3 border-t border-slate-100 space-y-2">
+                ${itemsHtml}
+              </div>
+            </div>
+
+            <div class="mt-5">
+              <!-- Resumen Financiero -->
+              <div class="pt-3 border-t border-slate-100 bg-slate-50 -mx-5 px-5 py-3 rounded-xl flex justify-between items-center text-xs">
+                <div>
+                  <span class="text-[9px] text-slate-500 block uppercase font-mono">Costo Insumos</span>
+                  <span class="font-mono font-bold text-slate-800 text-xs">$${cost.toFixed(2)}</span>
+                </div>
+                <div>
+                  <span class="text-[9px] text-slate-500 block uppercase font-mono">Precio Carta</span>
+                  <span class="font-mono font-black text-slate-900 text-xs">$${price.toFixed(2)}</span>
+                </div>
+                <div class="text-right">
+                  <span class="text-[9px] text-slate-500 block uppercase font-mono">Margen</span>
+                  <span class="font-mono font-black ${margin >= 65 ? 'text-emerald-600' : 'text-amber-600'} text-xs">${margin}%</span>
+                </div>
+              </div>
+
+              <!-- Botones de Acción -->
+              <div class="mt-3 flex gap-2">
+                <button onclick="openRecipeModal('${p.id}')" class="flex-1 py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition">
+                  <i data-lucide="layers" class="w-3.5 h-3.5 text-brand-400"></i>
+                  <span>Ficha Técnica</span>
+                </button>
+                <button onclick="editProduct('${p.id}')" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition" title="Editar datos del producto">
+                  <i data-lucide="pencil" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // MODAL DE PRODUCTO (CREAR / EDITAR)
+    // =========================================================================
+    function openProductModal(prod = null) {
+      document.getElementById('product-form').reset();
+      document.getElementById('prod-id').value = prod ? prod.id : '';
+      document.getElementById('product-modal-title').innerText = prod ? 'Editar Platillo' : 'Nuevo Platillo / Producto';
+
+      if (prod) {
+        document.getElementById('prod-sku').value = prod.sku || '';
+        document.getElementById('prod-category').value = prod.category || '';
+        document.getElementById('prod-name').value = prod.name || '';
+        document.getElementById('prod-description').value = prod.description || '';
+        document.getElementById('prod-price').value = prod.price || '';
+        document.getElementById('prod-kds').value = prod.destination_kds || 'KITCHEN';
+        document.getElementById('prod-type').value = prod.product_type || 'PREPARED';
+      }
+      document.getElementById('product-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeProductModal() {
+      document.getElementById('product-modal').classList.add('hidden');
+    }
+
+    function editProduct(prodId) {
+      const prod = allProducts.find(p => p.id === prodId);
+      if (prod) openProductModal(prod);
+    }
+
+    async function saveProduct(e) {
+      e.preventDefault();
+      const prodId = document.getElementById('prod-id').value;
+      const payload = {
+        sku: document.getElementById('prod-sku').value.trim().toUpperCase(),
+        category: document.getElementById('prod-category').value.trim(),
+        name: document.getElementById('prod-name').value.trim(),
+        description: document.getElementById('prod-description').value.trim(),
+        price: parseFloat(document.getElementById('prod-price').value),
+        destination_kds: document.getElementById('prod-kds').value,
+        product_type: document.getElementById('prod-type').value,
+        is_active: true
+      };
+
+      try {
+        const url = prodId ? `${API_BASE}/api/v1/products/${prodId}` : `${API_BASE}/api/v1/products`;
+        const method = prodId ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          alert("Error: " + (err.detail || "No se pudo guardar el platillo"));
+          return;
+        }
+
+        closeProductModal();
+        await fetchAllData();
+      } catch (err) {
+        alert("Error de conexión: " + err.message);
+      }
+    }
+
+    // =========================================================================
+    // MODAL DE FICHA TÉCNICA (RECETA / ESCANDALLO)
+    // =========================================================================
+    function openRecipeModal(productId) {
+      const prod = allProducts.find(p => p.id === productId);
+      if (!prod) return;
+
+      activeRecipeProduct = prod;
+      draftRecipeItems = prod.recipe_items ? JSON.parse(JSON.stringify(prod.recipe_items)) : [];
+
+      document.getElementById('recipe-modal-sku').innerText = `SKU: ${prod.sku}`;
+      document.getElementById('recipe-modal-title').innerText = `Ficha Técnica: ${prod.name}`;
+
+      // Llenar selector de insumos disponibles
+      const sel = document.getElementById('recipe-add-ing-select');
+      sel.innerHTML = '<option value="">-- Seleccionar Insumo --</option>';
+      allIngredients.forEach(ing => {
+        sel.innerHTML += `<option value="${ing.id}">${ing.code} - ${ing.name} ($${parseFloat(ing.cost_per_unit).toFixed(2)}/${ing.unit_of_measure})</option>`;
+      });
+
+      document.getElementById('recipe-add-qty').value = '';
+      document.getElementById('recipe-add-ing-preview').innerHTML = `<span>Unidad: -</span><span>Costo Unitario: $0.00</span>`;
+
+      renderDraftRecipeTable();
+      document.getElementById('recipe-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeRecipeModal() {
+      document.getElementById('recipe-modal').classList.add('hidden');
+      activeRecipeProduct = null;
+      draftRecipeItems = [];
+    }
+
+    function onSelectIngredientForRecipe() {
+      const ingId = document.getElementById('recipe-add-ing-select').value;
+      const ing = allIngredients.find(i => i.id === ingId);
+      if (ing) {
+        document.getElementById('recipe-add-ing-preview').innerHTML = `
+          <span>Unidad: <b>${ing.unit_of_measure}</b></span>
+          <span>Costo Unitario: <b>$${parseFloat(ing.cost_per_unit).toFixed(4)}</b></span>
+        `;
+      } else {
+        document.getElementById('recipe-add-ing-preview').innerHTML = `<span>Unidad: -</span><span>Costo Unitario: $0.00</span>`;
+      }
+    }
+
+    function addIngredientToRecipeDraft() {
+      const ingId = document.getElementById('recipe-add-ing-select').value;
+      const qty = parseFloat(document.getElementById('recipe-add-qty').value);
+
+      if (!ingId) {
+        alert("Selecciona un insumo de la lista.");
+        return;
+      }
+      if (!qty || qty <= 0) {
+        alert("Ingresa una cantidad o porción válida mayor a cero.");
+        return;
+      }
+
+      const ing = allIngredients.find(i => i.id === ingId);
+      if (!ing) return;
+
+      const unitCost = parseFloat(ing.cost_per_unit || 0);
+      const subtotal = qty * unitCost;
+
+      // Verificar si ya existe en la receta
+      const existing = draftRecipeItems.find(it => it.ingredient_id === ingId);
+      if (existing) {
+        existing.quantity = parseFloat(existing.quantity) + qty;
+        existing.subtotal_cost = parseFloat(existing.quantity) * unitCost;
+      } else {
+        draftRecipeItems.push({
+          ingredient_id: ing.id,
+          ingredient_code: ing.code,
+          ingredient_name: ing.name,
+          quantity: qty,
+          unit_of_measure: ing.unit_of_measure,
+          unit_cost: unitCost,
+          subtotal_cost: subtotal
+        });
+      }
+
+      document.getElementById('recipe-add-qty').value = '';
+      renderDraftRecipeTable();
+    }
+
+    function removeIngredientFromRecipeDraft(index) {
+      draftRecipeItems.splice(index, 1);
+      renderDraftRecipeTable();
+    }
+
+    function renderDraftRecipeTable() {
+      const tbody = document.getElementById('recipe-items-tbody');
+      tbody.innerHTML = '';
+
+      let totalCost = 0;
+      draftRecipeItems.forEach((it, idx) => {
+        const sub = parseFloat(it.subtotal_cost || 0);
+        totalCost += sub;
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50/80">
+            <td class="py-2 px-3 font-semibold text-slate-800">${it.ingredient_name || it.ingredient_code}</td>
+            <td class="py-2 px-3 font-mono text-slate-600">${it.quantity} ${it.unit_of_measure}</td>
+            <td class="py-2 px-3 font-mono text-slate-500">$${parseFloat(it.unit_cost || 0).toFixed(4)}</td>
+            <td class="py-2 px-3 font-mono font-bold text-slate-900">$${sub.toFixed(2)}</td>
+            <td class="py-2 px-3 text-right">
+              <button onclick="removeIngredientFromRecipeDraft(${idx})" class="text-rose-500 hover:text-rose-700 p-1">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+
+      if (draftRecipeItems.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400 italic">No hay insumos en esta ficha técnica. Agrega uno arriba.</td></tr>`;
+      }
+
+      const price = activeRecipeProduct ? parseFloat(activeRecipeProduct.price || 0) : 0;
+      const margin = price > 0 ? (((price - totalCost) / price) * 100).toFixed(1) : 0;
+
+      document.getElementById('recipe-calc-cost').innerText = `$${totalCost.toFixed(2)}`;
+      document.getElementById('recipe-calc-price').innerText = `$${price.toFixed(2)}`;
+      document.getElementById('recipe-calc-margin').innerText = `${margin}%`;
+
+      lucide.createIcons();
+    }
+
+    async function saveProductRecipe() {
+      if (!activeRecipeProduct) return;
+
+      const payload = draftRecipeItems.map(it => ({
+        ingredient_id: it.ingredient_id,
+        quantity: parseFloat(it.quantity),
+        unit_of_measure: it.unit_of_measure
+      }));
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/products/${activeRecipeProduct.id}/recipe`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          alert("Error: " + (err.detail || "No se pudo actualizar la receta"));
+          return;
+        }
+
+        closeRecipeModal();
+        await fetchAllData();
+      } catch (err) {
+        alert("Error de conexión: " + err.message);
+      }
+    }
+
+    // =========================================================================
+    // MODAL DE SUBIDA DE FOTOS
+    // =========================================================================
+    function openPhotoModal(productId, productName) {
+      photoTargetProductId = productId;
+      selectedPhotoFile = null;
+      document.getElementById('photo-modal-product-name').innerText = `Platillo: ${productName}`;
+      document.getElementById('photo-preview-img').src = '';
+      document.getElementById('photo-preview-img').classList.add('hidden');
+      document.getElementById('photo-preview-placeholder').classList.remove('hidden');
+      document.getElementById('photo-file-input').value = '';
+      document.getElementById('photo-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closePhotoModal() {
+      document.getElementById('photo-modal').classList.add('hidden');
+      photoTargetProductId = null;
+      selectedPhotoFile = null;
+    }
+
+    function onPhotoSelected(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      selectedPhotoFile = file;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = document.getElementById('photo-preview-img');
+        img.src = event.target.result;
+        img.classList.remove('hidden');
+        document.getElementById('photo-preview-placeholder').classList.add('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function uploadSelectedPhoto() {
+      if (!photoTargetProductId || !selectedPhotoFile) {
+        alert("Por favor selecciona un archivo de imagen.");
+        return;
+      }
+
+      const btn = document.getElementById('btn-upload-photo');
+      btn.disabled = true;
+      btn.innerText = 'Subiendo...';
+
+      const formData = new FormData();
+      formData.append('file', selectedPhotoFile);
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/products/${photoTargetProductId}/image`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          alert("Error al subir foto: " + (err.detail || "Error en el servidor"));
+          return;
+        }
+
+        closePhotoModal();
+        await fetchAllData();
+      } catch (err) {
+        alert("Error de conexión al subir fotografía: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Subir Foto';
+      }
+    }
+
+    // =========================================================================
+    // MODAL Y GESTIÓN DE INSUMOS
+    // =========================================================================
+    function renderIngredientsTable() {
+      const q = document.getElementById('ing-search').value.toLowerCase().trim();
+      const tbody = document.getElementById('ingredients-table-body');
+      tbody.innerHTML = '';
+
+      const filtered = allIngredients.filter(i => {
+        return i.name.toLowerCase().includes(q) || i.code.toLowerCase().includes(q) || (i.category && i.category.toLowerCase().includes(q));
+      });
+
+      document.getElementById('ing-count-badge').innerText = `${filtered.length} insumos`;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400 italic">No se encontraron insumos.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(i => {
+        const cost = parseFloat(i.cost_per_unit || 0);
+        const stock = parseFloat(i.current_stock || 0);
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50/80">
+            <td class="py-3 px-4 font-mono font-bold text-purple-700">${i.code}</td>
+            <td class="py-3 px-4 font-bold text-slate-900">${i.name}</td>
+            <td class="py-3 px-4 text-slate-500">${i.category || 'General'}</td>
+            <td class="py-3 px-4 font-mono font-bold text-slate-700">${i.unit_of_measure}</td>
+            <td class="py-3 px-4 font-mono font-black text-slate-900">$${cost.toFixed(4)}</td>
+            <td class="py-3 px-4 font-mono font-bold ${stock <= parseFloat(i.minimum_stock || 0) ? 'text-amber-600' : 'text-slate-800'}">${stock.toFixed(2)}</td>
+            <td class="py-3 px-4 text-right">
+              <button onclick="editIngredient('${i.id}')" class="p-1 rounded-lg hover:bg-slate-200 text-slate-600 mr-1" title="Editar">
+                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    function openIngredientModal(ing = null) {
+      document.getElementById('ingredient-form').reset();
+      document.getElementById('ing-id').value = ing ? ing.id : '';
+      document.getElementById('ingredient-modal-title').innerText = ing ? 'Editar Insumo' : 'Nuevo Insumo';
+
+      if (ing) {
+        document.getElementById('ing-code').value = ing.code || '';
+        document.getElementById('ing-category').value = ing.category || '';
+        document.getElementById('ing-name').value = ing.name || '';
+        document.getElementById('ing-unit').value = ing.unit_of_measure || 'KG';
+        document.getElementById('ing-cost').value = ing.cost_per_unit || '';
+        document.getElementById('ing-stock').value = ing.current_stock || '0';
+        document.getElementById('ing-min-stock').value = ing.minimum_stock || '0';
+      }
+      document.getElementById('ingredient-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeIngredientModal() {
+      document.getElementById('ingredient-modal').classList.add('hidden');
+    }
+
+    function editIngredient(ingId) {
+      const ing = allIngredients.find(i => i.id === ingId);
+      if (ing) openIngredientModal(ing);
+    }
+
+    async function saveIngredient(e) {
+      e.preventDefault();
+      const ingId = document.getElementById('ing-id').value;
+      const payload = {
+        code: document.getElementById('ing-code').value.trim().toUpperCase(),
+        category: document.getElementById('ing-category').value.trim(),
+        name: document.getElementById('ing-name').value.trim(),
+        unit_of_measure: document.getElementById('ing-unit').value,
+        cost_per_unit: parseFloat(document.getElementById('ing-cost').value),
+        current_stock: parseFloat(document.getElementById('ing-stock').value || 0),
+        minimum_stock: parseFloat(document.getElementById('ing-min-stock').value || 0),
+        is_active: true
+      };
+
+      try {
+        const url = ingId ? `${API_BASE}/api/v1/ingredients/${ingId}` : `${API_BASE}/api/v1/ingredients`;
+        const method = ingId ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          alert("Error: " + (err.detail || "No se pudo guardar el insumo"));
+          return;
+        }
+
+        closeIngredientModal();
+        await fetchAllData();
+      } catch (err) {
+        alert("Error de conexión: " + err.message);
+      }
+    }
+
+    // =========================================================================
+    // STOCK & INVENTARIO TAB
+    // =========================================================================
+    function renderStockTable() {
+      const tbody = document.getElementById('stock-table-body');
+      tbody.innerHTML = '';
+
+      allIngredients.forEach(i => {
+        const stock = parseFloat(i.current_stock || 0);
+        const min = parseFloat(i.minimum_stock || 0);
+        const isCritical = stock <= min;
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50/80">
+            <td class="py-3 px-4 font-mono font-bold text-slate-700">${i.code}</td>
+            <td class="py-3 px-4 font-bold text-slate-900">${i.name}</td>
+            <td class="py-3 px-4 font-mono text-slate-600">${i.unit_of_measure}</td>
+            <td class="py-3 px-4 font-mono text-slate-500">${min.toFixed(2)}</td>
+            <td class="py-3 px-4 font-mono font-black ${isCritical ? 'text-amber-600' : 'text-emerald-600'} text-sm">${stock.toFixed(2)}</td>
+            <td class="py-3 px-4">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold ${isCritical ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}">
+                ${isCritical ? 'BAJO STOCK' : 'ÓPTIMO'}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-right">
+              <button onclick="quickStockAdjust('${i.id}')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[11px] transition">
+                Ajustar
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    async function quickStockAdjust(ingId) {
+      const ing = allIngredients.find(i => i.id === ingId);
+      if (!ing) return;
+
+      const nuevo = prompt(`Ajustar existencia actual de "${ing.name}" (${ing.unit_of_measure}):`, ing.current_stock);
+      if (nuevo === null) return;
+
+      const num = parseFloat(nuevo);
+      if (isNaN(num) || num < 0) {
+        alert("Ingresa un número válido de existencia.");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/ingredients/${ing.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ current_stock: num })
+        });
+
+        if (res.ok) {
+          await fetchAllData();
+        } else {
+          alert("Error al actualizar existencia.");
+        }
+      } catch (err) {
+        alert("Error de conexión: " + err.message);
+      }
     }
   </script>
 </body>

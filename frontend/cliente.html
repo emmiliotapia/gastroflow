@@ -373,12 +373,20 @@
         const price = parseFloat(p.price || 0);
         const iconName = p.destination_kds === 'BAR' ? 'wine' : 'utensils';
 
+        const imageHtml = p.image_url ? `
+          <div class="w-full h-28 sm:h-36 bg-slate-100 rounded-xl mb-3 overflow-hidden border border-slate-200/60">
+            <img src="${p.image_url}" alt="${p.name}" class="w-full h-full object-cover">
+          </div>
+        ` : `
+          <div class="w-full h-28 sm:h-36 bg-slate-100 rounded-xl mb-3 flex items-center justify-center border border-slate-200/60 text-slate-400 group-hover:text-brand-500 transition">
+            <i data-lucide="${iconName}" class="w-8 h-8"></i>
+          </div>
+        `;
+
         container.innerHTML += `
           <button type="button" onclick="openItemModal('${p.id}')" class="bg-white hover:bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/90 text-left flex flex-col justify-between transition group shadow-card active:scale-98">
             <div>
-              <div class="w-full h-28 sm:h-36 bg-slate-100 rounded-xl mb-3 flex items-center justify-center border border-slate-200/60 text-slate-400 group-hover:text-brand-500 transition">
-                <i data-lucide="${iconName}" class="w-8 h-8"></i>
-              </div>
+              ${imageHtml}
               <div class="text-[9px] font-mono font-bold text-brand-600 uppercase tracking-wider">${p.category}</div>
               <h4 class="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-brand-600 transition mt-0.5 line-clamp-1 leading-tight">${p.name}</h4>
               <p class="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">${p.description || 'Preparado fresco al momento.'}</p>
@@ -408,6 +416,18 @@
       document.getElementById('item-modal-desc').innerText = prod.description || 'Preparación en tiempo real para servicio en mesa.';
       document.getElementById('item-modal-notes').value = '';
       document.getElementById('item-modal-qty').innerText = modalQty;
+
+      const modalImg = document.getElementById('item-modal-img');
+      const placeholder = document.getElementById('item-modal-img-placeholder');
+      if (prod.image_url) {
+        modalImg.src = prod.image_url;
+        modalImg.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+      } else {
+        modalImg.src = '';
+        modalImg.classList.add('hidden');
+        placeholder.classList.remove('hidden');
+      }
 
       updateItemModalButton();
 
