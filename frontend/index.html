@@ -177,16 +177,16 @@
         </div>
 
         <a href="#beneficios" class="hover:text-brand-600 transition py-1">Ventajas</a>
-        <a href="#simulador" class="hover:text-brand-600 transition py-1">Cotizador</a>
+        <button onclick="openQuoteWizard()" class="hover:text-brand-600 transition py-1 text-left font-semibold">Cotizador MXN</button>
         <a href="#arquitectura" class="hover:text-brand-600 transition py-1">Equipamiento</a>
       </nav>
 
       <!-- Action Buttons -->
       <div class="flex items-center gap-3">
-        <a href="#simulador" class="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/80 transition">
-          <i data-lucide="calculator" class="w-4 h-4 text-slate-500"></i>
-          <span>Calcular Paquete</span>
-        </a>
+        <button onclick="openQuoteWizard()" class="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-800 hover:text-brand-600 bg-slate-100 hover:bg-slate-200/80 transition">
+          <i data-lucide="calculator" class="w-4 h-4 text-brand-500"></i>
+          <span>Calcular Plan (MXN)</span>
+        </button>
         <a href="#soluciones" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 shadow-glow-orange transition">
           <span>Explorar Demos</span>
           <i data-lucide="arrow-right" class="w-4 h-4"></i>
@@ -224,10 +224,10 @@
             <i data-lucide="play-circle" class="w-5 h-5"></i>
             <span>Ver Catálogo de Módulos</span>
           </a>
-          <a href="#simulador" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-bold text-base border border-slate-300 shadow-subtle flex items-center justify-center gap-2 transition">
-            <i data-lucide="layers" class="w-5 h-5 text-slate-500"></i>
-            <span>Personalizar Mi Paquete</span>
-          </a>
+          <button onclick="openQuoteWizard()" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-bold text-base border border-slate-300 shadow-subtle flex items-center justify-center gap-2 transition active:scale-95">
+            <i data-lucide="calculator" class="w-5 h-5 text-brand-500"></i>
+            <span>Calcular Plan Personalizado (MXN)</span>
+          </button>
         </div>
 
         <!-- Trust Badges -->
@@ -695,225 +695,262 @@
     </div>
   </section>
 
-  <!-- COTIZADOR / SIMULADOR INTERACTIVO DE SERVICIOS & EQUIPAMIENTO -->
-  <section id="simulador" class="py-20 bg-slate-50">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+  <!-- MODAL / WIZARD INTERACTIVO DE COTIZACIÓN (EN PESOS MEXICANOS MXN) -->
+  <div id="quote-wizard-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="bg-white rounded-3xl w-full max-w-3xl max-h-[92vh] overflow-hidden flex flex-col border border-slate-200 shadow-2xl animate-fade-in">
       
-      <div class="bg-white rounded-3xl border border-slate-200/90 shadow-clean-lg p-6 sm:p-12">
-        <div class="text-center max-w-3xl mx-auto mb-10">
-          <span class="text-xs font-bold font-mono tracking-wider text-brand-600 uppercase bg-brand-50 px-3.5 py-1 rounded-full border border-brand-200">
-            Cotizador Rápido para Restaurantes y Bares
-          </span>
-          <h2 class="font-outfit text-2xl sm:text-4xl font-extrabold text-slate-900 mt-3">
-            Arma tu solución en minutos: Sistema + Estaciones y Equipos
-          </h2>
-          <p class="text-slate-600 text-sm sm:text-base mt-2">
-            Selecciona los módulos de software que necesitas y el equipamiento físico que te gustaría incluir para tu restaurante.
-          </p>
+      <!-- Wizard Header -->
+      <div class="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/70">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-orange-50 border border-orange-200 text-brand-600 flex items-center justify-center">
+            <i data-lucide="calculator" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="font-outfit text-lg sm:text-xl font-bold text-slate-900">Cotizador de Plan GastroFlow</h3>
+              <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">PESOS MEXICANOS (MXN)</span>
+            </div>
+            <p class="text-xs text-slate-500">Configura tu plan paso a paso según las necesidades de tu restaurante o bar</p>
+          </div>
+        </div>
+        <button onclick="closeQuoteWizard()" class="text-slate-400 hover:text-slate-700 p-1 rounded-xl hover:bg-slate-100 transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <!-- Wizard Step Indicator -->
+      <div class="px-6 py-3 bg-slate-100/70 border-b border-slate-200/80 flex items-center justify-between text-xs font-bold font-mono">
+        <div id="step-tab-1" class="flex items-center gap-2 text-brand-600 cursor-pointer" onclick="goToWizardStep(1)">
+          <span class="w-6 h-6 rounded-full bg-brand-500 text-white flex items-center justify-center text-[11px]">1</span>
+          <span class="hidden sm:inline">Módulos de Software</span>
+        </div>
+        <div class="w-8 sm:w-16 h-0.5 bg-slate-300" id="step-line-1"></div>
+        <div id="step-tab-2" class="flex items-center gap-2 text-slate-400 cursor-pointer" onclick="goToWizardStep(2)">
+          <span class="w-6 h-6 rounded-full bg-slate-300 text-slate-700 flex items-center justify-center text-[11px]">2</span>
+          <span class="hidden sm:inline">Equipos & Hardware</span>
+        </div>
+        <div class="w-8 sm:w-16 h-0.5 bg-slate-300" id="step-line-2"></div>
+        <div id="step-tab-3" class="flex items-center gap-2 text-slate-400 cursor-pointer" onclick="goToWizardStep(3)">
+          <span class="w-6 h-6 rounded-full bg-slate-300 text-slate-700 flex items-center justify-center text-[11px]">3</span>
+          <span class="hidden sm:inline">Resumen & Cotización</span>
+        </div>
+      </div>
+
+      <!-- Wizard Steps Content -->
+      <div class="p-6 overflow-y-auto flex-1 space-y-4 custom-scrollbar">
+
+        <!-- PASO 1: MÓDULOS DIGITALES -->
+        <div id="wizard-step-1" class="space-y-3">
+          <div class="flex justify-between items-center mb-1">
+            <h4 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+              <i data-lucide="layers" class="w-4 h-4 text-brand-500"></i> Selecciona los Módulos de Software que Requiere tu Operación
+            </h4>
+            <span class="text-[11px] text-slate-500 font-mono">Suscripción mensual</span>
+          </div>
+
+          <div class="space-y-2.5">
+            <label class="flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 hover:border-brand-500/50 bg-slate-50/70 cursor-pointer transition">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 border-slate-300 module-check" checked data-setup="2400" data-month="490" data-name="Menú Digital en Mesa (Código QR)">
+                <div>
+                  <p class="text-xs sm:text-sm font-bold text-slate-900">Menú Digital en Mesa (Código QR)</p>
+                  <p class="text-[11px] text-slate-500">Carta con fotos HD, botones de pedido directo y llamado de mesero</p>
+                </div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-800">$490 MXN<span class="text-[10px] text-slate-400 font-normal">/mes</span></span>
+            </label>
+
+            <label class="flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 hover:border-brand-500/50 bg-slate-50/70 cursor-pointer transition">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 border-slate-300 module-check" checked data-setup="2900" data-month="590" data-name="Comandero para Celulares de Meseros (POS Móvil)">
+                <div>
+                  <p class="text-xs sm:text-sm font-bold text-slate-900">Comandero para Meseros (Móvil PWA)</p>
+                  <p class="text-[11px] text-slate-500">Toma de comandas ágil desde cualquier smartphone o tablet en sala</p>
+                </div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-800">$590 MXN<span class="text-[10px] text-slate-400 font-normal">/mes</span></span>
+            </label>
+
+            <label class="flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 hover:border-brand-500/50 bg-slate-50/70 cursor-pointer transition">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 border-slate-300 module-check" checked data-setup="3500" data-month="690" data-name="Pantalla KDS Cocina y Barra en Vivo">
+                <div>
+                  <p class="text-xs sm:text-sm font-bold text-slate-900">Pantalla para Cocina y Barra (KDS)</p>
+                  <p class="text-[11px] text-slate-500">Elimina el papel: comanda electrónica con cronómetro y timbres sonoros</p>
+                </div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-800">$690 MXN<span class="text-[10px] text-slate-400 font-normal">/mes</span></span>
+            </label>
+
+            <label class="flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 hover:border-brand-500/50 bg-slate-50/70 cursor-pointer transition">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 border-slate-300 module-check" checked data-setup="2900" data-month="590" data-name="Punto de Cobro, Caja y Arqueo Blindado">
+                <div>
+                  <p class="text-xs sm:text-sm font-bold text-slate-900">Punto de Cobro, Caja y Arqueos Z</p>
+                  <p class="text-[11px] text-slate-500">División de cuentas, propinas, tickets térmicos y corte de turno con PIN</p>
+                </div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-800">$590 MXN<span class="text-[10px] text-slate-400 font-normal">/mes</span></span>
+            </label>
+
+            <label class="flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 hover:border-brand-500/50 bg-slate-50/70 cursor-pointer transition">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 border-slate-300 module-check" data-setup="3900" data-month="690" data-name="Control de Recetas, Escandallos e Inventario">
+                <div>
+                  <p class="text-xs sm:text-sm font-bold text-slate-900">Control de Recetas, Escandallos y Almacén</p>
+                  <p class="text-[11px] text-slate-500">Cálculo de costo por porción, margen bruto y descuento de inventario automático</p>
+                </div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-800">$690 MXN<span class="text-[10px] text-slate-400 font-normal">/mes</span></span>
+            </label>
+
+            <label class="flex items-center justify-between p-3.5 rounded-2xl border border-brand-500/40 bg-orange-50/40 hover:border-brand-500 cursor-pointer transition">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 border-slate-300 module-check" checked data-setup="1900" data-month="390" data-name="Notificaciones Push y Alertas (ntfy.sh / n8n)">
+                <div>
+                  <p class="text-xs sm:text-sm font-bold text-slate-900">Avisos Push Inmediatos (ntfy / n8n)</p>
+                  <p class="text-[11px] text-slate-500">Vibración y alarma en celulares cuando hay platillos listos o llamados de comensales</p>
+                </div>
+              </div>
+              <span class="text-xs font-mono font-bold text-brand-600">$390 MXN<span class="text-[10px] text-brand-400 font-normal">/mes</span></span>
+            </label>
+          </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          <!-- Selector de Software y Hardware (8 cols) -->
-          <div class="lg:col-span-7 space-y-6">
-            
-            <!-- Bloque 1: Módulos de Software -->
-            <div>
-              <div class="flex items-center gap-2 mb-3">
-                <div class="w-7 h-7 rounded-lg bg-orange-100 text-brand-600 flex items-center justify-center font-bold text-xs">1</div>
-                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-800 font-outfit">Sistemas y Módulos Digitales</h3>
-              </div>
-              <div class="space-y-2.5">
-                
-                <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-brand-500/50 bg-slate-50/60 cursor-pointer transition">
-                  <div class="flex items-center gap-3">
-                    <input type="checkbox" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 border-slate-300 module-check" checked data-type="soft" data-setup="120" data-month="25" data-name="Menú Digital en Mesa (Código QR)">
-                    <div>
-                      <p class="text-sm font-bold text-slate-900">Menú Digital en Mesa (Código QR)</p>
-                      <p class="text-xs text-slate-500">Carta con fotos, botones para pedir y llamar mesero</p>
-                    </div>
-                  </div>
-                  <span class="text-xs font-mono font-bold text-slate-700">$25/mes</span>
-                </label>
-
-                <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-brand-500/50 bg-slate-50/60 cursor-pointer transition">
-                  <div class="flex items-center gap-3">
-                    <input type="checkbox" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 border-slate-300 module-check" checked data-type="soft" data-setup="150" data-month="30" data-name="Comandero para Celulares de Meseros">
-                    <div>
-                      <p class="text-sm font-bold text-slate-900">Comandero para Meseros (Móvil)</p>
-                      <p class="text-xs text-slate-500">Toma de pedidos en mesa y aviso instantáneo a cocina</p>
-                    </div>
-                  </div>
-                  <span class="text-xs font-mono font-bold text-slate-700">$30/mes</span>
-                </label>
-
-                <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-brand-500/50 bg-slate-50/60 cursor-pointer transition">
-                  <div class="flex items-center gap-3">
-                    <input type="checkbox" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 border-slate-300 module-check" checked data-type="soft" data-setup="180" data-month="35" data-name="Pantalla Digital para Cocina y Barra">
-                    <div>
-                      <p class="text-sm font-bold text-slate-900">Pantalla para Cocina y Barra (KDS)</p>
-                      <p class="text-xs text-slate-500">Reemplaza el papel: semáforo de tiempo y timbre acústico</p>
-                    </div>
-                  </div>
-                  <span class="text-xs font-mono font-bold text-slate-700">$35/mes</span>
-                </label>
-
-                <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-brand-500/50 bg-slate-50/60 cursor-pointer transition">
-                  <div class="flex items-center gap-3">
-                    <input type="checkbox" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 border-slate-300 module-check" checked data-type="soft" data-setup="150" data-month="30" data-name="Punto de Cobro y Caja">
-                    <div>
-                      <p class="text-sm font-bold text-slate-900">Punto de Cobro, Caja y Arqueos</p>
-                      <p class="text-xs text-slate-500">División de cuentas, propinas, corte de turno seguro con PIN</p>
-                    </div>
-                  </div>
-                  <span class="text-xs font-mono font-bold text-slate-700">$30/mes</span>
-                </label>
-
-                <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-brand-500/50 bg-slate-50/60 cursor-pointer transition">
-                  <div class="flex items-center gap-3">
-                    <input type="checkbox" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 border-slate-300 module-check" data-type="soft" data-setup="200" data-month="35" data-name="Control de Costos de Platillos y Almacén">
-                    <div>
-                      <p class="text-sm font-bold text-slate-900">Control de Recetas, Costos y Almacén</p>
-                      <p class="text-xs text-slate-500">Sabe cuánto ganas por platillo y descuenta insumos al vender</p>
-                    </div>
-                  </div>
-                  <span class="text-xs font-mono font-bold text-slate-700">$35/mes</span>
-                </label>
-
-                <label class="flex items-center justify-between p-3.5 rounded-xl border border-brand-500/40 bg-orange-50/40 hover:border-brand-500 cursor-pointer transition">
-                  <div class="flex items-center gap-3">
-                    <input type="checkbox" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 border-slate-300 module-check" checked data-type="soft" data-setup="100" data-month="20" data-name="Avisos Inmediatos a WhatsApp / Celular">
-                    <div>
-                      <p class="text-sm font-bold text-slate-900">Avisos Inmediatos al Celular del Equipo</p>
-                      <p class="text-xs text-slate-500">Alertas cuando un plato está listo o el cliente llama al mesero</p>
-                    </div>
-                  </div>
-                  <span class="text-xs font-mono font-bold text-brand-600">$20/mes</span>
-                </label>
-
-              </div>
-            </div>
-
-            <!-- Bloque 2: Equipos Físicos y Estaciones Sugeridas -->
-            <div class="pt-2">
-              <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center gap-2">
-                  <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">2</div>
-                  <h3 class="text-sm font-bold uppercase tracking-wider text-slate-800 font-outfit">Equipos Físicos y Estaciones Opcionales</h3>
-                </div>
-                <span class="text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">Pago único de equipo</span>
-              </div>
-              <div class="space-y-2.5">
-                
-                <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-indigo-400 bg-white cursor-pointer transition">
-                  <div class="flex items-center gap-3">
-                    <input type="checkbox" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 hw-check" data-price="290" data-name="Estación Pantalla Cocina (Tablet 10'' + Base metálica)">
-                    <div>
-                      <p class="text-sm font-bold text-slate-900">Estación Pantalla de Cocina / KDS</p>
-                      <p class="text-xs text-slate-500">Tablet uso rudo 10" + soporte articulado + cargador continuo</p>
-                    </div>
-                  </div>
-                  <span class="text-xs font-mono font-bold text-slate-800">+$290 c/u</span>
-                </label>
-
-                <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-indigo-400 bg-white cursor-pointer transition">
-                  <div class="flex items-center gap-3">
-                    <input type="checkbox" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 hw-check" checked data-price="180" data-name="Impresora Térmica 80mm (Tickets de caja / comanda)">
-                    <div>
-                      <p class="text-sm font-bold text-slate-900">Impresora Térmica Rápida 80mm</p>
-                      <p class="text-xs text-slate-500">Conexión WiFi/Red para imprimir cuentas y pre-cuentas</p>
-                    </div>
-                  </div>
-                  <span class="text-xs font-mono font-bold text-slate-800">+$180 c/u</span>
-                </label>
-
-                <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-indigo-400 bg-white cursor-pointer transition">
-                  <div class="flex items-center gap-3">
-                    <input type="checkbox" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 hw-check" data-price="140" data-name="Comandero Móvil Portátil (Terminal compacta)">
-                    <div>
-                      <p class="text-sm font-bold text-slate-900">Comandero Portátil para Mesero</p>
-                      <p class="text-xs text-slate-500">Dispositivo ergonómico de alta batería resistente a caídas</p>
-                    </div>
-                  </div>
-                  <span class="text-xs font-mono font-bold text-slate-800">+$140 c/u</span>
-                </label>
-
-                <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-indigo-400 bg-white cursor-pointer transition">
-                  <div class="flex items-center gap-3">
-                    <input type="checkbox" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 hw-check" checked data-price="95" data-name="Cajón de Dinero Automático con Llave">
-                    <div>
-                      <p class="text-sm font-bold text-slate-900">Cajón de Dinero Automático</p>
-                      <p class="text-xs text-slate-500">Apertura electrónica al imprimir el ticket de cobro</p>
-                    </div>
-                  </div>
-                  <span class="text-xs font-mono font-bold text-slate-800">+$95 c/u</span>
-                </label>
-
-                <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-indigo-400 bg-white cursor-pointer transition">
-                  <div class="flex items-center gap-3">
-                    <input type="checkbox" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 hw-check" data-price="75" data-name="Lote de 30 Tokens / Displays Acrílicos QR para Mesa">
-                    <div>
-                      <p class="text-sm font-bold text-slate-900">Displays Acrílicos QR para Mesas (Kit de 30)</p>
-                      <p class="text-xs text-slate-500">Diseño elegante con tu logotipo y número de mesa grabado</p>
-                    </div>
-                  </div>
-                  <span class="text-xs font-mono font-bold text-slate-800">+$75 kit</span>
-                </label>
-
-              </div>
-            </div>
-
+        <!-- PASO 2: EQUIPOS Y HARDWARE -->
+        <div id="wizard-step-2" class="space-y-3 hidden">
+          <div class="flex justify-between items-center mb-1">
+            <h4 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+              <i data-lucide="printer" class="w-4 h-4 text-indigo-600"></i> Equipamiento Físico y Estaciones (Opcional)
+            </h4>
+            <span class="text-[11px] text-slate-500 font-mono">Pago único de compra</span>
           </div>
 
-          <!-- Resumen de Cotización (5 cols) -->
-          <div class="lg:col-span-5 p-7 rounded-2xl bg-slate-900 text-white flex flex-col justify-between shadow-xl sticky top-28">
-            <div>
-              <div class="flex items-center justify-between">
-                <span class="text-[11px] font-mono uppercase tracking-wider text-brand-400 font-bold">Tu Presupuesto Estimado</span>
-                <span class="text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded">Personalizado</span>
+          <div class="space-y-2.5">
+            <label class="flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 hover:border-indigo-400 bg-white cursor-pointer transition">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 hw-check" data-price="5800" data-name="Estación Pantalla de Cocina KDS (Tablet 10'' + Base metálica)">
+                <div>
+                  <p class="text-xs sm:text-sm font-bold text-slate-900">Estación Pantalla KDS Cocina</p>
+                  <p class="text-[11px] text-slate-500">Tablet uso rudo 10" + soporte articulado de acero inoxidable + cargador continuo</p>
+                </div>
               </div>
-              <h3 class="font-outfit text-xl font-bold mt-1 text-white">Resumen de Propuesta</h3>
-              
-              <div class="mt-5 space-y-2.5 text-xs border-b border-slate-800 pb-5 max-h-60 overflow-y-auto pr-1" id="quote-items">
-                <!-- Se llena con JS -->
-              </div>
+              <span class="text-xs font-mono font-bold text-slate-800">+$5,800 MXN</span>
+            </label>
 
-              <div class="mt-5 space-y-3">
-                <div class="flex justify-between items-center text-xs text-slate-400">
-                  <span>Equipos físicos seleccionados:</span>
-                  <span class="font-mono font-bold text-slate-200 text-sm" id="hw-price">$275</span>
-                </div>
-                <div class="flex justify-between items-center text-xs text-slate-400">
-                  <span>Puesta en marcha y capacitación:</span>
-                  <span class="font-mono font-bold text-slate-200 text-sm" id="setup-price">$700</span>
-                </div>
-                <div class="pt-3 border-t border-slate-800 flex justify-between items-baseline">
-                  <div>
-                    <span class="text-sm font-semibold text-slate-300 block">Mensualidad por servicio:</span>
-                    <span class="text-[11px] text-slate-400">Soporte, actualizaciones y hosting</span>
-                  </div>
-                  <span class="font-outfit font-black text-3xl text-brand-400" id="monthly-price">$123<span class="text-xs font-normal text-slate-400">/mes</span></span>
+            <label class="flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 hover:border-indigo-400 bg-white cursor-pointer transition">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 hw-check" checked data-price="3600" data-name="Impresora Térmica Rápida 80mm (WiFi/Red)">
+                <div>
+                  <p class="text-xs sm:text-sm font-bold text-slate-900">Impresora Térmica 80mm de Alta Velocidad</p>
+                  <p class="text-[11px] text-slate-500">Conectividad WiFi/Red Ethernet para imprimir cuentas, pre-cuentas y tickets</p>
                 </div>
               </div>
+              <span class="text-xs font-mono font-bold text-slate-800">+$3,600 MXN</span>
+            </label>
+
+            <label class="flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 hover:border-indigo-400 bg-white cursor-pointer transition">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 hw-check" data-price="2800" data-name="Comandero Portátil para Mesero (Terminal Industrial)">
+                <div>
+                  <p class="text-xs sm:text-sm font-bold text-slate-900">Comandero Portátil para Mesero</p>
+                  <p class="text-[11px] text-slate-500">Dispositivo ergonómico resistente a caídas y salpicaduras con batería de 14h</p>
+                </div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-800">+$2,800 MXN</span>
+            </label>
+
+            <label class="flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 hover:border-indigo-400 bg-white cursor-pointer transition">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 hw-check" checked data-price="1900" data-name="Cajón de Dinero Automático con Llave">
+                <div>
+                  <p class="text-xs sm:text-sm font-bold text-slate-900">Cajón de Dinero Automático de Metal</p>
+                  <p class="text-[11px] text-slate-500">Apertura electrónica sincronizada con la impresora térmica de caja</p>
+                </div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-800">+$1,900 MXN</span>
+            </label>
+
+            <label class="flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 hover:border-indigo-400 bg-white cursor-pointer transition">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 hw-check" data-price="1500" data-name="Displays Acrílicos QR para Mesas (Kit de 30)">
+                <div>
+                  <p class="text-xs sm:text-sm font-bold text-slate-900">Displays Acrílicos QR para Mesas (Kit 30)</p>
+                  <p class="text-[11px] text-slate-500">Acrílico premium con tu marca y numeración de mesa grabada</p>
+                </div>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-800">+$1,500 MXN</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- PASO 3: RESUMEN Y COTIZACIÓN FINAL -->
+        <div id="wizard-step-3" class="space-y-4 hidden">
+          <div class="bg-slate-900 text-white rounded-2xl p-5 sm:p-6 shadow-xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+              <div>
+                <span class="text-[10px] font-mono uppercase tracking-wider text-brand-400 font-bold">Cotización Personalizada</span>
+                <h4 class="font-outfit text-lg font-bold text-white">Resumen de Inversión</h4>
+              </div>
+              <span class="text-xs bg-slate-800 text-emerald-400 px-3 py-1 rounded-full font-mono font-bold">12% DESCUENTO PAQUETE</span>
             </div>
 
-            <div class="mt-8 space-y-2.5">
-              <button onclick="requestProposal()" class="w-full py-4 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs uppercase tracking-wider shadow-glow-orange transition flex items-center justify-center gap-2">
-                <i data-lucide="message-circle" class="w-4 h-4"></i>
-                <span>Pedir Cotización Formal por WhatsApp</span>
-              </button>
-              <p class="text-[11px] text-center text-slate-400">
-                Respuesta en menos de 15 minutos • Asesoría personalizada para tu local
-              </p>
+            <!-- Lista de selección -->
+            <div class="my-4 max-h-48 overflow-y-auto space-y-2 pr-1 text-xs" id="wizard-summary-list">
+              <!-- JS Inyecta selección -->
+            </div>
+
+            <!-- Desglose Financiero en MXN -->
+            <div class="pt-3 border-t border-slate-800 space-y-2 font-mono text-xs">
+              <div class="flex justify-between text-slate-400">
+                <span>Equipos físicos seleccionados (pago único):</span>
+                <span class="text-white font-bold" id="wizard-hw-total">$0 MXN</span>
+              </div>
+              <div class="flex justify-between text-slate-400">
+                <span>Implementación, configuración y capacitación:</span>
+                <span class="text-white font-bold" id="wizard-setup-total">$0 MXN</span>
+              </div>
+              <div class="pt-3 border-t border-slate-800 flex justify-between items-baseline">
+                <div>
+                  <span class="text-sm font-semibold text-slate-200 block font-sans">Suscripción Mensual:</span>
+                  <span class="text-[10px] text-slate-400 font-sans">Soporte técnico 24/7, actualizaciones y nube</span>
+                </div>
+                <div class="text-right">
+                  <span class="font-outfit font-black text-2xl sm:text-3xl text-brand-400" id="wizard-monthly-total">$0 MXN</span>
+                  <span class="text-[11px] text-slate-400 block font-sans">Facturación mensual en pesos</span>
+                </div>
+              </div>
             </div>
           </div>
 
+          <!-- Botón de Envío por WhatsApp -->
+          <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div>
+              <h5 class="text-xs font-bold text-emerald-950">¿Listo para comenzar o probar una demostración?</h5>
+              <p class="text-[11px] text-emerald-800">Recibe la cotización formal por PDF o agenda una videollamada con un asesor.</p>
+            </div>
+            <button onclick="requestProposalWhatsApp()" class="w-full sm:w-auto px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider shadow-sm flex items-center justify-center gap-2 transition active:scale-95">
+              <i data-lucide="message-circle" class="w-4 h-4"></i>
+              <span>Enviar Cotización a WhatsApp</span>
+            </button>
+          </div>
         </div>
 
       </div>
 
+      <!-- Wizard Footer Controls -->
+      <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center">
+        <button id="wizard-btn-prev" onclick="wizardPrevStep()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200 transition opacity-0 pointer-events-none">
+          &larr; Anterior
+        </button>
+        <div class="flex gap-2">
+          <button type="button" onclick="closeQuoteWizard()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800">Cerrar</button>
+          <button id="wizard-btn-next" onclick="wizardNextStep()" class="px-6 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs shadow-xs transition active:scale-95 flex items-center gap-1.5">
+            <span>Siguiente</span> &rarr;
+          </button>
+        </div>
+      </div>
+
     </div>
-  </section>
+  </div>
 
   <!-- ARQUITECTURA TÉCNICA / INFRAESTRUCTURA -->
   <section id="arquitectura" class="py-16 bg-white border-t border-slate-200">
@@ -966,7 +1003,72 @@
 
   <!-- SCRIPT LÓGICA INTERACTIVA -->
   <script>
-    // Filtrado de Categorías
+    let currentWizardStep = 1;
+
+    function openQuoteWizard() {
+      document.getElementById('quote-wizard-modal').classList.remove('hidden');
+      goToWizardStep(1);
+      updateWizardQuote();
+      lucide.createIcons();
+    }
+
+    function closeQuoteWizard() {
+      document.getElementById('quote-wizard-modal').classList.add('hidden');
+    }
+
+    function goToWizardStep(step) {
+      currentWizardStep = step;
+      [1, 2, 3].forEach(s => {
+        const sec = document.getElementById(`wizard-step-${s}`);
+        const tab = document.getElementById(`step-tab-${s}`);
+        if (s === step) {
+          sec.classList.remove('hidden');
+          tab.className = 'flex items-center gap-2 text-brand-600 font-bold cursor-pointer';
+          tab.querySelector('span:first-child').className = 'w-6 h-6 rounded-full bg-brand-500 text-white flex items-center justify-center text-[11px]';
+        } else if (s < step) {
+          sec.classList.add('hidden');
+          tab.className = 'flex items-center gap-2 text-emerald-600 font-bold cursor-pointer';
+          tab.querySelector('span:first-child').className = 'w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[11px]';
+        } else {
+          sec.classList.add('hidden');
+          tab.className = 'flex items-center gap-2 text-slate-400 font-bold cursor-pointer';
+          tab.querySelector('span:first-child').className = 'w-6 h-6 rounded-full bg-slate-300 text-slate-700 flex items-center justify-center text-[11px]';
+        }
+      });
+
+      const prevBtn = document.getElementById('wizard-btn-prev');
+      const nextBtn = document.getElementById('wizard-btn-next');
+
+      if (step === 1) {
+        prevBtn.classList.add('opacity-0', 'pointer-events-none');
+        nextBtn.innerHTML = `<span>Siguiente: Equipos</span> &rarr;`;
+      } else if (step === 2) {
+        prevBtn.classList.remove('opacity-0', 'pointer-events-none');
+        nextBtn.innerHTML = `<span>Ver Resumen & Cotización</span> &rarr;`;
+      } else {
+        prevBtn.classList.remove('opacity-0', 'pointer-events-none');
+        nextBtn.innerHTML = `<span>Finalizar</span> &#10003;`;
+      }
+
+      updateWizardQuote();
+      lucide.createIcons();
+    }
+
+    function wizardNextStep() {
+      if (currentWizardStep < 3) {
+        goToWizardStep(currentWizardStep + 1);
+      } else {
+        closeQuoteWizard();
+      }
+    }
+
+    function wizardPrevStep() {
+      if (currentWizardStep > 1) {
+        goToWizardStep(currentWizardStep - 1);
+      }
+    }
+
+    // Filtrado de Categorías de Módulos
     function filterCategory(category) {
       document.querySelectorAll('.cat-btn').forEach(btn => {
         if (btn.dataset.category === category) {
@@ -986,11 +1088,12 @@
       });
     }
 
-    // Calculadora del Simulador de Precios (Software + Hardware)
-    function updateQuote() {
+    // Calculadora del Wizard en Pesos Mexicanos (MXN)
+    function updateWizardQuote() {
       const softCheckboxes = document.querySelectorAll('.module-check');
       const hwCheckboxes = document.querySelectorAll('.hw-check');
-      const listContainer = document.getElementById('quote-items');
+      const listContainer = document.getElementById('wizard-summary-list');
+      if (!listContainer) return;
       
       let totalSetup = 0;
       let totalMonthly = 0;
@@ -1010,7 +1113,7 @@
 
           const row = document.createElement('div');
           row.className = 'flex justify-between items-center text-slate-300';
-          row.innerHTML = `<span>• ${name}</span><span class="font-mono text-slate-400">$${month}/m</span>`;
+          row.innerHTML = `<span>• ${name}</span><span class="font-mono text-slate-400">$${month.toLocaleString('es-MX')} MXN/mes</span>`;
           listContainer.appendChild(row);
         }
       });
@@ -1026,7 +1129,7 @@
 
           const row = document.createElement('div');
           row.className = 'flex justify-between items-center text-amber-300/90';
-          row.innerHTML = `<span>[Equipo] ${name}</span><span class="font-mono text-amber-200">+$${price}</span>`;
+          row.innerHTML = `<span>[Equipo] ${name}</span><span class="font-mono text-amber-200">+$${price.toLocaleString('es-MX')} MXN</span>`;
           listContainer.appendChild(row);
         }
       });
@@ -1035,41 +1138,42 @@
         listContainer.innerHTML = '<span class="text-slate-500 italic">Selecciona al menos un módulo o equipo</span>';
       }
 
-      // Descuento por paquete de software completo (si selecciona 4 o más módulos)
+      // Descuento por paquete de software completo
       if (softCount >= 4) {
-        totalMonthly = Math.round(totalMonthly * 0.88); // 12% de descuento en suscripción
+        totalMonthly = Math.round(totalMonthly * 0.88);
       }
 
-      document.getElementById('hw-price').textContent = `$${totalHardware}`;
-      document.getElementById('setup-price').textContent = `$${totalSetup}`;
-      document.getElementById('monthly-price').innerHTML = `$${totalMonthly}<span class="text-xs font-normal text-slate-400">/mes</span>`;
+      document.getElementById('wizard-hw-total').textContent = `$${totalHardware.toLocaleString('es-MX')} MXN`;
+      document.getElementById('wizard-setup-total').textContent = `$${totalSetup.toLocaleString('es-MX')} MXN`;
+      document.getElementById('wizard-monthly-total').textContent = `$${totalMonthly.toLocaleString('es-MX')} MXN`;
     }
 
     document.querySelectorAll('.module-check, .hw-check').forEach(cb => {
-      cb.addEventListener('change', updateQuote);
+      cb.addEventListener('change', updateWizardQuote);
     });
 
-    function requestProposal() {
-      // Extraer selección para generar mensaje amigable
+    function requestProposalWhatsApp() {
       const selectedItems = [];
       document.querySelectorAll('.module-check:checked, .hw-check:checked').forEach(cb => {
         selectedItems.push(cb.dataset.name);
       });
 
+      const monthly = document.getElementById('wizard-monthly-total').textContent;
+      const hw = document.getElementById('wizard-hw-total').textContent;
+
       const message = encodeURIComponent(
-        "¡Hola! Me interesa solicitar una cotización y demostración de GastroFlow para mi restaurante.\n\n" +
-        "Módulos y equipos de interés:\n" + selectedItems.map(item => "- " + item).join("\n") +
-        "\n\n¿Cuándo podríamos agendar una demo?"
+        "¡Hola! Estuve cotizando un plan para mi restaurante en GastroFlow OS.\n\n" +
+        "Módulos y equipos de mi interés:\n" + selectedItems.map(item => "• " + item).join("\n") + "\n\n" +
+        `Presupuesto Estimado:\n- Suscripción Mensual: ${monthly}\n- Equipamiento: ${hw}\n\n` +
+        "¿Me podrían brindar una cotización formal y agendar una demostración?"
       );
 
-      // Abrir WhatsApp con el mensaje pre-cargado
       window.open(`https://wa.me/?text=${message}`, '_blank');
     }
 
-    // Inicializar iconos y cotización
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
-      updateQuote();
+      updateWizardQuote();
     });
   </script>
 </body>
