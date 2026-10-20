@@ -40,6 +40,9 @@ NTFY_TOKEN = os.getenv("NTFY_TOKEN", "").strip()
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "https://gastroflow.smartopsia.com").rstrip("/")
 
 # Topic por estación KDS -> {prefix}kds-cocina, {prefix}kds-barra, {prefix}kds-snack
+# Cloudflare bloquea el UA por defecto 'Python-urllib' (error 1010) -> UA propio
+USER_AGENT = "GastroFlow/1.0 (+https://gastroflow.smartopsia.com)"
+
 STATION_TOPICS = {"KITCHEN": "cocina", "BAR": "barra", "SNACK_BAR": "snack"}
 STATION_LABELS = {"KITCHEN": "Cocina", "BAR": "Barra", "SNACK_BAR": "Snack"}
 
@@ -88,7 +91,7 @@ def _execute_notify_script(
         req = urllib.request.Request(
             target_url,
             data=data,
-            headers={"Content-Type": "application/json"},
+            headers={"Content-Type": "application/json", "User-Agent": USER_AGENT},
             method="POST"
         )
         with urllib.request.urlopen(req, timeout=4) as response:
@@ -128,7 +131,7 @@ def _execute_notify_script(
         ntfy_sent = False
         for ep in unique_endpoints:
             try:
-                headers = {"Content-Type": "application/json"}
+                headers = {"Content-Type": "application/json", "User-Agent": USER_AGENT}
                 if NTFY_TOKEN:
                     headers["Authorization"] = f"Bearer {NTFY_TOKEN}"
                 req_ntfy = urllib.request.Request(
@@ -228,7 +231,7 @@ def _send_n8n_only(channel: str, title: str, payload: dict):
         return
     try:
         body = json.dumps({"channel": channel, "title": title, "timestamp": datetime.now().isoformat(), "data": payload}).encode("utf-8")
-        req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"}, method="POST")
+        req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json", "User-Agent": USER_AGENT}, method="POST")
         with urllib.request.urlopen(req, timeout=4):
             pass
     except Exception as e:
