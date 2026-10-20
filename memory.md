@@ -93,6 +93,14 @@
 - **Cierre Definitivo de Turno & Reporte Z Inmutable (`POST /api/v1/cashier/corte-caja/close`, modelo `ShiftClosing`):**
   - Genera un certificado inmutable (`CRTE-YYYYMMDD-XXXX`) registrando el arqueo físico declarado vs teórico calculado, diferencia monetaria (sobrante/faltante) y autorización mediante PIN.
 
+## Integración y Validación de Notificaciones Push n8n & ntfy.sh - 2026-10-20
+- **Verificación de Canales en Vivo:**
+  - `prestige-meseros`: Llamados de meseros y órdenes listas (READY).
+  - `prestige-runners`: Solicitudes de recarga de créditos en slots.
+  - `prestige-kds`: Comandas hacia cocina y barra.
+  - `prestige-sistemas`: Tickets de fallas técnicas en slots.
+- **Enrutamiento Dual Blindado:** `backend/utils/n8n.py` despacha con `NOTIFY_VIA=n8n` asegurando compatibilidad nativa con los webhooks del flujo Prestige de n8n y fallback directo a `ntfy.smartopsia.com` / `ntfy.sh`.
+
 
 
 

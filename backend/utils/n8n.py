@@ -46,6 +46,27 @@ USER_AGENT = "GastroFlow/1.0 (+https://gastroflow.smartopsia.com)"
 STATION_TOPICS = {"KITCHEN": "cocina", "BAR": "barra", "SNACK_BAR": "snack"}
 STATION_LABELS = {"KITCHEN": "Cocina", "BAR": "Barra", "SNACK_BAR": "Snack"}
 
+# Ruta de entrega de avisos:
+#   n8n  -> solo webhook al despachador n8n (que publica en ntfy.sh/prestige-*). Default.
+#   ntfy -> solo push directo al servidor ntfy con topics {prefix}kds-cocina, etc.
+#   both -> ambos.
+NOTIFY_VIA = os.getenv("NOTIFY_VIA", "n8n").strip().lower()
+
+# Los canales de GastroFlow se traducen a los 4 canales que entiende el workflow de n8n
+# ("Casino Prestige - Despachador de Alertas"): meseros, runners, kds, sistemas.
+N8N_CHANNEL_MAP = {
+    "kds-cocina": "kds", "kds-barra": "kds", "kds-snack": "kds", "cocina": "kds", "kds": "kds",
+    "comandas": "meseros", "meseros": "meseros",
+    "runners": "runners",
+    "sistemas": "sistemas", "alertas": "sistemas",
+}
+N8N_URL_MAP = {
+    "meseros": N8N_WEBHOOK_MESEROS,
+    "runners": N8N_WEBHOOK_RUNNERS,
+    "kds": N8N_WEBHOOK_ORDERS,
+    "sistemas": N8N_WEBHOOK_TICKETS,
+}
+
 
 
 def _execute_notify_script(
@@ -59,27 +80,20 @@ def _execute_notify_script(
     actions: Optional[list] = None
 ):
     """
-    Despacha la alerta en paralelo con máxima prioridad (Sonido + Vibración urgente):
-    1. Webhook de n8n (para automatizaciones, logs y bots de Telegram/WhatsApp).
-    2. Servidor ntfy (notificaciones push con volumen máximo, vibración y bypass DND).
-    3. notify.sh script bash local si está presente.
+    Despacha la alerta según NOTIFY_VIA:
+    1. Webhook de n8n (canal traducido con N8N_CHANNEL_MAP).
+    2. Push directo al servidor ntfy.
     """
     # 1. Enviar HTTP Webhook a n8n
-    url_map = {
-        "runners": N8N_WEBHOOK_RUNNERS,
-        "meseros": N8N_WEBHOOK_MESEROS,
-        "kds": N8N_WEBHOOK_ORDERS,
-        "cocina": N8N_WEBHOOK_ORDERS,
-        "sistemas": N8N_WEBHOOK_TICKETS,
-        "alertas": N8N_WEBHOOK_ALERTS
-    }
-    target_url = url_map.get(channel)  # canales nuevos (kds-*, comandas) no van a n8n
+    n8n_channel = N8N_CHANNEL_MAP.get(channel)
+    target_url = N8N_URL_MAP.get(n8n_channel) if NOTIFY_VIA in ("n8n", "both") else None
     
     try:
         if not target_url:
-            raise LookupError("canal sin webhook n8n")
+            raise LookupError("n8n deshabilitado o canal sin webhook")
         body = {
-            "channel": channel,
+            "channel": n8n_channel,
+            "source_channel": channel,
             "title": title,
             "message": message,
             "priority": priority,
