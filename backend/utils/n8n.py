@@ -31,9 +31,17 @@ N8N_WEBHOOK_ALERTS = os.getenv("N8N_WEBHOOK_ALERTS", "https://n8n.smartopsia.com
 N8N_WEBHOOK_RUNNERS = os.getenv("N8N_WEBHOOK_RUNNERS", "https://n8n.smartopsia.com/webhook/alerta-runner")
 N8N_WEBHOOK_MESEROS = os.getenv("N8N_WEBHOOK_MESEROS", "https://n8n.smartopsia.com/webhook/alerta-meseros")
 
-# Configuración del Servidor Privado de ntfy (Push Notifications a Celulares y Relojes)
+# Configuración del Servidor de ntfy (privado o público https://ntfy.sh)
 NTFY_SERVER = os.getenv("NTFY_SERVER", "https://ntfy.smartopsia.com")
-NTFY_TOPIC_PREFIX = os.getenv("NTFY_TOPIC_PREFIX", "prestige-")
+NTFY_TOPIC_PREFIX = os.getenv("NTFY_TOPIC_PREFIX", "gastroflow-")
+# Token opcional (tk_...) si el servidor ntfy requiere autenticación para publicar
+NTFY_TOKEN = os.getenv("NTFY_TOKEN", "").strip()
+# URL pública de la app para los botones/clicks de las notificaciones
+PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "https://gastroflow.smartopsia.com").rstrip("/")
+
+# Topic por estación KDS -> {prefix}kds-cocina, {prefix}kds-barra, {prefix}kds-snack
+STATION_TOPICS = {"KITCHEN": "cocina", "BAR": "barra", "SNACK_BAR": "snack"}
+STATION_LABELS = {"KITCHEN": "Cocina", "BAR": "Barra", "SNACK_BAR": "Snack"}
 
 
 
@@ -62,9 +70,11 @@ def _execute_notify_script(
         "sistemas": N8N_WEBHOOK_TICKETS,
         "alertas": N8N_WEBHOOK_ALERTS
     }
-    target_url = url_map.get(channel, N8N_WEBHOOK_RUNNERS)
+    target_url = url_map.get(channel)  # canales nuevos (kds-*, comandas) no van a n8n
     
     try:
+        if not target_url:
+            raise LookupError("canal sin webhook n8n")
         body = {
             "channel": channel,
             "title": title,
@@ -118,10 +128,13 @@ def _execute_notify_script(
         ntfy_sent = False
         for ep in unique_endpoints:
             try:
+                headers = {"Content-Type": "application/json"}
+                if NTFY_TOKEN:
+                    headers["Authorization"] = f"Bearer {NTFY_TOKEN}"
                 req_ntfy = urllib.request.Request(
                     ep,
                     data=json_data,
-                    headers={"Content-Type": "application/json"},
+                    headers=headers,
                     method="POST"
                 )
                 with urllib.request.urlopen(req_ntfy, timeout=3) as resp_ntfy:
@@ -137,46 +150,117 @@ def _execute_notify_script(
     except Exception as e:
         logger.warning(f"[NOTIFY:ntfy] Error al preparar push ntfy: {str(e)}")
 
-    # 3. Invocar notify.sh si existe en el host
-    script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "notify.sh"))
-    if os.path.exists(script_path) and os.name != 'nt':
-        try:
-            subprocess.run(
-                ["bash", script_path, channel, title, message, json.dumps(payload)],
-                capture_output=True,
-                timeout=5
-            )
-        except Exception as e:
-            logger.debug(f"notify.sh subprocess error: {str(e)}")
+    # 3. notify.sh ya no se invoca desde aquí: publicaba al mismo topic y duplicaba avisos.
+    #    El script queda disponible para envíos manuales desde el host.
+
+
+def _items_summary(items: list) -> str:
+    """Texto compacto '2x Hamburguesa, 1x Refresco' para el cuerpo del push."""
+    return ", ".join(
+        f"{int(float(it.get('quantity', 1)))}x {it.get('product_name', 'Artículo')}" for it in items
+    ) or "Sin artículos"
+
+
+def _items_by_station(order_data: dict) -> dict:
+    """Agrupa los artículos de la orden por estación KDS (KITCHEN, BAR, SNACK_BAR)."""
+    groups: dict = {}
+    for it in order_data.get("items", []):
+        groups.setdefault(it.get("destination_kds") or "KITCHEN", []).append(it)
+    return groups
+
+
+def _order_location(order_data: dict) -> str:
+    machine = order_data.get("machine_code") or "000"
+    return "Sala / Barra" if machine == "000" else f"Máq. {machine}"
 
 
 def trigger_order_webhook(order_data: dict):
     """
-    Notifica al canal KDS (Cocina y Barra) que ha entrado una nueva comanda con máxima prioridad.
+    NUEVA COMANDA:
+    - Un push por estación ({prefix}kds-cocina / kds-barra / kds-snack) solo con sus artículos.
+    - Un push resumen al topic {prefix}comandas (supervisión / jefe de sala).
     """
     order_num = order_data.get("order_number", "COM-XXXX")
-    machine = order_data.get("machine_code") or order_data.get("machine_id") or "000"
-    items_count = len(order_data.get("items", []))
-    
+    where = _order_location(order_data)
+    waiter = order_data.get("created_by_name") or "Staff"
+    notes = order_data.get("notes")
+    kds_url = f"{PUBLIC_BASE_URL}/kds"
+
+    for station, items in _items_by_station(order_data).items():
+        label = STATION_LABELS.get(station, station)
+        msg = f"{_items_summary(items)}\n{where} · Mesero: {waiter}"
+        if notes:
+            msg += f"\nNota: {notes}"
+        executor.submit(
+            _execute_notify_script,
+            f"kds-{STATION_TOPICS.get(station, station.lower())}",
+            f"🔥 Nueva comanda {label} #{order_num}",
+            msg,
+            order_data,
+            "5",
+            "rotating_light,fire,cooking",
+            kds_url,
+            [{"action": "view", "label": "Abrir KDS", "url": kds_url}]
+        )
+
     try:
-        total = float(order_data.get('total_amount', 0))
+        total = float(order_data.get("total_amount", 0))
     except (ValueError, TypeError):
         total = 0.0
-
-    title = f"🔥 ¡NUEVA COMANDA! #{order_num} (Máq. {machine})"
-    msg = f"Nueva comanda para Máquina {machine} con {items_count} artículo(s). Total: ${total:.2f}"
-
     executor.submit(
         _execute_notify_script,
-        "kds",
-        title,
-        msg,
+        "comandas",
+        f"📝 Comanda registrada #{order_num}",
+        f"{_items_summary(order_data.get('items', []))}\n{where} · {waiter} · Total ${total:.2f}",
         order_data,
-        "5",
-        "rotating_light,fire,cooking,fork_and_knife",
-        "https://prestige.smartopsia.com/kds.html",
-        [{"action": "view", "label": "Abrir KDS", "url": "https://prestige.smartopsia.com/kds.html"}]
+        "3",
+        "memo,fork_and_knife",
+        f"{PUBLIC_BASE_URL}/pos",
     )
+    # Webhook n8n histórico de nuevas órdenes (sin push duplicado: canal 'kds' no se publica en ntfy)
+    executor.submit(_send_n8n_only, "kds", f"Nueva comanda #{order_num}", order_data)
+
+
+def _send_n8n_only(channel: str, title: str, payload: dict):
+    """Envía solo el webhook n8n (sin push), para mantener los flujos existentes."""
+    url = {"kds": N8N_WEBHOOK_ORDERS}.get(channel)
+    if not url:
+        return
+    try:
+        body = json.dumps({"channel": channel, "title": title, "timestamp": datetime.now().isoformat(), "data": payload}).encode("utf-8")
+        req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(req, timeout=4):
+            pass
+    except Exception as e:
+        logger.warning(f"[NOTIFY:n8n] Webhook {url} omitido/error: {e}")
+
+
+def trigger_order_status_notification(order_data: dict, status: str):
+    """
+    Cambios de estado de la orden:
+    - PREPARING  -> {prefix}comandas (prioridad 3): cocina/barra tomó la comanda.
+    - DELIVERED  -> {prefix}comandas (prioridad 2): orden finalizada / entregada.
+    - CANCELLED  -> {prefix}kds-<estación> + {prefix}meseros (prioridad 4).
+    (READY se maneja en trigger_order_ready_notification.)
+    """
+    order_num = order_data.get("order_number", "COM-XXXX")
+    where = _order_location(order_data)
+    summary = _items_summary(order_data.get("items", []))
+
+    if status == "PREPARING":
+        executor.submit(_execute_notify_script, "comandas", f"👨‍🍳 En preparación #{order_num}",
+                        f"{summary}\n{where}", order_data, "3", "cook,hourglass_flowing_sand", f"{PUBLIC_BASE_URL}/kds")
+    elif status == "DELIVERED":
+        executor.submit(_execute_notify_script, "comandas", f"✅ Orden finalizada #{order_num}",
+                        f"Entregada en {where}\n{summary}", order_data, "2", "white_check_mark", f"{PUBLIC_BASE_URL}/pos")
+    elif status == "CANCELLED":
+        reason = order_data.get("cancellation_reason") or "Sin motivo"
+        msg = f"{summary}\n{where} · Motivo: {reason}"
+        for station in _items_by_station(order_data):
+            executor.submit(_execute_notify_script, f"kds-{STATION_TOPICS.get(station, station.lower())}",
+                            f"❌ Comanda cancelada #{order_num}", msg, order_data, "4", "x,warning", f"{PUBLIC_BASE_URL}/kds")
+        executor.submit(_execute_notify_script, "meseros", f"❌ Comanda cancelada #{order_num}",
+                        msg, order_data, "4", "x,warning", f"{PUBLIC_BASE_URL}/pos")
 
 
 def trigger_order_ready_notification(order_data: dict):
@@ -191,9 +275,9 @@ def trigger_order_ready_notification(order_data: dict):
     title = f"🚨 ¡ORDEN LISTA PARA ENTREGA! #{order_num}"
     msg = f"Comanda #{order_num} lista en barra/cocina para MÁQUINA {machine}.\nDetalle: {items_summary}"
     
-    actions = [{"action": "view", "label": "Ver en POS", "url": "https://prestige.smartopsia.com/pos.html"}]
-    executor.submit(_execute_notify_script, "meseros", title, msg, order_data, "5", "rotating_light,bell,plate,runner", "https://prestige.smartopsia.com/pos.html", actions)
-    executor.submit(_execute_notify_script, "runners", title, msg, order_data, "5", "rotating_light,runner,bell", "https://prestige.smartopsia.com/pos.html", actions)
+    actions = [{"action": "view", "label": "Ver en POS", "url": f"{PUBLIC_BASE_URL}/pos"}]
+    executor.submit(_execute_notify_script, "meseros", title, msg, order_data, "5", "rotating_light,bell,plate,runner", f"{PUBLIC_BASE_URL}/pos", actions)
+    executor.submit(_execute_notify_script, "runners", title, msg, order_data, "5", "rotating_light,runner,bell", f"{PUBLIC_BASE_URL}/pos", actions)
 
 
 def trigger_waiter_call_alert(machine_id: str, notes: Optional[str] = None, user_name: Optional[str] = None):
@@ -211,7 +295,7 @@ def trigger_waiter_call_alert(machine_id: str, notes: Optional[str] = None, user
         "notes": notes,
         "requested_by": user_name or "Cliente QR"
     }
-    actions = [{"action": "view", "label": "Atender en POS", "url": "https://prestige.smartopsia.com/pos.html"}]
+    actions = [{"action": "view", "label": "Atender en POS", "url": f"{PUBLIC_BASE_URL}/pos"}]
     executor.submit(
         _execute_notify_script,
         "meseros",
@@ -220,7 +304,7 @@ def trigger_waiter_call_alert(machine_id: str, notes: Optional[str] = None, user
         payload,
         "5",
         "rotating_light,bell,raising_hand,loudspeaker",
-        "https://prestige.smartopsia.com/pos.html",
+        f"{PUBLIC_BASE_URL}/pos",
         actions
     )
 
@@ -243,7 +327,7 @@ def trigger_runner_recharge_alert(machine_id: str, amount: Optional[str] = None,
         "notes": notes,
         "requested_by": user_name or "Cliente QR"
     }
-    actions = [{"action": "view", "label": "Atender Recarga", "url": "https://prestige.smartopsia.com/pos.html"}]
+    actions = [{"action": "view", "label": "Atender Recarga", "url": f"{PUBLIC_BASE_URL}/pos"}]
     executor.submit(
         _execute_notify_script,
         "runners",
@@ -252,7 +336,7 @@ def trigger_runner_recharge_alert(machine_id: str, amount: Optional[str] = None,
         payload,
         "5",
         "rotating_light,moneybag,zap,runner",
-        "https://prestige.smartopsia.com/pos.html",
+        f"{PUBLIC_BASE_URL}/pos",
         actions
     )
 
@@ -271,7 +355,7 @@ def trigger_system_failure_alert(machine_id: str, description: str, user_name: O
         "description": description,
         "reported_by": user_name or "Cliente QR"
     }
-    actions = [{"action": "view", "label": "Ver en Staff", "url": "https://prestige.smartopsia.com/staff.html"}]
+    actions = [{"action": "view", "label": "Ver en Staff", "url": f"{PUBLIC_BASE_URL}/staff"}]
     executor.submit(
         _execute_notify_script,
         "sistemas",
@@ -280,14 +364,14 @@ def trigger_system_failure_alert(machine_id: str, description: str, user_name: O
         payload,
         "5",
         "rotating_light,warning,tools,red_circle",
-        "https://prestige.smartopsia.com/staff.html",
+        f"{PUBLIC_BASE_URL}/staff",
         actions
     )
 
 
 def trigger_ticket_webhook(ticket_data: dict):
     """Dispara el webhook general de tickets con prioridad alta."""
-    actions = [{"action": "view", "label": "Ver Ticket", "url": "https://prestige.smartopsia.com/staff.html"}]
+    actions = [{"action": "view", "label": "Ver Ticket", "url": f"{PUBLIC_BASE_URL}/staff"}]
     executor.submit(
         _execute_notify_script,
         "sistemas",
@@ -296,7 +380,7 @@ def trigger_ticket_webhook(ticket_data: dict):
         ticket_data,
         "5",
         "rotating_light,tools,clipboard",
-        "https://prestige.smartopsia.com/staff.html",
+        f"{PUBLIC_BASE_URL}/staff",
         actions
     )
 
@@ -311,7 +395,7 @@ def trigger_stock_webhook(alert_data: dict):
         alert_data,
         "4",
         "package,warning,chart_with_downwards_trend",
-        "https://prestige.smartopsia.com/catalogo.html"
+        f"{PUBLIC_BASE_URL}/catalogo"
     )
 
 

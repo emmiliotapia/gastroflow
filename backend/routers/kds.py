@@ -25,7 +25,7 @@ from backend.models.user import User
 from backend.schemas.order import KDSOrderUpdate, OrderCreate, OrderRead, OrderItemRead, OrderCancel
 from backend.services.inventory_service import InventoryService
 from backend.websockets.kds_manager import kds_manager
-from backend.utils.n8n import trigger_order_webhook, trigger_order_ready_notification
+from backend.utils.n8n import trigger_order_webhook, trigger_order_ready_notification, trigger_order_status_notification
 
 router = APIRouter(tags=["Comandas y KDS (Kitchen Display System)"])
 
@@ -448,6 +448,10 @@ def update_kds_order_status(
             }
         )
 
+    # Push ntfy para en preparación / finalizada (solo si el estado realmente cambió)
+    if payload.status != previous_status and payload.status in (OrderStatus.PREPARING, OrderStatus.DELIVERED):
+        trigger_order_status_notification(order_payload, payload.status.value)
+
     return dto
 
 
@@ -581,6 +585,8 @@ def cancel_order(
             "reason": payload.reason
         }
     )
+
+    trigger_order_status_notification({**order_payload, "cancellation_reason": payload.reason}, "CANCELLED")
 
     return dto
 
