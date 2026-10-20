@@ -1,0 +1,54 @@
+services:
+
+  # Base de Datos PostgreSQL con soporte nativo de pgvector para GastroFlow
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: gastroflow_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-gastroflow_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gastroflow_secure_2026_db}
+      POSTGRES_DB: ${POSTGRES_DB:-gastroflow_db}
+    volumes:
+      - gastroflow_pgdata:/var/lib/postgresql/data
+      - ./docker/init-pgvector.sql:/docker-entrypoint-initdb.d/01-init-pgvector.sql
+    ports:
+      # Puerto 5441 en el host VPS para evitar colisión con otras bases de datos
+      - "${POSTGRES_PORT_HOST:-5441}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gastroflow_admin} -d ${POSTGRES_DB:-gastroflow_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gastroflow_net
+
+  # API Principal FastAPI - GastroFlow Core
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: gastroflow_backend
+    restart: always
+    env_file:
+      - .env
+    ports:
+      # Puerto 8002 en el host VPS mapeado al 8000 interno del contenedor
+      - "${BACKEND_PORT_HOST:-8002}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./frontend:/app/frontend
+      - ./backend:/app/backend
+      - ./uploads:/app/uploads
+    networks:
+      - gastroflow_net
+
+volumes:
+  gastroflow_pgdata:
+    driver: local
+
+networks:
+  gastroflow_net:
+    driver: bridge
