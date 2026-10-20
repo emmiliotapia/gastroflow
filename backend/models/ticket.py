@@ -55,7 +55,7 @@ class Ticket(Base, TimestampMixin):
     )
 
     status: Mapped[TicketStatus] = mapped_column(
-        Enum(TicketStatus, name="ticket_status_enum", create_type=False),
+        Enum(TicketStatus, name="ticket_status_enum", create_type=True),
         default=TicketStatus.PENDIENTE,
         nullable=False,
         comment="Estado actual del ticket (PENDIENTE, EN_PROCESO, HOLD, FINALIZADO)"
