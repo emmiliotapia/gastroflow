@@ -1,1189 +1,405 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Casino Prestige - Caja y Punto de Venta A&B</title>
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GastroFlow • Terminal de Caja, Cobros & Arqueo</title>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        obsidian: {
-                            DEFAULT: '#0e0e11',
-                            deep: '#060608',
-                            card: '#16161b',
-                            light: '#22222b',
-                            border: '#2a2a36'
-                        },
-                        gold: {
-                            400: '#e1b77c',
-                            500: '#d49b4b',
-                            600: '#c5843a',
-                            goldish: '#d4af37'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        outfit: ['Outfit', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace']
-                    }
-                }
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              500: '#f97316',
+              600: '#ea580c',
             }
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+            outfit: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
         }
-    </script>
+      }
+    }
+  </script>
 
-    <style>
-        body {
-            background-color: #060608;
-            color: #e2e8f0;
-            font-family: 'Inter', sans-serif;
-            background-image: 
-                radial-gradient(circle at 10% 10%, rgba(212, 175, 55, 0.03) 0%, transparent 40%),
-                radial-gradient(circle at 90% 90%, rgba(197, 132, 58, 0.02) 0%, transparent 40%);
-            background-attachment: fixed;
-        }
+  <style>
+    body {
+      background-color: #f8fafc;
+      color: #0f172a;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
 
-        .glass-card {
-            background: rgba(22, 22, 27, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-        }
-
-        .glass-card:hover {
-            border-color: rgba(212, 175, 55, 0.2);
-        }
-
-        .btn-gold {
-            background: linear-gradient(135deg, #d49b4b 0%, #c5843a 100%);
-            color: #060608;
-            font-weight: 700;
-            transition: all 0.2s ease;
-        }
-
-        .btn-gold:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.35);
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #060608;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #22222b;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #d49b4b;
-        }
-    </style>
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #thermal-receipt-container, #thermal-receipt-container * {
+        visibility: visible;
+      }
+      #thermal-receipt-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 80mm;
+        margin: 0;
+        padding: 5mm;
+        font-family: 'JetBrains Mono', monospace, Courier, sans-serif;
+        color: #000;
+        background: #fff;
+        display: block !important;
+      }
+      @page {
+        size: 80mm auto;
+        margin: 0;
+      }
+    }
+  </style>
 </head>
 <body class="min-h-screen flex flex-col select-none">
 
-    <!-- HEADER -->
-    <header class="bg-obsidian-deep/95 border-b border-obsidian-border px-6 py-3.5 sticky top-0 z-30 backdrop-blur-md flex justify-between items-center">
-        <div class="flex items-center gap-3.5">
-            <div class="w-10 h-10 rounded-2xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center">
-                <i data-lucide="circle-dollar-sign" class="w-6 h-6 text-gold-400"></i>
-            </div>
-            <div>
-                <h1 class="font-outfit text-lg font-bold text-white tracking-wider">CASINO <span class="text-gold-400">PRESTIGE</span></h1>
-                <p class="text-xs text-gray-400 font-mono">Terminal de Caja, Cobros A&B y Barra POS</p>
-            </div>
+  <!-- HEADER CAJA -->
+  <header class="bg-white border-b border-slate-200 px-6 py-3.5 flex justify-between items-center shadow-xs">
+    <div class="flex items-center gap-3">
+      <a href="index.html" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition">
+        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+      </a>
+      <div>
+        <h1 class="font-outfit text-xl font-black text-slate-900 flex items-center gap-2">
+          Gastro<span class="text-brand-500">Cashier</span>
+          <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">CAJA CENTRAL</span>
+        </h1>
+        <p class="text-xs text-slate-500">Caja 01 • Turno Tarde • Cajero: Laura S.</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-mono font-bold text-emerald-800">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        Fondo Inicial: $1,500.00
+      </div>
+      <button onclick="promptCashClose()" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 transition">
+        <i data-lucide="archive" class="w-4 h-4 text-brand-400"></i>
+        <span>Cierre de Turno (Corte Z)</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL: 2 COLUMNAS (Mesas por cobrar y Detalle de cuenta) -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+    
+    <!-- COL 1 & 2: CUENTAS ACTIVAS / MESAS CON PEDIDO -->
+    <div class="lg:col-span-2 space-y-4">
+      
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="font-outfit text-lg font-bold text-slate-900">Cuentas Abiertas en Salón & Barra</h2>
+          <p class="text-xs text-slate-500">Selecciona una mesa para liquidar o emitir ticket</p>
+        </div>
+        <div class="text-xs font-mono font-bold text-brand-600 bg-orange-50 px-3 py-1 rounded-lg border border-orange-200">
+          3 Mesas por Cobrar
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="tables-grid">
+        
+        <!-- Mesa 04 (Seleccionada) -->
+        <div onclick="selectTableBill('MESA 04', 440, 'Carlos M.')" class="bg-white p-5 rounded-2xl border-2 border-brand-500 shadow-md cursor-pointer transition relative">
+          <div class="flex justify-between items-start mb-2">
+            <span class="font-outfit font-black text-base text-slate-900">Mesa 04</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-50 text-amber-700 border border-amber-200">Por Cobrar</span>
+          </div>
+          <p class="text-xs text-slate-500">Mesero: Carlos M. • 3 Platillos</p>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-baseline">
+            <span class="text-xs font-semibold text-slate-600">Total a Pagar:</span>
+            <span class="font-mono text-xl font-black text-brand-600">$440.00</span>
+          </div>
         </div>
 
-        <div class="flex items-center gap-3">
-            <button onclick="openCorteCajaModal()" class="px-3.5 py-2 rounded-xl bg-gold-500/10 border border-gold-500/30 hover:bg-gold-500/20 text-xs font-bold text-gold-400 flex items-center gap-2 transition">
-                <i data-lucide="calculator" class="w-4 h-4"></i>
-                <span>Corte de Turno</span>
+        <!-- Terraza 02 -->
+        <div onclick="selectTableBill('TERRAZA 02', 225, 'Ana R.')" class="bg-white p-5 rounded-2xl border border-slate-200 hover:border-slate-300 shadow-xs cursor-pointer transition">
+          <div class="flex justify-between items-start mb-2">
+            <span class="font-outfit font-black text-base text-slate-900">Terraza 02</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-50 text-amber-700 border border-amber-200">Por Cobrar</span>
+          </div>
+          <p class="text-xs text-slate-500">Mesero: Ana R. • 3 Bebidas</p>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-baseline">
+            <span class="text-xs font-semibold text-slate-600">Total a Pagar:</span>
+            <span class="font-mono text-xl font-black text-slate-900">$225.00</span>
+          </div>
+        </div>
+
+        <!-- Mesa 09 -->
+        <div onclick="selectTableBill('MESA 09', 385, 'Carlos M.')" class="bg-white p-5 rounded-2xl border border-slate-200 hover:border-slate-300 shadow-xs cursor-pointer transition">
+          <div class="flex justify-between items-start mb-2">
+            <span class="font-outfit font-black text-base text-slate-900">Mesa 09</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-50 text-amber-700 border border-amber-200">Por Cobrar</span>
+          </div>
+          <p class="text-xs text-slate-500">Mesero: Carlos M. • 2 Platillos</p>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-baseline">
+            <span class="text-xs font-semibold text-slate-600">Total a Pagar:</span>
+            <span class="font-mono text-xl font-black text-slate-900">$385.00</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- COL 3: TERMINAL DE COBRO DE LA CUENTA SELECCIONADA -->
+    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
+      <div>
+        <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+          <div>
+            <span class="text-[11px] font-mono font-bold text-brand-600 uppercase" id="checkout-table-badge">MESA 04</span>
+            <h3 class="font-outfit text-lg font-bold text-slate-900">Desglose de Liquidación</h3>
+          </div>
+          <span class="text-xs text-slate-400 font-mono" id="checkout-waiter">Mesero: Carlos M.</span>
+        </div>
+
+        <!-- Breakdown Items -->
+        <div class="py-4 space-y-2.5 text-xs text-slate-700 border-b border-slate-100" id="checkout-items">
+          <div class="flex justify-between">
+            <span>2x Hamburguesa Smash Trufada</span>
+            <span class="font-mono font-bold text-slate-900">$370.00</span>
+          </div>
+          <div class="flex justify-between">
+            <span>1x Papas Rústicas con Parmesano</span>
+            <span class="font-mono font-bold text-slate-900">$95.00</span>
+          </div>
+          <div class="flex justify-between text-emerald-600">
+            <span>Descuento Cortesía de la Casa</span>
+            <span class="font-mono font-bold">-$25.00</span>
+          </div>
+        </div>
+
+        <!-- Total Box -->
+        <div class="py-4 space-y-1.5 border-b border-slate-100">
+          <div class="flex justify-between text-xs text-slate-500">
+            <span>Subtotal:</span>
+            <span class="font-mono text-slate-800" id="subtotal-val">$440.00</span>
+          </div>
+          <div class="flex justify-between text-xs text-slate-500">
+            <span>Sugerencia Propina (10%):</span>
+            <span class="font-mono text-slate-800" id="tip-val">$44.00</span>
+          </div>
+          <div class="flex justify-between items-baseline pt-2">
+            <span class="text-sm font-bold text-slate-900">Total a Cobrar:</span>
+            <span class="font-mono text-2xl font-black text-brand-600" id="checkout-total">$484.00</span>
+          </div>
+        </div>
+
+        <!-- Métodos de Pago -->
+        <div class="mt-4">
+          <label class="block text-xs font-bold text-slate-700 mb-2">Seleccionar Método de Pago:</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="setPaymentMethod('Efectivo')" class="p-3 rounded-xl border-2 border-brand-500 bg-orange-50/50 text-slate-900 font-bold text-xs flex flex-col items-center gap-1 pay-btn">
+              <i data-lucide="banknote" class="w-4 h-4 text-brand-600"></i>
+              <span>Efectivo</span>
             </button>
-            <button onclick="openHistoryModal()" class="px-3.5 py-2 rounded-xl bg-obsidian border border-obsidian-border hover:border-gold-500/40 text-xs font-bold text-gray-300 hover:text-gold-400 flex items-center gap-2 transition">
-                <i data-lucide="history" class="w-4 h-4 text-gold-400"></i>
-                <span>Historial</span>
+            <button onclick="setPaymentMethod('Tarjeta')" class="p-3 rounded-xl border border-slate-200 hover:border-slate-300 text-slate-700 font-bold text-xs flex flex-col items-center gap-1 pay-btn">
+              <i data-lucide="credit-card" class="w-4 h-4 text-slate-500"></i>
+              <span>Tarjeta</span>
             </button>
-            <button onclick="openBarStockModal()" class="px-3.5 py-2 rounded-xl bg-obsidian border border-obsidian-border hover:border-gold-500/40 text-xs font-bold text-gray-300 hover:text-gold-400 flex items-center gap-2 transition">
-                <i data-lucide="wine" class="w-4 h-4 text-gold-400"></i>
-                <span class="hidden sm:inline">Stock Barra</span>
+            <button onclick="setPaymentMethod('Transfer')" class="p-3 rounded-xl border border-slate-200 hover:border-slate-300 text-slate-700 font-bold text-xs flex flex-col items-center gap-1 pay-btn">
+              <i data-lucide="smartphone" class="w-4 h-4 text-slate-500"></i>
+              <span>Transferencia</span>
             </button>
-            <button onclick="loadPendingOrders()" class="p-2 rounded-xl bg-obsidian border border-obsidian-border hover:border-gold-500/40 text-gray-400 hover:text-gold-400 transition" title="Refrescar Cuentas">
-                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-            </button>
-            <div class="text-xs font-mono bg-obsidian-card px-3 py-1.5 rounded-xl border border-obsidian-border text-gold-400 font-bold" id="cashier-clock">
-                00:00:00
-            </div>
+          </div>
         </div>
-    </header>
+      </div>
 
+      <div class="mt-6 space-y-2">
+        <button onclick="confirmPayment()" class="w-full py-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-black text-xs uppercase tracking-wider shadow-sm flex items-center justify-center gap-2 transition active:scale-95">
+          <i data-lucide="check-circle" class="w-4 h-4"></i>
+          <span>Cobrar & Imprimir Ticket</span>
+        </button>
+        <button onclick="splitBillPrompt()" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
+          Dividir Cuenta entre Comensales
+        </button>
+      </div>
 
-    <!-- MAIN TWO-COLUMN WORKSPACE -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        <!-- LEFT COLUMN: GENERAR ORDEN DIRECTA (7 COLS) -->
-        <section class="lg:col-span-7 flex flex-col gap-4">
-            <div class="glass-card rounded-2xl p-5 flex flex-col gap-4 shadow-xl">
-                <div class="flex justify-between items-center">
-                    <h2 class="font-outfit text-base font-bold text-white flex items-center gap-2">
-                        <i data-lucide="plus-circle" class="w-4 h-4 text-gold-400"></i> Nueva Comanda Directa
-                    </h2>
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs text-gray-400 font-mono">Máquina/Slot:</span>
-                        <input type="text" id="direct-machine" value="000" placeholder="000 o SL-101" class="w-24 bg-obsidian border border-obsidian-border rounded-xl px-2.5 py-1 text-xs font-mono font-bold text-center text-gold-400 focus:outline-none focus:border-gold-500">
-                    </div>
-                </div>
-
-                <!-- Product Catalog Quick Selector -->
-                <div class="flex items-center gap-2">
-                    <div class="relative flex-1">
-                        <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-2.5 text-gray-500"></i>
-                        <input type="text" id="product-search" oninput="filterCatalog()" placeholder="Buscar bebida o platillo..." class="w-full bg-obsidian border border-obsidian-border rounded-xl py-1.5 pl-8 pr-3 text-xs text-white focus:outline-none focus:border-gold-500">
-                    </div>
-                    <!-- Categories -->
-                    <select id="category-filter" onchange="filterCatalog()" class="bg-obsidian border border-obsidian-border rounded-xl px-3 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-gold-500">
-                        <option value="ALL">Todas las Categorías</option>
-                    </select>
-                </div>
-
-                <!-- Product Cards Grid -->
-                <div id="catalog-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-64 overflow-y-auto pr-1">
-                    <!-- Loaded dynamically -->
-                </div>
-
-                <!-- Current Cart / Tray Items -->
-                <div class="border-t border-obsidian-border pt-3">
-                    <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex justify-between">
-                        <span>Bandeja del Ticket</span>
-                        <button onclick="clearCart()" class="text-red-400 hover:text-red-300 text-[11px] lowercase">vaciar</button>
-                    </div>
-                    <div id="cart-items" class="space-y-2 max-h-40 overflow-y-auto pr-1">
-                        <div class="text-center py-6 text-xs text-gray-500 italic">No hay productos agregados a la comanda</div>
-                    </div>
-                </div>
-
-                <!-- Notes & Dispatch Action -->
-                <div class="border-t border-obsidian-border pt-3 flex flex-col gap-3">
-                    <input type="text" id="direct-notes" placeholder="Notas de preparación (ej. sin hielo, término medio)..." class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-gold-500">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <span class="text-xs text-gray-400 block font-mono">Total a Cobrar</span>
-                            <span class="text-xl font-bold font-mono text-gold-400" id="cart-total">$0.00</span>
-                        </div>
-                        <button onclick="submitDirectOrder()" class="btn-gold px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2">
-                            <i data-lucide="send" class="w-4 h-4"></i> Enviar Comanda a KDS
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- RIGHT COLUMN: CUENTAS ABIERTAS FIFO (5 COLS) -->
-        <section class="lg:col-span-5 flex flex-col gap-4">
-            <div class="glass-card rounded-2xl p-5 flex flex-col gap-4 shadow-xl flex-1">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h2 class="font-outfit text-base font-bold text-white flex items-center gap-2">
-                            <i data-lucide="receipt" class="w-4 h-4 text-gold-400"></i> Cuentas Abiertas (FIFO)
-                        </h2>
-                        <p class="text-[11px] text-gray-400 font-mono">Comandas pendientes de cobro o liberación</p>
-                    </div>
-                    <span class="text-xs font-mono font-bold bg-obsidian px-2.5 py-1 rounded-lg border border-obsidian-border text-gold-400" id="open-accounts-count">0 cuentas</span>
-                </div>
-
-                <!-- Open Orders List Container -->
-                <div id="pending-orders-list" class="space-y-3 flex-1 overflow-y-auto max-h-[600px] pr-1">
-                    <!-- Dynamic Orders -->
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- PAY ORDER MODAL -->
-    <div id="pay-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="glass-card bg-obsidian-card p-6 rounded-3xl w-full max-w-md flex flex-col gap-5 border border-obsidian-border shadow-2xl">
-            <div class="flex justify-between items-center border-b border-obsidian-border pb-3">
-                <div>
-                    <h3 class="font-outfit text-lg font-bold text-white">Cobro de Comanda</h3>
-                    <p class="text-xs font-mono text-gold-400" id="pay-order-folio">FOLIO: COM-00000</p>
-                </div>
-                <button onclick="closePayModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-
-            <div class="bg-obsidian p-4 rounded-2xl border border-obsidian-border flex justify-between items-center">
-                <span class="text-xs text-gray-400 font-mono">Monto Total:</span>
-                <span class="text-2xl font-bold font-mono text-emerald-400" id="pay-modal-total">$0.00</span>
-            </div>
-
-            <!-- Payment Methods -->
-            <div class="space-y-2">
-                <label class="block text-xs text-gray-400 font-semibold">Método de Liquidación</label>
-                <div class="grid grid-cols-3 gap-2">
-                    <button type="button" onclick="selectPayMethod('CASH')" id="pay-btn-cash" class="p-3 rounded-xl bg-gold-500 text-black font-bold text-xs flex flex-col items-center gap-1 transition">
-                        <i data-lucide="banknote" class="w-4 h-4"></i> Efectivo
-                    </button>
-                    <button type="button" onclick="selectPayMethod('CARD')" id="pay-btn-card" class="p-3 rounded-xl bg-obsidian border border-obsidian-border text-gray-300 font-bold text-xs flex flex-col items-center gap-1 transition">
-                        <i data-lucide="credit-card" class="w-4 h-4"></i> Tarjeta
-                    </button>
-                    <button type="button" onclick="selectPayMethod('COURTESY')" id="pay-btn-courtesy" class="p-3 rounded-xl bg-obsidian border border-obsidian-border text-amber-300 font-bold text-xs flex flex-col items-center gap-1 transition">
-                        <i data-lucide="crown" class="w-4 h-4"></i> Cortesía
-                    </button>
-                </div>
-            </div>
-
-            <!-- Supervisor PIN input (for courtesy) -->
-            <div id="supervisor-pin-container" class="space-y-1.5 hidden">
-                <label class="block text-xs text-amber-300 font-semibold flex items-center gap-1">
-                    <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> PIN de Supervisor / Jefe de Sala *
-                </label>
-                <input type="password" maxlength="6" id="supervisor-pin-input" placeholder="••••" class="w-full bg-obsidian border border-amber-500/50 rounded-xl p-2.5 text-center text-base tracking-widest font-mono text-white focus:outline-none focus:border-gold-500">
-                <p class="text-[10px] text-gray-500 text-center">Autorización requerida para bonificación al 100%</p>
-            </div>
-
-            <div class="flex justify-end gap-3 pt-3 border-t border-obsidian-border">
-                <button type="button" onclick="closePayModal()" class="px-4 py-2.5 rounded-xl bg-obsidian text-gray-400 hover:text-white font-bold text-xs">Cancelar</button>
-                <button type="button" onclick="executePayment()" class="btn-gold px-6 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2">
-                    <i data-lucide="check" class="w-4 h-4"></i> Confirmar y Liquidar
-                </button>
-            </div>
-        </div>
     </div>
 
-    <!-- BAR STOCK MODAL -->
-    <div id="bar-stock-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="glass-card bg-obsidian-card p-6 rounded-3xl w-full max-w-2xl max-h-[85vh] overflow-y-auto flex flex-col gap-4 border border-obsidian-border shadow-2xl">
-            <div class="flex justify-between items-center border-b border-obsidian-border pb-3">
-                <h3 class="font-outfit text-lg font-bold text-white flex items-center gap-2">
-                    <i data-lucide="wine" class="w-5 h-5 text-gold-400"></i> Stock en Estación de Barra (BAR)
-                </h3>
-                <button onclick="closeBarStockModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+  </main>
+
+  <script>
+    let activeTable = 'MESA 04';
+    let activeTotal = 440;
+    let selectedPay = 'Efectivo';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      loadActiveBills();
+
+      // Escuchar nuevas comandas en tiempo real
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'gastro_orders' || e.key === 'gastro_new_order_event') {
+          loadActiveBills();
+        }
+      });
+    });
+
+    function loadActiveBills() {
+      const stored = localStorage.getItem('gastro_orders');
+      if (!stored) return;
+      try {
+        const orders = JSON.parse(stored);
+        if (!Array.isArray(orders) || orders.length === 0) return;
+
+        const grid = document.getElementById('tables-grid');
+        grid.innerHTML = '';
+
+        orders.forEach((ord, idx) => {
+          const total = ord.items.reduce((s, i) => s + ((i.price || 150) * i.qty), 0);
+          const isFirst = idx === 0;
+
+          grid.innerHTML += `
+            <div onclick="selectTableBill('${ord.table}', ${total}, '${ord.waiter}')" class="bg-white p-5 rounded-2xl border ${isFirst ? 'border-2 border-brand-500 shadow-md' : 'border-slate-200 hover:border-slate-300'} shadow-xs cursor-pointer transition">
+              <div class="flex justify-between items-start mb-2">
+                <span class="font-outfit font-black text-base text-slate-900">${ord.table}</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-50 text-amber-700 border border-amber-200">Por Cobrar</span>
+              </div>
+              <p class="text-xs text-slate-500">Comanda ${ord.id} • ${ord.waiter} • ${ord.items.length} Platillos</p>
+              <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-baseline">
+                <span class="text-xs font-semibold text-slate-600">Total a Pagar:</span>
+                <span class="font-mono text-xl font-black ${isFirst ? 'text-brand-600' : 'text-slate-900'}">$${total.toFixed(2)}</span>
+              </div>
             </div>
+          `;
 
-            <div id="bar-stock-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <!-- Loaded dynamically -->
-            </div>
-        </div>
-    </div>
-
-    <!-- CORTE DE CAJA / REPORTE Z MODAL -->
-    <div id="corte-caja-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="glass-card bg-obsidian-card p-6 rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto flex flex-col gap-5 border border-obsidian-border shadow-2xl">
-            <div class="flex justify-between items-center border-b border-obsidian-border pb-3">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400">
-                        <i data-lucide="calculator" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-outfit text-lg font-bold text-white">Arqueo Financiero & Corte de Turno (Reporte Z)</h3>
-                        <p class="text-xs text-gray-400 font-mono" id="corte-date-label">Generando reporte...</p>
-                    </div>
-                </div>
-                <button onclick="closeCorteCajaModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-
-            <!-- Financial Metric Cards Grid -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div class="bg-obsidian p-3.5 rounded-2xl border border-obsidian-border flex flex-col justify-between">
-                    <span class="text-[10px] uppercase font-mono text-gray-400">Total Venta Neta</span>
-                    <span class="text-lg font-mono font-extrabold text-emerald-400 mt-1" id="corte-total-sales">$0.00</span>
-                </div>
-                <div class="bg-obsidian p-3.5 rounded-2xl border border-obsidian-border flex flex-col justify-between">
-                    <span class="text-[10px] uppercase font-mono text-gray-400">Efectivo (CASH)</span>
-                    <span class="text-lg font-mono font-extrabold text-white mt-1" id="corte-cash">$0.00</span>
-                </div>
-                <div class="bg-obsidian p-3.5 rounded-2xl border border-obsidian-border flex flex-col justify-between">
-                    <span class="text-[10px] uppercase font-mono text-gray-400">Tarjeta (CARD)</span>
-                    <span class="text-lg font-mono font-extrabold text-white mt-1" id="corte-card">$0.00</span>
-                </div>
-                <div class="bg-obsidian p-3.5 rounded-2xl border border-obsidian-border flex flex-col justify-between">
-                    <span class="text-[10px] uppercase font-mono text-gray-400">Cortesías VIP</span>
-                    <span class="text-lg font-mono font-extrabold text-gold-400 mt-1" id="corte-courtesy">$0.00</span>
-                </div>
-                <div class="bg-obsidian p-3.5 rounded-2xl border border-obsidian-border flex flex-col justify-between">
-                    <span class="text-[10px] uppercase font-mono text-gray-400">Mermas Turno</span>
-                    <span class="text-lg font-mono font-extrabold text-red-400 mt-1" id="corte-waste">$0.00</span>
-                </div>
-                <div class="bg-obsidian p-3.5 rounded-2xl border border-emerald-800/40 bg-emerald-950/20 flex flex-col justify-between">
-                    <span class="text-[10px] uppercase font-mono text-emerald-400 font-bold">Balance en Caja</span>
-                    <span class="text-lg font-mono font-extrabold text-emerald-300 mt-1" id="corte-net">$0.00</span>
-                </div>
-            </div>
-
-            <!-- Stats Counts Row -->
-            <div class="flex flex-wrap gap-4 text-xs font-mono bg-obsidian/60 p-3 rounded-2xl border border-obsidian-border text-gray-300">
-                <span id="corte-paid-count">✅ Pagadas: 0</span>
-                <span id="corte-comp-count">🟡 Cortesías: 0</span>
-                <span id="corte-pend-count">⏳ Pendientes: 0</span>
-                <span id="corte-waste-count">🗑️ Mermas: 0 reg.</span>
-            </div>
-
-            <!-- Items Breakdown Table -->
-            <div class="space-y-2">
-                <h4 class="font-outfit text-sm font-bold text-gold-400 flex items-center gap-1.5">
-                    <i data-lucide="layers" class="w-4 h-4"></i> Desglose de Productos Despachados
-                </h4>
-                <div class="bg-obsidian rounded-2xl overflow-hidden border border-obsidian-border max-h-44 overflow-y-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead class="bg-obsidian-deep text-gray-400 font-mono text-[10px] uppercase">
-                            <tr>
-                                <th class="p-2.5">Producto</th>
-                                <th class="p-2.5 text-center">Unidades</th>
-                                <th class="p-2.5 text-right">Subtotal</th>
-                            </tr>
-                        </thead>
-                        <tbody id="corte-items-table" class="divide-y divide-obsidian-border text-gray-300 font-mono">
-                            <!-- Items -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- ARQUEO FÍSICO DE EFECTIVO & CIERRE BLINDADO -->
-            <div class="bg-obsidian p-4 rounded-2xl border border-gold-500/30 space-y-3">
-                <div class="flex justify-between items-center">
-                    <h4 class="font-outfit text-sm font-bold text-white flex items-center gap-1.5">
-                        <i data-lucide="shield-check" class="w-4 h-4 text-gold-400"></i> Arqueo Físico & Cierre Definitivo de Turno
-                    </h4>
-                    <span id="corte-diff-badge" class="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-obsidian-light text-gray-400 border border-obsidian-border">Diferencia: $0.00</span>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                        <label class="block text-[11px] text-gray-400 font-semibold mb-1">Efectivo Físico en Caja ($) *</label>
-                        <input type="number" step="0.01" id="corte-declared-cash" oninput="calculateCorteDifference()" placeholder="0.00" class="w-full bg-obsidian-deep border border-obsidian-border rounded-xl p-2 text-xs font-mono font-bold text-emerald-400 focus:outline-none focus:border-gold-500">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] text-amber-300 font-semibold mb-1 flex items-center gap-1">
-                            <i data-lucide="key-round" class="w-3 h-3"></i> PIN Supervisor *
-                        </label>
-                        <input type="password" maxlength="6" id="corte-supervisor-pin" placeholder="••••" class="w-full bg-obsidian-deep border border-amber-500/50 rounded-xl p-2 text-center text-xs font-mono font-bold text-white focus:outline-none focus:border-gold-500">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] text-gray-400 font-semibold mb-1">Nombre / Cajero</label>
-                        <input type="text" id="corte-cashier-name" placeholder="Cajero en turno" class="w-full bg-obsidian-deep border border-obsidian-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-gold-500">
-                    </div>
-                </div>
-
-                <div>
-                    <input type="text" id="corte-notes" placeholder="Observaciones / Justificación de sobrante o faltante..." class="w-full bg-obsidian-deep border border-obsidian-border rounded-xl p-2 text-xs text-white focus:outline-none focus:border-gold-500">
-                </div>
-
-                <div class="flex justify-end gap-2 pt-1">
-                    <button type="button" onclick="executeShiftClose()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gold-500 hover:bg-gold-400 text-black font-bold text-xs flex items-center justify-center gap-2 transition">
-                        <i data-lucide="lock" class="w-4 h-4"></i> Autorizar y Cerrar Turno (Reporte Z Inmutable)
-                    </button>
-                </div>
-            </div>
-
-            <div class="flex justify-between items-center pt-2 border-t border-obsidian-border">
-                <button type="button" onclick="printCorteCaja()" class="px-4 py-2 rounded-xl bg-obsidian hover:bg-obsidian-light border border-obsidian-border text-white text-xs font-bold flex items-center gap-2 transition">
-                    <i data-lucide="printer" class="w-4 h-4 text-gold-400"></i> Imprimir Reporte Z
-                </button>
-                <button type="button" onclick="closeCorteCajaModal()" class="px-6 py-2 rounded-xl bg-obsidian-light text-gray-300 hover:text-white font-bold text-xs">
-                    Cerrar
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- CANCEL ORDER MODAL -->
-    <div id="cancel-order-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="glass-card bg-obsidian-card p-6 rounded-3xl w-full max-w-md flex flex-col gap-4 border border-red-900/40 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-obsidian-border pb-3">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400">
-                        <i data-lucide="alert-octagon" class="w-4 h-4"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-outfit text-base font-bold text-white">Cancelar Comanda</h3>
-                        <p class="text-xs font-mono text-red-400" id="cancel-modal-folio">COM-00000</p>
-                    </div>
-                </div>
-                <button onclick="closeCancelOrderModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-
-            <p class="text-xs text-gray-300 leading-relaxed">
-                Esta acción cancela la comanda. Si la orden ya estaba en preparación o servida en KDS, se registrará una <b class="text-red-400">merma justificada</b> en inventario.
-            </p>
-
-            <div class="space-y-2">
-                <label class="block text-xs text-gray-400 font-semibold">Motivo de Cancelación *</label>
-                <input type="text" id="cancel-reason-input" placeholder="Ej. Cliente se retiró, error de captura..." class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-gold-500">
-            </div>
-
-            <div class="space-y-2">
-                <label class="block text-xs text-amber-300 font-semibold flex items-center gap-1">
-                    <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> PIN de Supervisor Requerido *
-                </label>
-                <input type="password" maxlength="6" id="cancel-pin-input" placeholder="••••" class="w-full bg-obsidian border border-amber-500/50 rounded-xl p-2.5 text-center text-base tracking-widest font-mono text-white focus:outline-none focus:border-gold-500">
-            </div>
-
-            <div class="flex justify-end gap-3 pt-3 border-t border-obsidian-border">
-                <button type="button" onclick="closeCancelOrderModal()" class="px-4 py-2.5 rounded-xl bg-obsidian text-gray-400 hover:text-white font-bold text-xs">Atrás</button>
-                <button type="button" onclick="executeCancelOrder()" class="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs flex items-center gap-2 transition">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i> Confirmar Cancelación
-                </button>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- AUDITORÍA E HISTORIAL DE COMANDAS MODAL -->
-    <div id="history-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="glass-card bg-obsidian-card p-6 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col gap-5 border border-obsidian-border shadow-2xl">
-            <div class="flex justify-between items-center border-b border-obsidian-border pb-3">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400">
-                        <i data-lucide="history" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-outfit text-lg font-bold text-white">Auditoría e Historial de Comandas</h3>
-                        <p class="text-xs text-gray-400 font-mono">Consulta de comandas pagadas, cortesías y detalle de emisión</p>
-                    </div>
-                </div>
-                <button onclick="closeHistoryModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-
-            <!-- Filter Controls -->
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
-                <div class="relative w-full sm:w-72">
-                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-gray-500"></i>
-                    <input type="text" id="hist-search" oninput="filterCashierHistory()" placeholder="Buscar por folio o máquina..." class="w-full bg-obsidian border border-obsidian-border rounded-xl py-2 pl-9 pr-3 text-xs text-white focus:outline-none focus:border-gold-500">
-                </div>
-
-                <div class="bg-obsidian rounded-xl p-1 border border-obsidian-border flex gap-1 text-xs">
-                    <button onclick="setHistoryStatusFilter('ALL')" id="hist-btn-all" class="px-3 py-1.5 rounded-lg font-bold bg-obsidian-light text-white transition">Todas</button>
-                    <button onclick="setHistoryStatusFilter('PAID')" id="hist-btn-paid" class="px-3 py-1.5 rounded-lg text-gray-400 hover:text-white transition">Pagadas</button>
-                    <button onclick="setHistoryStatusFilter('COMPLIMENTARY')" id="hist-btn-comp" class="px-3 py-1.5 rounded-lg text-gray-400 hover:text-white transition">Cortesías</button>
-                    <button onclick="setHistoryStatusFilter('PENDING')" id="hist-btn-pend" class="px-3 py-1.5 rounded-lg text-gray-400 hover:text-white transition">Pendientes</button>
-                </div>
-            </div>
-
-            <!-- History Cards Grid -->
-            <div id="history-orders-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1">
-                <!-- Loaded dynamically -->
-            </div>
-        </div>
-    </div>
-
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
-
-        const proto = window.location.protocol === 'https:' ? 'https:' : 'http:';
-        const API_BASE = window.location.port === '8001' || window.location.port === '8000' ? '' : `${proto}//${window.location.host}`;
-
-        let catalog = [];
-        let cart = [];
-        let pendingOrders = [];
-        let activePayOrderId = null;
-        let selectedPayMethod = 'CASH';
-
-        document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            setInterval(updateClock, 1000);
-            updateClock();
-            loadCatalog();
-            loadPendingOrders();
-            setInterval(loadPendingOrders, 10000); // Polling cada 10s
+          if (isFirst) {
+            selectTableBill(ord.table, total, ord.waiter, ord.items);
+          }
         });
+      } catch(e) {}
+    }
 
-        function updateClock() {
-            document.getElementById('cashier-clock').innerText = new Date().toLocaleTimeString();
+    function selectTableBill(table, total, waiter, items = null) {
+      activeTable = table;
+      activeTotal = total;
+      document.getElementById('checkout-table-badge').innerText = table;
+      document.getElementById('checkout-waiter').innerText = `Mesero: ${waiter}`;
+      document.getElementById('subtotal-val').innerText = `$${total.toFixed(2)}`;
+      
+      const tip = Math.round(total * 0.10);
+      document.getElementById('tip-val').innerText = `$${tip.toFixed(2)}`;
+      document.getElementById('checkout-total').innerText = `$${(total + tip).toFixed(2)}`;
+
+      if (items && Array.isArray(items)) {
+        const cItems = document.getElementById('checkout-items');
+        cItems.innerHTML = '';
+        items.forEach(it => {
+          const itemPrice = (it.price || 150) * it.qty;
+          cItems.innerHTML += `
+            <div class="flex justify-between">
+              <span>${it.qty}x ${it.name}</span>
+              <span class="font-mono font-bold text-slate-900">$${itemPrice.toFixed(2)}</span>
+            </div>
+          `;
+        });
+      }
+    }
+
+    function setPaymentMethod(method) {
+      selectedPay = method;
+      document.querySelectorAll('.pay-btn').forEach(btn => {
+        if (btn.innerText.includes(method)) {
+          btn.className = 'p-3 rounded-xl border-2 border-brand-500 bg-orange-50/50 text-slate-900 font-bold text-xs flex flex-col items-center gap-1 pay-btn';
+        } else {
+          btn.className = 'p-3 rounded-xl border border-slate-200 hover:border-slate-300 text-slate-700 font-bold text-xs flex flex-col items-center gap-1 pay-btn';
         }
-
-        // Cargar Catálogo de Productos
-        async function loadCatalog() {
-            try {
-                const res = await fetch(`${API_BASE}/api/v1/products`);
-                if (!res.ok) throw new Error('Error al consultar productos');
-                catalog = await res.json();
-                
-                // Extraer categorías
-                const categories = ['ALL', ...new Set(catalog.map(p => p.category))];
-                const catSelect = document.getElementById('category-filter');
-                catSelect.innerHTML = '';
-                categories.forEach(c => {
-                    catSelect.innerHTML += `<option value="${c}">${c === 'ALL' ? 'Todas las Categorías' : c}</option>`;
-                });
-
-                renderCatalog();
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        function filterCatalog() {
-            renderCatalog();
-        }
-
-        function renderCatalog() {
-            const query = document.getElementById('product-search').value.toLowerCase().trim();
-            const cat = document.getElementById('category-filter').value;
-            const container = document.getElementById('catalog-grid');
-            container.innerHTML = '';
-
-            const filtered = catalog.filter(p => {
-                const matchCat = cat === 'ALL' || p.category === cat;
-                const matchQuery = p.name.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query);
-                return matchCat && matchQuery && p.is_active;
-            });
-
-            if (filtered.length === 0) {
-                container.innerHTML = '<div class="col-span-3 text-center py-6 text-xs text-gray-500">Sin coincidencias</div>';
-                return;
-            }
-
-            filtered.forEach(p => {
-                const imgTag = p.image_url 
-                    ? `<img src="${p.image_url}" alt="${p.name}" class="w-full h-16 object-cover rounded-lg mb-1.5 border border-obsidian-border">` 
-                    : '';
-
-                container.innerHTML += `
-                    <button type="button" onclick="addToCart('${p.id}')" class="bg-obsidian hover:bg-obsidian-light p-2.5 rounded-xl border border-obsidian-border hover:border-gold-500/50 text-left flex flex-col justify-between transition group shadow-sm">
-                        <div>
-                            ${imgTag}
-                            <div class="flex justify-between items-start gap-1">
-                                <span class="text-[9px] font-mono text-gold-400">${p.sku}</span>
-                                <span class="text-[9px] font-mono text-gray-400 uppercase">${p.destination_kds}</span>
-                            </div>
-                            <div class="text-xs font-bold text-white group-hover:text-gold-400 transition mt-1 line-clamp-1">${p.name}</div>
-                        </div>
-                        <div class="mt-2 text-xs font-mono font-bold text-emerald-400">$${parseFloat(p.price).toFixed(2)}</div>
-                    </button>
-                `;
-            });
-            lucide.createIcons();
-
-        }
-
-        // Cart Actions
-        function addToCart(productId) {
-            const prod = catalog.find(p => p.id === productId);
-            if (!prod) return;
-
-            const existing = cart.find(i => i.product_id === productId && !i.is_courtesy);
-            if (existing) {
-                existing.quantity += 1;
-            } else {
-                cart.push({
-                    product_id: prod.id,
-                    name: prod.name,
-                    price: parseFloat(prod.price),
-                    quantity: 1,
-                    is_courtesy: false
-                });
-            }
-            renderCart();
-        }
-
-        function toggleCartCourtesy(index) {
-            cart[index].is_courtesy = !cart[index].is_courtesy;
-            renderCart();
-        }
-
-        function changeCartQty(index, delta) {
-            cart[index].quantity += delta;
-            if (cart[index].quantity <= 0) {
-                cart.splice(index, 1);
-            }
-            renderCart();
-        }
-
-        function clearCart() {
-            cart = [];
-            renderCart();
-        }
-
-        function renderCart() {
-            const container = document.getElementById('cart-items');
-            container.innerHTML = '';
-
-            let total = 0;
-
-            if (cart.length === 0) {
-                container.innerHTML = '<div class="text-center py-6 text-xs text-gray-500 italic">No hay productos agregados a la comanda</div>';
-                document.getElementById('cart-total').innerText = '$0.00';
-                return;
-            }
-
-            cart.forEach((item, idx) => {
-                const effectivePrice = item.is_courtesy ? 0 : item.price;
-                const subtotal = effectivePrice * item.quantity;
-                total += subtotal;
-
-                container.innerHTML += `
-                    <div class="flex justify-between items-center bg-obsidian p-2 rounded-xl border border-obsidian-border text-xs">
-                        <div class="flex flex-col">
-                            <span class="font-bold text-white">${item.name}</span>
-                            <div class="flex items-center gap-2 mt-0.5">
-                                <span class="font-mono text-gray-400 text-[10px]">$${effectivePrice.toFixed(2)} c/u</span>
-                                <button type="button" onclick="toggleCartCourtesy(${idx})" class="text-[9px] font-mono px-1.5 py-0.5 rounded border ${item.is_courtesy ? 'bg-amber-950/80 text-amber-300 border-amber-800' : 'bg-obsidian-light text-gray-400 border-obsidian-border'}">
-                                    ${item.is_courtesy ? 'Cortesía $0' : 'Normal'}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="changeCartQty(${idx}, -1)" class="w-6 h-6 rounded bg-obsidian-light text-gray-300 font-bold flex items-center justify-center hover:bg-obsidian-border">-</button>
-                            <span class="font-mono font-bold text-gold-400 w-4 text-center">${item.quantity}</span>
-                            <button type="button" onclick="changeCartQty(${idx}, 1)" class="w-6 h-6 rounded bg-obsidian-light text-gray-300 font-bold flex items-center justify-center hover:bg-obsidian-border">+</button>
-                            <span class="font-mono font-bold text-white w-14 text-right">$${subtotal.toFixed(2)}</span>
-                        </div>
-                    </div>
-                `;
-            });
-
-            document.getElementById('cart-total').innerText = `$${total.toFixed(2)}`;
-            lucide.createIcons();
-        }
-
-        // Enviar Orden Directa a KDS
-        async function submitDirectOrder() {
-            if (cart.length === 0) {
-                alert('Agregue al menos un producto a la comanda.');
-                return;
-            }
-
-            const machineCode = document.getElementById('direct-machine').value.trim() || '000';
-            const notes = document.getElementById('direct-notes').value.trim();
-            const clientOrderId = 'ORD-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7);
-
-            const payload = {
-                client_order_id: clientOrderId,
-                machine_code: machineCode,
-                notes: notes,
-                items: cart.map(i => ({
-                    product_id: i.product_id,
-                    quantity: i.quantity,
-                    is_courtesy: i.is_courtesy
-                }))
-            };
-
-            try {
-                const res = await fetch(`${API_BASE}/api/v1/cashier/orders`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!res.ok) {
-                    const err = await res.json();
-                    throw new Error(err.detail || 'Error al generar comanda');
-                }
-
-                alert('¡Comanda generada y enrutada a KDS exitosamente!');
-                cart = [];
-                renderCart();
-                document.getElementById('direct-notes').value = '';
-                loadPendingOrders();
-            } catch (err) {
-                alert(err.message);
-            }
-        }
-
-        // Cargar Cuentas Abiertas
-        async function loadPendingOrders() {
-            try {
-                const res = await fetch(`${API_BASE}/api/v1/cashier/orders`);
-                if (!res.ok) throw new Error('Error consultando cuentas abiertas');
-                pendingOrders = await res.json();
-                renderPendingOrders();
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        function renderPendingOrders() {
-            const container = document.getElementById('pending-orders-list');
-            container.innerHTML = '';
-
-            document.getElementById('open-accounts-count').innerText = `${pendingOrders.length} cuentas`;
-
-            if (pendingOrders.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-16 text-gray-500 text-xs flex flex-col items-center gap-2">
-                        <i data-lucide="check-circle" class="w-8 h-8 text-emerald-500"></i>
-                        <span>No hay cuentas pendientes de cobro</span>
-                    </div>
-                `;
-                lucide.createIcons();
-                return;
-            }
-
-            pendingOrders.forEach(order => {
-                const slot = order.machine_code || '000';
-                const waiter = order.created_by_name || 'Staff';
-                const total = parseFloat(order.total_amount || 0);
-
-                let itemsSummary = (order.items || []).map(i => `${parseInt(i.quantity)}x ${i.product_name}`).join(', ');
-
-                container.innerHTML += `
-                    <div class="bg-obsidian p-4 rounded-2xl border border-obsidian-border hover:border-gold-500/30 flex flex-col gap-2 transition">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-xs font-mono font-bold text-gold-400">${order.order_number}</span>
-                                    <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-obsidian-light text-white font-bold border border-obsidian-border">${slot}</span>
-                                </div>
-                                <div class="text-[11px] text-gray-400 mt-1 flex items-center gap-1">
-                                    <i data-lucide="user" class="w-3 h-3 text-gray-500"></i>
-                                    <span>${waiter}</span>
-                                </div>
-                            </div>
-
-                            <div class="text-right">
-                                <span class="text-sm font-mono font-bold text-emerald-400">$${total.toFixed(2)}</span>
-                                <span class="block text-[10px] font-mono ${order.status === 'READY' ? 'text-emerald-400 font-bold' : 'text-gray-400'}">${order.status}</span>
-                            </div>
-                        </div>
-
-                        <div class="text-[11px] text-gray-300 font-mono line-clamp-1 bg-obsidian-deep px-2 py-1 rounded-lg border border-obsidian-border/50">
-                            ${itemsSummary || 'Sin productos'}
-                        </div>
-
-                        <div class="flex justify-end gap-2 pt-1 border-t border-obsidian-border/50">
-                            <button onclick="openCancelOrderModal('${order.id}', '${order.order_number}')" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-obsidian-light text-red-400 hover:bg-red-950/40 border border-obsidian-border flex items-center gap-1 transition">
-                                <i data-lucide="x" class="w-3.5 h-3.5"></i> Cancelar
-                            </button>
-                            <button onclick="openPayModal('${order.id}', '${order.order_number}', ${total})" class="btn-gold px-4 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
-                                <i data-lucide="dollar-sign" class="w-3.5 h-3.5"></i> Cobrar / Cerrar
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-            lucide.createIcons();
-        }
-
-        // Modal Cobro
-        function openPayModal(orderId, orderFolio, total) {
-            activePayOrderId = orderId;
-            document.getElementById('pay-order-folio').innerText = `FOLIO: ${orderFolio}`;
-            document.getElementById('pay-modal-total').innerText = `$${total.toFixed(2)}`;
-            selectPayMethod('CASH');
-            document.getElementById('pay-modal').classList.remove('hidden');
-        }
-
-        function closePayModal() {
-            document.getElementById('pay-modal').classList.add('hidden');
-            activePayOrderId = null;
-        }
-
-        function selectPayMethod(method) {
-            selectedPayMethod = method;
-            ['cash', 'card', 'courtesy'].forEach(m => {
-                const btn = document.getElementById(`pay-btn-${m}`);
-                if (m.toUpperCase() === method) {
-                    btn.className = 'p-3 rounded-xl bg-gold-500 text-black font-bold text-xs flex flex-col items-center gap-1 transition';
-                } else {
-                    btn.className = 'p-3 rounded-xl bg-obsidian border border-obsidian-border text-gray-300 font-bold text-xs flex flex-col items-center gap-1 transition';
-                }
-            });
-
-            const pinBox = document.getElementById('supervisor-pin-container');
-            if (method === 'COURTESY') {
-                pinBox.classList.remove('hidden');
-            } else {
-                pinBox.classList.add('hidden');
-            }
-        }
-
-        async function executePayment() {
-            if (!activePayOrderId) return;
-
-            const pin = document.getElementById('supervisor-pin-input').value.trim();
-            if (selectedPayMethod === 'COURTESY' && !pin) {
-                alert('Ingrese el PIN de supervisor para autorizar la cortesía.');
-                return;
-            }
-
-            const payload = {
-                payment_method: selectedPayMethod,
-                supervisor_pin: selectedPayMethod === 'COURTESY' ? pin : null
-            };
-
-            try {
-                const res = await fetch(`${API_BASE}/api/v1/cashier/orders/${activePayOrderId}/pay`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!res.ok) {
-                    const err = await res.json();
-                    throw new Error(err.detail || 'Error al procesar pago');
-                }
-
-                alert('¡Cuenta liquidada y cerrada exitosamente!');
-                closePayModal();
-                loadPendingOrders();
-            } catch (err) {
-                alert(err.message);
-            }
-        }
-
-        // =====================================================================
-        // CANCELACIONES DE COMANDAS CON PIN DE SUPERVISOR
-        // =====================================================================
-
-        let activeCancelOrderId = null;
-
-        function openCancelOrderModal(orderId, folio) {
-            activeCancelOrderId = orderId;
-            document.getElementById('cancel-modal-folio').innerText = `FOLIO: ${folio}`;
-            document.getElementById('cancel-reason-input').value = '';
-            document.getElementById('cancel-pin-input').value = '';
-            document.getElementById('cancel-order-modal').classList.remove('hidden');
-        }
-
-        function closeCancelOrderModal() {
-            document.getElementById('cancel-order-modal').classList.add('hidden');
-            activeCancelOrderId = null;
-        }
-
-        async function executeCancelOrder() {
-            if (!activeCancelOrderId) return;
-            const reason = document.getElementById('cancel-reason-input').value.trim();
-            if (!reason) {
-                alert('Ingrese el motivo de la cancelación.');
-                return;
-            }
-            const pin = document.getElementById('cancel-pin-input').value.trim();
-            if (!pin) {
-                alert('Ingrese el PIN de supervisor para autorizar la cancelación.');
-                return;
-            }
-
-            try {
-                const res = await fetch(`${API_BASE}/api/v1/cashier/orders/${activeCancelOrderId}/cancel`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        supervisor_pin: pin,
-                        reason: reason
-                    })
-                });
-                if (!res.ok) {
-                    const err = await res.json();
-                    throw new Error(err.detail || 'Error al cancelar comanda');
-                }
-                alert('¡Comanda cancelada y registrada en auditoría exitosamente!');
-                closeCancelOrderModal();
-                loadPendingOrders();
-                if (!document.getElementById('history-modal').classList.contains('hidden')) {
-                    loadCashierHistory();
-                }
-            } catch (err) {
-                alert(err.message);
-            }
-        }
-
-        // Stock de Barra
-        async function openBarStockModal() {
-            document.getElementById('bar-stock-modal').classList.remove('hidden');
-            try {
-                const res = await fetch(`${API_BASE}/api/v1/cashier/bar-stock`);
-                if (!res.ok) return;
-                const items = await res.json();
-                const container = document.getElementById('bar-stock-grid');
-                container.innerHTML = '';
-                if (items.length === 0) {
-                    container.innerHTML = '<div class="col-span-2 text-center py-6 text-xs text-gray-500">Sin existencias registradas en Barra</div>';
-                    return;
-                }
-                items.forEach(it => {
-                    container.innerHTML += `
-                        <div class="bg-obsidian p-3 rounded-2xl border border-obsidian-border flex justify-between items-center">
-                            <div>
-                                <span class="text-[10px] font-mono text-gold-400">${it.code}</span>
-                                <div class="text-xs font-bold text-white mt-0.5">${it.name}</div>
-                            </div>
-                            <div class="text-right">
-                                <span class="font-mono font-extrabold text-sm text-white">${it.quantity.toFixed(2)} ${it.unit}</span>
-                                <span class="block text-[10px] font-mono text-emerald-400">$${it.total_value.toFixed(2)}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
-        function closeBarStockModal() {
-            document.getElementById('bar-stock-modal').classList.add('hidden');
-        }
-
-        // =====================================================================
-        // CORTE DE CAJA / REPORTE Z Y ARQUEO BLINDADO
-        // =====================================================================
-
-        let currentExpectedCash = 0;
-
-        async function openCorteCajaModal() {
-            document.getElementById('corte-caja-modal').classList.remove('hidden');
-            await loadCorteCajaData();
-        }
-
-        function closeCorteCajaModal() {
-            document.getElementById('corte-caja-modal').classList.add('hidden');
-        }
-
-        async function loadCorteCajaData() {
-            try {
-                const res = await fetch(`${API_BASE}/api/v1/cashier/corte-caja`);
-                if (!res.ok) throw new Error('Error al consultar corte de caja');
-                const data = await res.json();
-
-                currentExpectedCash = data.cash_total || 0;
-
-                document.getElementById('corte-date-label').innerText = `Turno Fecha: ${data.shift_date} • Generado: ${data.generated_at}`;
-                document.getElementById('corte-total-sales').innerText = `$${data.total_sales_amount.toFixed(2)}`;
-                document.getElementById('corte-cash').innerText = `$${data.cash_total.toFixed(2)}`;
-                document.getElementById('corte-card').innerText = `$${data.card_total.toFixed(2)}`;
-                document.getElementById('corte-courtesy').innerText = `$${data.courtesy_total.toFixed(2)}`;
-                document.getElementById('corte-waste').innerText = `$${data.total_waste_cost.toFixed(2)}`;
-                document.getElementById('corte-net').innerText = `$${data.net_revenue.toFixed(2)}`;
-
-                document.getElementById('corte-paid-count').innerText = `✅ Pagadas: ${data.paid_orders_count}`;
-                document.getElementById('corte-comp-count').innerText = `🟡 Cortesías: ${data.complimentary_orders_count}`;
-                document.getElementById('corte-pend-count').innerText = `⏳ Pendientes: ${data.pending_orders_count}`;
-                document.getElementById('corte-waste-count').innerText = `🗑️ Mermas: ${data.waste_records_count} reg.`;
-
-                document.getElementById('corte-declared-cash').value = '';
-                document.getElementById('corte-supervisor-pin').value = '';
-                calculateCorteDifference();
-
-                const tbody = document.getElementById('corte-items-table');
-                tbody.innerHTML = '';
-                if (!data.items_breakdown || data.items_breakdown.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-gray-500 italic">Sin productos liquidados en este turno</td></tr>';
-                } else {
-                    data.items_breakdown.forEach(it => {
-                        tbody.innerHTML += `
-                            <tr class="hover:bg-obsidian-light/40 transition">
-                                <td class="p-2.5 font-bold text-white">${it.name}</td>
-                                <td class="p-2.5 text-center font-bold text-gold-400">${it.quantity}</td>
-                                <td class="p-2.5 text-right font-bold text-emerald-400">$${it.total.toFixed(2)}</td>
-                            </tr>
-                        `;
-                    });
-                }
-                lucide.createIcons();
-            } catch (err) {
-                console.error(err);
-                alert('No se pudo cargar el corte de caja.');
-            }
-        }
-
-        function calculateCorteDifference() {
-            const rawVal = document.getElementById('corte-declared-cash').value;
-            const badge = document.getElementById('corte-diff-badge');
-            if (rawVal === '') {
-                badge.className = 'text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-obsidian-light text-gray-400 border border-obsidian-border';
-                badge.innerText = 'Diferencia: $0.00';
-                return;
-            }
-            const declared = parseFloat(rawVal) || 0;
-            const diff = declared - currentExpectedCash;
-            if (Math.abs(diff) < 0.01) {
-                badge.className = 'text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800';
-                badge.innerText = 'Cuadrado ($0.00)';
-            } else if (diff > 0) {
-                badge.className = 'text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-amber-950/80 text-amber-400 border border-amber-800';
-                badge.innerText = `Sobrante (+$${diff.toFixed(2)})`;
-            } else {
-                badge.className = 'text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-red-950/80 text-red-400 border border-red-800';
-                badge.innerText = `Faltante (-$${Math.abs(diff).toFixed(2)})`;
-            }
-        }
-
-        async function executeShiftClose() {
-            const declared = parseFloat(document.getElementById('corte-declared-cash').value);
-            if (isNaN(declared) || declared < 0) {
-                alert('Ingrese el monto de efectivo físico en caja.');
-                return;
-            }
-            const pin = document.getElementById('corte-supervisor-pin').value.trim();
-            if (!pin) {
-                alert('Ingrese el PIN de supervisor para autorizar el cierre definitivo.');
-                return;
-            }
-            const cashierName = document.getElementById('corte-cashier-name').value.trim() || 'Cajero en Turno';
-            const notes = document.getElementById('corte-notes').value.trim();
-
-            const payload = {
-                declared_cash: declared,
-                supervisor_pin: pin,
-                cashier_name: cashierName,
-                notes: notes
-            };
-
-            try {
-                const res = await fetch(`${API_BASE}/api/v1/cashier/corte-caja/close`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (!res.ok) {
-                    const err = await res.json();
-                    throw new Error(err.detail || 'Error al cerrar turno');
-                }
-                const data = await res.json();
-                alert(`¡Turno cerrado y Reporte Z blindado exitosamente!\nFolio: ${data.folio}\nSupervisor: ${data.supervisor_name}\nDiferencia: $${data.difference}`);
-                closeCorteCajaModal();
-                loadPendingOrders();
-            } catch (err) {
-                alert(err.message);
-            }
-        }
-
-        function printCorteCaja() {
-            window.print();
-        }
-
-        // =====================================================================
-        // HISTORIAL DE COMANDAS & AUDITORÍA
-        // =====================================================================
-
-
-        let historyOrdersList = [];
-        let historyStatusFilter = 'ALL';
-
-        async function openHistoryModal() {
-            document.getElementById('history-modal').classList.remove('hidden');
-            await loadCashierHistory();
-        }
-
-        function closeHistoryModal() {
-            document.getElementById('history-modal').classList.add('hidden');
-        }
-
-        function setHistoryStatusFilter(st) {
-            historyStatusFilter = st;
-            ['all', 'paid', 'comp', 'pend'].forEach(k => {
-                const btn = document.getElementById(`hist-btn-${k}`);
-                if (btn) btn.className = 'px-3 py-1.5 rounded-lg text-gray-400 hover:text-white transition';
-            });
-            const activeBtn = document.getElementById(st === 'ALL' ? 'hist-btn-all' : st === 'PAID' ? 'hist-btn-paid' : st === 'COMPLIMENTARY' ? 'hist-btn-comp' : 'hist-btn-pend');
-            if (activeBtn) activeBtn.className = 'px-3 py-1.5 rounded-lg font-bold bg-obsidian-light text-white transition';
-            renderCashierHistory();
-        }
-
-        async function loadCashierHistory() {
-            try {
-                const res = await fetch(`${API_BASE}/api/v1/cashier/history`);
-                if (!res.ok) throw new Error('Error al consultar historial');
-                historyOrdersList = await res.json();
-                renderCashierHistory();
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        function filterCashierHistory() {
-            renderCashierHistory();
-        }
-
-        function renderCashierHistory() {
-            const query = document.getElementById('hist-search').value.toLowerCase().trim();
-            const container = document.getElementById('history-orders-grid');
-            container.innerHTML = '';
-
-            const filtered = historyOrdersList.filter(o => {
-                const matchStatus = historyStatusFilter === 'ALL' || o.payment_status === historyStatusFilter;
-                const matchQuery = o.order_number.toLowerCase().includes(query) || (o.machine_code && o.machine_code.toLowerCase().includes(query));
-                return matchStatus && matchQuery;
-            });
-
-            if (filtered.length === 0) {
-                container.innerHTML = '<div class="col-span-2 text-center py-10 text-xs text-gray-500 italic">No se encontraron comandas con los filtros seleccionados</div>';
-                return;
-            }
-
-            filtered.forEach(o => {
-                const total = parseFloat(o.total_amount || 0);
-                const isPaid = o.payment_status === 'PAID';
-                const isComp = o.payment_status === 'COMPLIMENTARY';
-                const isCancelled = o.status === 'CANCELLED';
-
-                const badgeColor = isCancelled
-                    ? 'bg-rose-950/80 text-rose-300 border-rose-800'
-                    : isPaid 
-                    ? 'bg-emerald-950/60 text-emerald-300 border-emerald-800/60' 
-                    : isComp 
-                    ? 'bg-amber-950/60 text-amber-300 border-amber-800/60' 
-                    : 'bg-red-950/60 text-red-300 border-red-800/60';
-
-                let itemsHtml = (o.items || []).map(it => `
-                    <div class="flex justify-between text-[11px] text-gray-300 py-0.5">
-                        <span>${parseInt(it.quantity)}x ${it.product_name}</span>
-                        <span class="font-mono text-gray-400">$${parseFloat(it.subtotal).toFixed(2)}</span>
-                    </div>
-                `).join('');
-
-                const createdDate = o.created_at ? new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--';
-
-                let cancelAuditHtml = '';
-                if (isCancelled) {
-                    cancelAuditHtml = `
-                        <div class="bg-rose-950/30 p-2 rounded-xl border border-rose-900/40 text-[10px] text-rose-300 font-mono mt-1">
-                            <span class="font-bold">❌ Cancelado por:</span> ${o.cancelled_by_name || 'Supervisor'}<br>
-                            <span class="font-bold">Motivo:</span> ${o.cancellation_reason || 'Sin justificación'}
-                        </div>
-                    `;
-                }
-
-                container.innerHTML += `
-                    <div class="bg-obsidian p-4 rounded-2xl border ${isCancelled ? 'border-rose-900/50' : 'border-obsidian-border'} flex flex-col justify-between gap-3 shadow-lg">
-                        <div>
-                            <div class="flex justify-between items-start">
-                                <div class="flex items-center gap-2">
-                                    <span class="font-mono font-bold text-xs text-gold-400 px-2 py-0.5 rounded bg-gold-500/10 border border-gold-500/20">${o.order_number}</span>
-                                    <span class="font-mono text-xs font-bold text-white px-2 py-0.5 rounded bg-obsidian-light border border-obsidian-border">${o.machine_code || '000'}</span>
-                                </div>
-                                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${badgeColor}">
-                                    ${isCancelled ? 'CANCELADA' : o.payment_status + ' (' + (o.payment_method || 'PEND') + ')'}
-                                </span>
-                            </div>
-
-                            <div class="text-[11px] text-gray-400 mt-1.5 flex items-center gap-1">
-                                <i data-lucide="user" class="w-3 h-3 text-gray-500"></i>
-                                <span>Emisor: ${o.created_by_name || 'Staff'} • Hora: ${createdDate}</span>
-                            </div>
-
-                            ${cancelAuditHtml}
-
-                            <div class="bg-obsidian-deep/80 p-2.5 rounded-xl border border-obsidian-border/50 my-2 max-h-24 overflow-y-auto">
-                                ${itemsHtml || '<span class="text-[10px] text-gray-500 italic">Sin detalle</span>'}
-                            </div>
-                        </div>
-
-                        <div class="flex justify-between items-center pt-2 border-t border-obsidian-border/50 font-mono text-xs">
-                            <span class="text-gray-400">${isCancelled ? 'Monto Anulado:' : 'Total Liquidado:'}</span>
-                            <span class="font-bold ${isCancelled ? 'text-rose-400 line-through' : 'text-emerald-400'} text-sm">$${total.toFixed(2)}</span>
-                        </div>
-                    </div>
-                `;
-            });
-            lucide.createIcons();
-        }
-
-    </script>
+      });
+    }
+
+    function confirmPayment() {
+      // 1. Preparar Ticket Fiscal Térmico
+      document.getElementById('receipt-ticket-table').innerText = activeTable;
+      document.getElementById('receipt-ticket-date').innerText = new Date().toLocaleString();
+      document.getElementById('receipt-ticket-total').innerText = `$${(activeTotal * 1.1).toFixed(2)}`;
+      document.getElementById('receipt-ticket-method').innerText = `PAGO: ${selectedPay.toUpperCase()}`;
+
+      // Disparar impresión
+      setTimeout(() => {
+        window.print();
+      }, 150);
+
+      alert(`✅ ¡Cobro exitoso de ${activeTable}! Monto recibido: $${(activeTotal * 1.1).toFixed(2)} mediante ${selectedPay}. Ticket fiscal enviado a la impresora térmica.`);
+    }
+
+    function splitBillPrompt() {
+      const parts = prompt("¿Entre cuántas personas deseas dividir la cuenta?", "2");
+      if (parts && parseInt(parts) > 0) {
+        const perPerson = ((activeTotal * 1.1) / parseInt(parts)).toFixed(2);
+        alert(`Cuenta dividida en ${parts} partes iguales:\nCada persona paga: $${perPerson}`);
+      }
+    }
+
+    function promptCashClose() {
+      alert("🔒 Generando Corte Z de Caja: Ventas totales del turno: $8,420.00 • Efectivo: $3,210.00 • Tarjetas: $5,210.00. Turno cuadrado con éxito.");
+    }
+  </script>
+
+  <!-- PLANTILLA OCULTA DE TICKET FISCAL DE CAJA 80MM -->
+  <div id="thermal-receipt-container" class="hidden text-black font-mono">
+    <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 8px;">
+      <h2 style="font-size: 18px; font-weight: 900; margin: 0;">RESTAURANTE GASTROFLOW</h2>
+      <p style="font-size: 11px; margin: 2px 0;">RFC: GFL260101-ABC • Av. Central 123</p>
+      <p style="font-size: 10px; margin: 2px 0;" id="receipt-ticket-date">19/10/2026 18:00</p>
+      <div style="font-size: 15px; font-weight: 900; margin: 4px 0;" id="receipt-ticket-table">MESA 04</div>
+      <p style="font-size: 10px; margin: 0;">Cajero: Laura S. • Ticket #TK-8492</p>
+    </div>
+
+    <!-- Items -->
+    <div style="font-size: 12px; margin-bottom: 8px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom: 3px;">
+        <span>2x HAmb. Smash Trufada</span>
+        <span>$370.00</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-bottom: 3px;">
+        <span>1x Papas Rústicas</span>
+        <span>$95.00</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; color:#444;">
+        <span>Desc. Cortesía</span>
+        <span>-$25.00</span>
+      </div>
+    </div>
+
+    <!-- Totales -->
+    <div style="border-top: 1px dashed #000; padding-top: 6px; font-size: 12px;">
+      <div style="display:flex; justify-content:space-between;">
+        <span>SUBTOTAL:</span>
+        <span>$440.00</span>
+      </div>
+      <div style="display:flex; justify-content:space-between;">
+        <span>PROPINA (10%):</span>
+        <span>$44.00</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size: 15px; font-weight: 900; margin-top: 4px; border-top: 1px solid #000; padding-top: 4px;">
+        <span>TOTAL COBRADO:</span>
+        <span id="receipt-ticket-total">$484.00</span>
+      </div>
+      <div style="text-align: right; font-size: 10px; margin-top: 2px;" id="receipt-ticket-method">PAGO: EFECTIVO</div>
+    </div>
+
+    <div style="text-align: center; margin-top: 15px; font-size: 10px; border-top: 1px dotted #888; padding-top: 8px;">
+      <p style="margin: 0; font-weight: bold;">¡GRACIAS POR SU PREFERENCIA!</p>
+      <p style="margin: 2px 0;">Facturación en línea: factura.gastroflow.com</p>
+    </div>
+  </div>
 </body>
 </html>
-

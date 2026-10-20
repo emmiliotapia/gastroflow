@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Casino Prestige - Kitchen Display System (KDS)</title>
+  <title>GastroFlow KDS • Monitor Digital de Cocina y Barra</title>
   
-  <!-- Google Fonts -->
+  <!-- Google Fonts: Plus Jakarta Sans & Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -21,24 +21,24 @@
       theme: {
         extend: {
           colors: {
-            obsidian: {
-              DEFAULT: '#0e0e11',
-              deep: '#060608',
-              card: '#16161b',
-              light: '#22222b',
-              border: '#2a2a36'
+            brand: {
+              50: '#fff7ed',
+              500: '#f97316',
+              600: '#ea580c',
             },
-            gold: {
-              400: '#e1b77c',
-              500: '#d49b4b',
-              600: '#c5843a',
-              goldish: '#d4af37'
+            accent: {
+              500: '#10b981',
+              600: '#059669',
             }
           },
           fontFamily: {
-            sans: ['Inter', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
             outfit: ['Outfit', 'sans-serif'],
             mono: ['JetBrains Mono', 'monospace']
+          },
+          boxShadow: {
+            'card': '0 4px 15px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.02)',
+            'urgent': '0 0 20px -3px rgba(239, 68, 68, 0.35)',
           }
         }
       }
@@ -47,512 +47,419 @@
 
   <style>
     body {
-      background-color: #060608;
-      color: #e2e8f0;
-      font-family: 'Inter', sans-serif;
-      background-image: 
-        radial-gradient(circle at 15% 15%, rgba(212, 175, 55, 0.03) 0%, transparent 40%),
-        radial-gradient(circle at 85% 85%, rgba(197, 132, 58, 0.02) 0%, transparent 40%);
-      background-attachment: fixed;
+      background-color: #f1f5f9;
+      color: #0f172a;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
-    .glass-card {
-      background: rgba(22, 22, 27, 0.85);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .glass-card:hover {
-      border-color: rgba(212, 175, 55, 0.25);
-    }
-
-    .gold-glow {
-      box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
-    }
-
-    .btn-gold {
-      background: linear-gradient(135deg, #d49b4b 0%, #c5843a 100%);
-      color: #060608;
-      font-weight: 700;
-      transition: all 0.2s ease;
-    }
-
-    .btn-gold:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
-    }
-
-    /* Custom Scrollbar */
+    /* Barra de scroll horizontal limpia para comanderos KDS */
     ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+      height: 8px;
+      width: 8px;
     }
     ::-webkit-scrollbar-track {
-      background: #060608;
+      background: #e2e8f0;
+      border-radius: 4px;
     }
     ::-webkit-scrollbar-thumb {
-      background: #22222b;
-      border-radius: 3px;
+      background: #cbd5e1;
+      border-radius: 4px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #d49b4b;
-    }
-
-    @keyframes pulse-red {
-      0%, 100% { border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
-      50% { border-color: rgba(239, 68, 68, 0.9); box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
-    }
-
-    .card-urgent {
-      animation: pulse-red 2s infinite ease-in-out;
+      background: #94a3b8;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col select-none overflow-hidden">
+<body class="h-screen w-screen flex flex-col overflow-hidden select-none">
 
-  <!-- HEADER -->
-  <header class="bg-obsidian-deep/95 border-b border-obsidian-border px-6 py-3.5 flex justify-between items-center z-20 backdrop-blur-md">
+  <!-- TOP BAR KDS -->
+  <header class="bg-white border-b border-slate-200 px-6 py-3.5 flex justify-between items-center z-20 shadow-sm flex-shrink-0">
+    
+    <!-- Branding & Estación -->
     <div class="flex items-center gap-4">
-      <div class="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center">
-        <i data-lucide="chef-hat" class="w-6 h-6 text-gold-400"></i>
+      <a href="index.html" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition" title="Ir al Catálogo de Soluciones">
+        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+      </a>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-center text-brand-600">
+          <i data-lucide="chef-hat" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-outfit font-black text-xl text-slate-900 tracking-tight leading-none">
+              Gastro<span class="text-brand-500">KDS</span>
+            </h1>
+            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              EN VIVO
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 font-medium mt-0.5">Pantalla de Comandas de Cocina & Barra</p>
+        </div>
       </div>
-      <div>
-        <h1 class="font-outfit text-lg font-bold text-white tracking-wider flex items-center gap-2">
-          PRESTIGE <span class="text-gold-400">KDS</span>
-          <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-obsidian-light border border-obsidian-border text-gray-400 uppercase" id="header-station-label">
-            COCINA
-          </span>
-        </h1>
-        <p class="text-[11px] text-gray-400 font-mono">Kitchen Display System & Production FIFO</p>
+
+      <!-- Selector de Estación (Cocina / Barra / Todos) -->
+      <div class="hidden md:flex items-center gap-1 bg-slate-100 p-1 rounded-xl ml-4">
+        <button onclick="setStation('ALL')" id="btn-st-ALL" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-xs transition">
+          General
+        </button>
+        <button onclick="setStation('KITCHEN')" id="btn-st-KITCHEN" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+          Cocina
+        </button>
+        <button onclick="setStation('BAR')" id="btn-st-BAR" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+          Barra
+        </button>
       </div>
     </div>
 
-    <!-- Filter Pills & Status -->
+    <!-- Filtros de Estado & Acciones -->
     <div class="flex items-center gap-3">
-      <!-- Tabs de Estado -->
-      <div class="bg-obsidian rounded-xl p-1 border border-obsidian-border flex gap-1">
-        <button onclick="setFilter('ALL')" id="filter-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-obsidian-light text-white transition">Todas</button>
-        <button onclick="setFilter('PENDING')" id="filter-pending" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white transition">En Cola</button>
-        <button onclick="setFilter('PREPARING')" id="filter-preparing" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white transition">Preparando</button>
-        <button onclick="setFilter('READY')" id="filter-ready" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white transition">Listas</button>
+      
+      <!-- Filtro de Estados -->
+      <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+        <button onclick="setFilter('ALL')" id="filter-all" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white transition">
+          Todas (<span id="count-all">3</span>)
+        </button>
+        <button onclick="setFilter('PENDING')" id="filter-pending" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+          En Cola (<span id="count-pending">1</span>)
+        </button>
+        <button onclick="setFilter('PREPARING')" id="filter-preparing" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+          Cocinando (<span id="count-preparing">1</span>)
+        </button>
+        <button onclick="setFilter('READY')" id="filter-ready" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+          Listas (<span id="count-ready">1</span>)
+        </button>
       </div>
 
-      <!-- Selector de Estación -->
-      <button onclick="openStationModal()" class="px-3.5 py-2 rounded-xl bg-obsidian border border-obsidian-border hover:border-gold-500/40 text-xs font-bold text-gray-300 hover:text-gold-400 flex items-center gap-2 transition">
-        <i data-lucide="monitor" class="w-4 h-4 text-gold-400"></i>
-        <span id="current-station-btn">Estación: Cocina</span>
-      </button>      
-      <!-- Historial de Despachados -->
-      <button onclick="openHistoryModal()" class="px-3.5 py-2 rounded-xl bg-obsidian border border-obsidian-border hover:border-gold-500/40 text-xs font-bold text-gray-300 hover:text-gold-400 flex items-center gap-2 transition" title="Histórico de Comandas">
-        <i data-lucide="history" class="w-4 h-4 text-gold-400"></i>
-        <span class="hidden sm:inline">Historial</span>
+      <!-- Nueva Comanda Demo -->
+      <button onclick="injectDemoOrder()" class="px-3.5 py-2 rounded-xl bg-orange-50 hover:bg-orange-100 border border-orange-200 text-brand-700 text-xs font-bold flex items-center gap-1.5 transition active:scale-95">
+        <i data-lucide="plus" class="w-4 h-4"></i>
+        <span class="hidden sm:inline">Nueva Orden Demo</span>
       </button>
 
-      <!-- WebSocket Status Badge -->
-      <div id="ws-badge" class="flex items-center gap-2 text-xs bg-red-950/40 text-red-400 border border-red-900/50 px-3.5 py-2 rounded-xl font-mono">
-        <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-        <span>Desconectado</span>
-      </div>
-
-      <!-- Test Chime Audio Button -->
-      <button onclick="playChimeSound()" class="p-2 rounded-xl bg-obsidian border border-obsidian-border hover:border-gold-500/40 text-gray-400 hover:text-gold-400 transition" title="Probar Alerta Sonora">
-        <i data-lucide="volume-2" class="w-4 h-4"></i>
+      <!-- Botón de Audio Alerta -->
+      <button onclick="toggleAudio()" id="btn-audio" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition" title="Alerta Sonora Activa">
+        <i data-lucide="volume-2" class="w-4 h-4 text-emerald-600" id="audio-icon"></i>
       </button>
 
-      <!-- Recargar lista -->
-      <button onclick="loadKDSOrders()" class="p-2 rounded-xl bg-obsidian border border-obsidian-border hover:border-gold-500/40 text-gray-400 hover:text-gold-400 transition" title="Refrescar Comandas">
-        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-      </button>
     </div>
   </header>
 
-  <!-- MAIN FIFO HORIZONTAL CARDS CONTAINER -->
+  <!-- TABLERO KDS HORIZONTAL CON COLA FIFO -->
   <main class="flex-1 p-6 overflow-x-auto overflow-y-hidden flex gap-5 items-stretch" id="kds-board">
-    <!-- Initial Loading State -->
-    <div class="m-auto flex flex-col items-center gap-3 text-gray-500">
-      <i data-lucide="loader-2" class="w-10 h-10 animate-spin text-gold-500"></i>
-      <span class="text-sm font-medium font-outfit">Sincronizando comandas de producción...</span>
-    </div>
+    <!-- Se inyectan las tarjetas de comandas -->
   </main>
 
-  <!-- FOOTER STATS BAR -->
-  <footer class="bg-obsidian-deep/95 border-t border-obsidian-border px-6 py-2.5 flex justify-between items-center text-xs font-mono text-gray-400 z-20">
+  <!-- FOOTER STATUS & RELOJ -->
+  <footer class="bg-white border-t border-slate-200 px-6 py-2.5 flex justify-between items-center text-xs font-medium text-slate-500 z-20 flex-shrink-0">
     <div class="flex items-center gap-6">
-      <span id="stat-total" class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-gold-400"></span> Total Activas: 0</span>
-      <span id="stat-pending" class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-400"></span> En Cola: 0</span>
-      <span id="stat-preparing" class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-400"></span> En Preparación: 0</span>
-      <span id="stat-ready" class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Listas para Entrega: 0</span>
+      <span class="flex items-center gap-1.5 font-bold text-slate-700">
+        <span class="w-2 h-2 rounded-full bg-slate-400"></span> 
+        Total en Pantalla: <span id="stat-total" class="font-mono">3</span>
+      </span>
+      <span class="flex items-center gap-1.5 text-rose-600 font-semibold">
+        <span class="w-2 h-2 rounded-full bg-rose-500"></span> 
+        Alerta Demora (>15m): <span id="stat-delayed" class="font-mono">0</span>
+      </span>
+      <span class="flex items-center gap-1.5 text-emerald-600 font-semibold">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span> 
+        FIFO Automático Ordenado
+      </span>
     </div>
-    <div class="flex items-center gap-4 text-[11px] text-gray-400">
-      <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Auto-FIFO Activo</span>
-      <span id="clock-display" class="font-mono text-gold-400 font-bold">00:00:00</span>
+
+    <div class="flex items-center gap-4 text-xs font-mono">
+      <span class="text-slate-400">Terminal KDS #1</span>
+      <span id="clock-display" class="font-black text-slate-900 bg-slate-100 px-2 py-0.5 rounded">12:00:00</span>
     </div>
   </footer>
 
-  <!-- MODAL SELECCIONAR ESTACION -->
-  <div id="station-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="glass-card bg-obsidian-card p-6 rounded-3xl w-full max-w-md flex flex-col gap-5 border border-obsidian-border shadow-2xl">
-      <div class="flex justify-between items-center border-b border-obsidian-border pb-3">
-        <h3 class="font-outfit text-lg font-bold text-white">Seleccionar Estación KDS</h3>
-        <button onclick="closeStationModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-
-      <div class="grid grid-cols-3 gap-3">
-        <button onclick="selectStation('KITCHEN')" class="p-5 rounded-2xl bg-obsidian border border-obsidian-border hover:border-gold-500 hover:bg-obsidian-light flex flex-col items-center gap-3 transition group text-center">
-          <i data-lucide="flame" class="w-8 h-8 text-gold-400 group-hover:scale-110 transition-transform"></i>
-          <div>
-            <div class="font-bold text-sm text-white">COCINA</div>
-            <div class="text-[10px] text-gray-400 mt-0.5">Platillos y Alimentos</div>
-          </div>
-        </button>
-
-        <button onclick="selectStation('BAR')" class="p-5 rounded-2xl bg-obsidian border border-obsidian-border hover:border-gold-500 hover:bg-obsidian-light flex flex-col items-center gap-3 transition group text-center">
-          <i data-lucide="wine" class="w-8 h-8 text-gold-400 group-hover:scale-110 transition-transform"></i>
-          <div>
-            <div class="font-bold text-sm text-white">BARRA</div>
-            <div class="text-[10px] text-gray-400 mt-0.5">Coctelería y Bebidas</div>
-          </div>
-        </button>
-
-        <button onclick="selectStation('ALL')" class="p-5 rounded-2xl bg-obsidian border border-obsidian-border hover:border-gold-500 hover:bg-obsidian-light flex flex-col items-center gap-3 transition group text-center">
-          <i data-lucide="layers" class="w-8 h-8 text-gold-400 group-hover:scale-110 transition-transform"></i>
-          <div>
-            <div class="font-bold text-sm text-white">GENERAL</div>
-            <div class="text-[10px] text-gray-400 mt-0.5">Todas las Estaciones</div>
-          </div>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL HISTORIAL DE COMANDAS DESPACHADAS -->
-  <div id="history-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="glass-card bg-obsidian-card p-6 rounded-3xl w-full max-w-2xl max-h-[85vh] flex flex-col gap-4 border border-obsidian-border shadow-2xl">
-      <div class="flex justify-between items-center border-b border-obsidian-border pb-3">
-        <div>
-          <h3 class="font-outfit text-lg font-bold text-white flex items-center gap-2">
-            <i data-lucide="history" class="w-5 h-5 text-gold-400"></i> Historial de Comandas Despachadas
-          </h3>
-          <p class="text-xs text-gray-400 font-mono" id="history-subtitle">Métricas de tiempo de preparación y órdenes entregadas</p>
-        </div>
-        <button onclick="closeHistoryModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-
-      <!-- SLA Performance Banner -->
-      <div class="bg-obsidian p-4 rounded-2xl border border-obsidian-border flex justify-between items-center text-xs">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400">
-            <i data-lucide="timer" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <span class="text-[10px] text-gray-400 uppercase font-mono block">Tiempo Promedio Despacho</span>
-            <span class="font-mono text-lg font-extrabold text-gold-400" id="hist-avg-time">-- min</span>
-          </div>
-        </div>
-        <div class="text-right font-mono">
-          <span class="text-[10px] text-gray-400 uppercase block">Órdenes Despachadas</span>
-          <span class="text-base font-bold text-white" id="hist-total-count">0</span>
-        </div>
-      </div>
-
-      <!-- History List Container -->
-      <div id="history-list" class="flex-1 overflow-y-auto space-y-3 pr-1 max-h-96">
-        <!-- Loaded dynamically -->
-      </div>
-    </div>
-  </div>
-
-  <!-- JAVASCRIPT LOGIC -->
+  <!-- SCRIPT KDS -->
   <script>
-    // Configuración Dinámica de API y WebSocket
-    const API_BASE = '';
-    const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const WS_BASE = `${wsProto}//${window.location.host}`;
-
-    let currentStation = localStorage.getItem('kds_station') || 'KITCHEN';
+    let currentStation = 'ALL';
     let currentFilter = 'ALL';
-    let ordersList = [];
-    let ws = null;
-    let wsHeartbeatInterval = null;
-    let fallbackPollInterval = null;
-    let reconnectTimeout = null;
-    let reconnectDelay = 1000;
+    let audioEnabled = true;
 
-    // Web Audio Synthesizer para alertas sonoras de cocina (sin ficheros externos)
-    let audioCtx = null;
-    function playChimeSound() {
-      try {
-        if (!audioCtx) {
-          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioCtx.state === 'suspended') {
-          audioCtx.resume();
-        }
-
-        const now = audioCtx.currentTime;
-        
-        // Tono 1 (Crystal ping)
-        const osc1 = audioCtx.createOscillator();
-        const gain1 = audioCtx.createGain();
-        osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(880, now); // A5
-        osc1.frequency.exponentialRampToValueAtTime(1760, now + 0.15);
-        gain1.gain.setValueAtTime(0.3, now);
-        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-        osc1.connect(gain1);
-        gain1.connect(audioCtx.destination);
-        osc1.start(now);
-        osc1.stop(now + 0.4);
-
-        // Tono 2 (Double bell)
-        const osc2 = audioCtx.createOscillator();
-        const gain2 = audioCtx.createGain();
-        osc2.type = 'triangle';
-        osc2.frequency.setValueAtTime(1318.5, now + 0.12); // E6
-        gain2.gain.setValueAtTime(0.35, now + 0.12);
-        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-        osc2.connect(gain2);
-        gain2.connect(audioCtx.destination);
-        osc2.start(now + 0.12);
-        osc2.stop(now + 0.6);
-      } catch (e) {
-        console.warn('Audio no inicializado:', e);
+    // Órdenes iniciales de demostración para restaurantes
+    let orders = [
+      {
+        id: 'ORD-104',
+        table: 'MESA 04',
+        waiter: 'Carlos M.',
+        station: 'KITCHEN',
+        status: 'PREPARING', // PENDING, PREPARING, READY
+        createdAt: Date.now() - (1000 * 60 * 8), // Hace 8 min (Ámbar)
+        items: [
+          { qty: 2, name: 'Hamburguesa Smash Trufada', notes: 'Término medio, sin cebolla en una' },
+          { qty: 1, name: 'Papas Rústicas con Parmesano', notes: 'Salsa tártara extra' }
+        ]
+      },
+      {
+        id: 'ORD-105',
+        table: 'TERRAZA 02',
+        waiter: 'Ana R.',
+        station: 'BAR',
+        status: 'PENDING',
+        createdAt: Date.now() - (1000 * 60 * 3), // Hace 3 min (Verde)
+        items: [
+          { qty: 2, name: 'Cóctel Gin Tonic Frutos Rojos', notes: 'Poco hielo' },
+          { qty: 1, name: 'Cerveza Artesanal IPA 355ml', notes: 'Vaso escarchado' }
+        ]
+      },
+      {
+        id: 'ORD-103',
+        table: 'MESA 09',
+        waiter: 'Carlos M.',
+        station: 'KITCHEN',
+        status: 'READY',
+        createdAt: Date.now() - (1000 * 60 * 14),
+        items: [
+          { qty: 1, name: 'Pizza Margherita Napolitana', notes: 'Bien dorada' },
+          { qty: 1, name: 'Tacos de Rib Eye con Tuétano', notes: 'Salsa habanera aparte' }
+        ]
       }
+    ];
+
+    // Cargar órdenes persistidas o usar las predeterminadas
+    function initOrders() {
+      const stored = localStorage.getItem('gastro_orders');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            orders = parsed;
+            return;
+          }
+        } catch(e) {}
+      }
+      localStorage.setItem('gastro_orders', JSON.stringify(orders));
     }
 
-    // Inicialización
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
-      updateClock();
+      initOrders();
+      renderOrders();
       setInterval(updateClock, 1000);
-      setInterval(renderTimers, 1000); // Actualiza semáforos de tiempo cada segundo
+      setInterval(renderOrders, 10000);
 
-      // Polling de respaldo cada 6s para garantizar cero pérdida de comandas
-      if (fallbackPollInterval) clearInterval(fallbackPollInterval);
-      fallbackPollInterval = setInterval(() => {
-        loadKDSOrders(true); // silent refresh
-      }, 6000);
-
-      // Cargar estación por defecto y conectar de inmediato
-      applyStation(currentStation);
+      // Escuchar comandas entrantes desde Menú QR o Comandero en vivo
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'gastro_new_order_event' && e.newValue) {
+          try {
+            const newOrder = JSON.parse(e.newValue);
+            if (!orders.some(o => o.id === newOrder.id)) {
+              orders.unshift(newOrder);
+              playBeep();
+              renderOrders();
+            }
+          } catch(err) {}
+        } else if (e.key === 'gastro_orders' && e.newValue) {
+          try {
+            orders = JSON.parse(e.newValue);
+            renderOrders();
+          } catch(err) {}
+        }
+      });
     });
+
+    function saveOrders() {
+      localStorage.setItem('gastro_orders', JSON.stringify(orders));
+    }
 
     function updateClock() {
       const now = new Date();
-      const el = document.getElementById('clock-display');
-      if (el) el.innerText = now.toLocaleTimeString();
+      document.getElementById('clock-display').innerText = now.toTimeString().split(' ')[0];
     }
 
-    function openStationModal() {
-      document.getElementById('station-modal').classList.remove('hidden');
-    }
-
-    function closeStationModal() {
-      document.getElementById('station-modal').classList.add('hidden');
-    }
-
-    function selectStation(station) {
+    function setStation(station) {
       currentStation = station;
-      localStorage.setItem('kds_station', station);
-      document.getElementById('station-modal').classList.add('hidden');
-      applyStation(station);
-    }
-
-    function applyStation(station) {
-      const labelMap = {
-        'KITCHEN': 'COCINA',
-        'BAR': 'BARRA',
-        'ALL': 'SUPERVISIÓN GENERAL'
-      };
-      const headerLabel = document.getElementById('header-station-label');
-      if (headerLabel) headerLabel.innerText = labelMap[station] || station;
-      const curBtn = document.getElementById('current-station-btn');
-      if (curBtn) curBtn.innerText = `Estación: ${labelMap[station] || station}`;
-
-      loadKDSOrders();
-      connectWS();
-    }
-
-    function setFilter(filter) {
-      currentFilter = filter;
-      ['all', 'pending', 'preparing', 'ready'].forEach(f => {
-        const el = document.getElementById(`filter-${f}`);
-        if (el) {
-          if (f.toUpperCase() === filter) {
-            el.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-gold-500 text-black transition';
-          } else {
-            el.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white transition';
-          }
+      ['ALL', 'KITCHEN', 'BAR'].forEach(s => {
+        const btn = document.getElementById(`btn-st-${s}`);
+        if (s === station) {
+          btn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-xs transition';
+        } else {
+          btn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition';
         }
       });
       renderOrders();
     }
 
-    // Cargar órdenes por REST
-    async function loadKDSOrders(silent = false) {
-      try {
-        const queryParam = currentStation === 'ALL' ? '' : `?station=${currentStation}`;
-        const res = await fetch(`${API_BASE}/api/v1/kds/orders${queryParam}`);
-        if (!res.ok) throw new Error('Error al consultar comanda');
-        const freshOrders = await res.json();
-        
-        // Detectar si llegaron nuevas órdenes para disparar sonido si es silent refresh
-        if (silent && freshOrders.length > ordersList.length) {
-          const freshPending = freshOrders.filter(fo => !ordersList.some(ol => ol.id === fo.id));
-          if (freshPending.length > 0) {
-            playChimeSound();
-          }
+    function setFilter(filter) {
+      currentFilter = filter;
+      const filters = ['ALL', 'PENDING', 'PREPARING', 'READY'];
+      filters.forEach(f => {
+        const btn = document.getElementById(`filter-${f.toLowerCase()}`);
+        if (f === filter) {
+          btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white transition';
+        } else {
+          btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition';
         }
-
-        ordersList = freshOrders;
-        renderOrders();
-      } catch (err) {
-        if (!silent) console.error('Falla consultando órdenes KDS:', err);
-      }
+      });
+      renderOrders();
     }
 
-    // Renderizar Tablero de Comandas
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      const icon = document.getElementById('audio-icon');
+      if (audioEnabled) {
+        icon.setAttribute('data-lucide', 'volume-2');
+        icon.className = 'w-4 h-4 text-emerald-600';
+      } else {
+        icon.setAttribute('data-lucide', 'volume-x');
+        icon.className = 'w-4 h-4 text-slate-400';
+      }
+      lucide.createIcons();
+    }
+
+    function playBeep() {
+      if (!audioEnabled) return;
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.setValueAtTime(800, ctx.currentTime);
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.15);
+      } catch (e) {}
+    }
+
+    function getElapsedTime(timestamp) {
+      const diffMins = Math.floor((Date.now() - timestamp) / 60000);
+      return diffMins;
+    }
+
     function renderOrders() {
       const board = document.getElementById('kds-board');
-      if (!board) return;
       board.innerHTML = '';
 
-      // Filtrar según tab activa
-      let filtered = ordersList;
-      if (currentFilter !== 'ALL') {
-        filtered = ordersList.filter(o => o.status === currentFilter);
-      }
+      // Filtrado
+      let filtered = orders.filter(o => {
+        const matchStation = currentStation === 'ALL' || o.station === currentStation;
+        const matchStatus = currentFilter === 'ALL' || o.status === currentFilter;
+        return matchStation && matchStatus;
+      });
 
-      // Actualizar contadores en el footer
-      const stTotal = document.getElementById('stat-total');
-      if (stTotal) stTotal.innerHTML = `<span class="w-2 h-2 rounded-full bg-gold-400"></span> Total Activas: ${ordersList.length}`;
-      const stPend = document.getElementById('stat-pending');
-      if (stPend) stPend.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-400"></span> En Cola: ${ordersList.filter(o=>o.status==='PENDING').length}`;
-      const stPrep = document.getElementById('stat-preparing');
-      if (stPrep) stPrep.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span> En Preparación: ${ordersList.filter(o=>o.status==='PREPARING').length}`;
-      const stRdy = document.getElementById('stat-ready');
-      if (stRdy) stRdy.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Listas para Entrega: ${ordersList.filter(o=>o.status==='READY').length}`;
+      // Conteo de badges
+      document.getElementById('count-all').innerText = orders.length;
+      document.getElementById('count-pending').innerText = orders.filter(o => o.status === 'PENDING').length;
+      document.getElementById('count-preparing').innerText = orders.filter(o => o.status === 'PREPARING').length;
+      document.getElementById('count-ready').innerText = orders.filter(o => o.status === 'READY').length;
+
+      document.getElementById('stat-total').innerText = orders.length;
+      document.getElementById('stat-delayed').innerText = orders.filter(o => getElapsedTime(o.createdAt) >= 15 && o.status !== 'READY').length;
 
       if (filtered.length === 0) {
         board.innerHTML = `
-          <div class="m-auto flex flex-col items-center gap-3 text-gray-500 py-20">
-            <div class="w-16 h-16 rounded-2xl bg-obsidian-card border border-obsidian-border flex items-center justify-center">
-              <i data-lucide="check-circle-2" class="w-8 h-8 text-emerald-500"></i>
-            </div>
-            <span class="text-base font-outfit font-semibold text-gray-300">¡Todas las comandas al día!</span>
-            <span class="text-xs text-gray-500">Sin pedidos pendientes en estación ${currentStation}</span>
+          <div class="m-auto flex flex-col items-center justify-center text-slate-400 py-16">
+            <i data-lucide="check-circle-2" class="w-12 h-12 text-slate-300 mb-3"></i>
+            <p class="font-outfit text-base font-bold text-slate-700">Sin comandas pendientes</p>
+            <p class="text-xs text-slate-400">La estación se encuentra al día con los pedidos.</p>
           </div>
         `;
         lucide.createIcons();
         return;
       }
 
-      filtered.forEach((order, index) => {
-        // Cálculo de semáforo de tiempo
-        const createdAt = new Date(order.created_at || Date.now());
-        const elapsedMinutes = Math.floor((Date.now() - createdAt.getTime()) / 60000);
+      filtered.forEach(order => {
+        const mins = getElapsedTime(order.createdAt);
         
-        let timerColor = 'bg-emerald-950/40 text-emerald-400 border-emerald-800/40';
-        let cardUrgentClass = '';
-        if (elapsedMinutes >= 20) {
-          timerColor = 'bg-red-950/80 text-red-300 border-red-800';
-          cardUrgentClass = 'card-urgent';
-        } else if (elapsedMinutes >= 10) {
-          timerColor = 'bg-amber-950/60 text-amber-300 border-amber-800/50';
+        // Semáforo de tiempos
+        let timerBg = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        let cardBorder = 'border-slate-200';
+        if (mins >= 8 && mins < 15) {
+          timerBg = 'bg-amber-50 text-amber-700 border-amber-200';
+          cardBorder = 'border-amber-300';
+        } else if (mins >= 15) {
+          timerBg = 'bg-rose-50 text-rose-700 border-rose-300 font-black animate-pulse';
+          cardBorder = 'border-rose-400 shadow-urgent';
         }
 
-        // Configuración visual según status
+        // Estado Badge
         let statusBadge = '';
-        let actionBtn = '';
-        let headerBorder = 'border-obsidian-border';
-
         if (order.status === 'PENDING') {
-          statusBadge = '<span class="text-[10px] font-mono font-bold bg-red-950/80 text-red-300 border border-red-800 px-2 py-0.5 rounded">EN COLA</span>';
+          statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">EN COLA</span>`;
+        } else if (order.status === 'PREPARING') {
+          statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-50 text-amber-700 border border-amber-200">COCINANDO</span>`;
+        } else if (order.status === 'READY') {
+          statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">LISTA</span>`;
+        }
+
+        // Acciones botón según estado
+        let actionBtn = '';
+        if (order.status === 'PENDING') {
           actionBtn = `
-            <button onclick="changeOrderStatus('${order.id}', 'PREPARING')" class="w-full btn-gold py-3 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2">
-              <i data-lucide="play" class="w-4 h-4"></i> Iniciar Preparación
+            <button onclick="advanceOrder('${order.id}', 'PREPARING')" class="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition">
+              <i data-lucide="flame" class="w-3.5 h-3.5 text-brand-400"></i>
+              <span>Iniciar Preparación</span>
             </button>
           `;
         } else if (order.status === 'PREPARING') {
-          statusBadge = '<span class="text-[10px] font-mono font-bold bg-amber-950/80 text-amber-300 border border-amber-800 px-2 py-0.5 rounded">PREPARANDO</span>';
           actionBtn = `
-            <button onclick="changeOrderStatus('${order.id}', 'READY')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40 transition">
-              <i data-lucide="check-check" class="w-4 h-4"></i> Marcar Listo
+            <button onclick="advanceOrder('${order.id}', 'READY')" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition">
+              <i data-lucide="check" class="w-3.5 h-3.5"></i>
+              <span>Marcar Listo para Entrega</span>
             </button>
           `;
         } else if (order.status === 'READY') {
-          statusBadge = '<span class="text-[10px] font-mono font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded animate-pulse">LISTO PARA ENTREGA</span>';
           actionBtn = `
-            <button onclick="changeOrderStatus('${order.id}', 'DELIVERED')" class="w-full bg-obsidian-light hover:bg-obsidian-border text-gray-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 border border-obsidian-border transition">
-              <i data-lucide="package-check" class="w-4 h-4 text-emerald-400"></i> Despachar / Entregado
+            <button onclick="finishOrder('${order.id}')" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition">
+              <i data-lucide="archive" class="w-3.5 h-3.5"></i>
+              <span>Archivar Comanda Despachada</span>
             </button>
           `;
         }
 
-        // Renderizar renglones de platillos/bebidas
-        let itemsHtml = '';
-        (order.items || []).forEach(it => {
-          itemsHtml += `
-            <div class="flex justify-between items-start py-2 border-b border-obsidian-border/40">
-              <div class="flex flex-col">
-                <span class="text-sm font-bold text-white leading-tight">${it.product_name || 'Insumo'}</span>
-                ${it.destination_kds ? `<span class="text-[10px] font-mono text-gray-500 uppercase mt-0.5">${it.destination_kds}</span>` : ''}
-              </div>
-              <span class="text-sm font-mono font-extrabold text-gold-400 bg-obsidian-deep px-2.5 py-0.5 rounded-lg border border-obsidian-border">
-                x${parseInt(it.quantity)}
+        const itemsHtml = order.items.map(it => `
+          <div class="py-2 border-b border-slate-100 last:border-0">
+            <div class="flex items-start gap-2.5">
+              <span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-800 font-mono font-bold text-xs flex items-center justify-center flex-shrink-0">
+                ${it.qty}
               </span>
+              <div class="flex-1">
+                <p class="text-xs sm:text-sm font-bold text-slate-900 leading-snug">${it.name}</p>
+                ${it.notes ? `<p class="text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded mt-1 border border-amber-100">${it.notes}</p>` : ''}
+              </div>
             </div>
-          `;
-        });
-
-        // Slot ID o Terminal
-        const slotCode = order.machine_code || 'SALA / BARRA';
-        const waiterName = order.created_by_name || 'Staff';
+          </div>
+        `).join('');
 
         board.innerHTML += `
-          <div class="w-80 flex-shrink-0 glass-card rounded-2xl flex flex-col justify-between shadow-2xl border ${headerBorder} ${cardUrgentClass} transition-all">
+          <div class="w-80 flex-shrink-0 bg-white rounded-2xl border ${cardBorder} shadow-card flex flex-col justify-between overflow-hidden">
             
             <!-- Card Header -->
-            <div class="p-4 border-b border-obsidian-border bg-obsidian/60 rounded-t-2xl flex justify-between items-start">
-              <div>
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-mono font-bold text-gold-400">${order.order_number}</span>
-                  <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-obsidian-light border border-obsidian-border text-gray-400">#${index + 1}</span>
+            <div class="p-4 bg-slate-50/70 border-b border-slate-100">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="font-outfit text-lg font-black text-slate-900 leading-tight">${order.table}</h3>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <span class="text-[11px] font-mono font-bold text-brand-600">${order.id}</span>
+                    <span class="text-slate-300">•</span>
+                    <span class="text-[11px] text-slate-500">${order.waiter}</span>
+                  </div>
                 </div>
-                <div class="font-outfit text-base font-bold text-white flex items-center gap-1.5 mt-1">
-                  <i data-lucide="cpu" class="w-4 h-4 text-gold-400"></i>
-                  <span>${slotCode}</span>
-                </div>
-                <div class="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
-                  <i data-lucide="user" class="w-3 h-3 text-gray-500"></i>
-                  <span>${waiterName}</span>
-                </div>
-              </div>
-
-              <div class="flex flex-col items-end gap-1.5">
-                ${statusBadge}
-                <div class="text-[11px] font-mono px-2 py-0.5 rounded-md border ${timerColor} flex items-center gap-1" data-created="${order.created_at}">
-                  <i data-lucide="clock" class="w-3 h-3"></i>
-                  <span class="timer-text">${formatTimer(order.created_at)}</span>
+                
+                <div class="flex flex-col items-end gap-1">
+                  <div class="px-2.5 py-1 rounded-lg border text-xs font-mono font-bold flex items-center gap-1 ${timerBg}">
+                    <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                    <span>${mins} min</span>
+                  </div>
+                  ${statusBadge}
                 </div>
               </div>
             </div>
 
-            <!-- Card Items List -->
-            <div class="p-4 flex-1 overflow-y-auto max-h-72 flex flex-col gap-1">
+            <!-- Card Body Items -->
+            <div class="p-4 flex-1 overflow-y-auto max-h-[calc(100vh-270px)]">
               ${itemsHtml}
-              ${order.notes ? `
-                <div class="mt-3 p-2.5 rounded-xl bg-obsidian-deep/80 border border-gold-500/20 text-xs text-amber-200/90 italic flex items-start gap-2">
-                  <i data-lucide="message-square" class="w-3.5 h-3.5 text-gold-400 flex-shrink-0 mt-0.5"></i>
-                  <span>"${order.notes}"</span>
-                </div>
-              ` : ''}
             </div>
 
             <!-- Card Actions -->
-            <div class="p-4 border-t border-obsidian-border bg-obsidian/40 rounded-b-2xl">
+            <div class="p-3 bg-slate-50 border-t border-slate-100">
               ${actionBtn}
             </div>
+
           </div>
         `;
       });
@@ -560,238 +467,46 @@
       lucide.createIcons();
     }
 
-    function formatTimer(createdAtStr) {
-      if (!createdAtStr) return '00:00';
-      const created = new Date(createdAtStr);
-      const diffSecs = Math.max(0, Math.floor((Date.now() - created.getTime()) / 1000));
-      const mins = Math.floor(diffSecs / 60);
-      const secs = diffSecs % 60;
-      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}m`;
-    }
-
-    function renderTimers() {
-      document.querySelectorAll('[data-created]').forEach(el => {
-        const createdStr = el.getAttribute('data-created');
-        const textSpan = el.querySelector('.timer-text');
-        if (textSpan) {
-          textSpan.innerText = formatTimer(createdStr);
-        }
-      });
-    }
-
-    // Actualizar Estado de Comanda por REST
-    async function changeOrderStatus(orderId, nextStatus) {
-      try {
-        const res = await fetch(`${API_BASE}/api/v1/kds/orders/${orderId}/status`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: nextStatus })
-        });
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.detail || 'Error actualizando estatus');
-        }
-
-        if (nextStatus === 'DELIVERED') {
-          ordersList = ordersList.filter(o => o.id !== orderId);
-        } else {
-          const idx = ordersList.findIndex(o => o.id === orderId);
-          if (idx !== -1) {
-            ordersList[idx].status = nextStatus;
-          }
-        }
+    function advanceOrder(id, nextStatus) {
+      const ord = orders.find(o => o.id === id);
+      if (ord) {
+        ord.status = nextStatus;
+        playBeep();
+        saveOrders();
         renderOrders();
-      } catch (err) {
-        alert(err.message);
       }
     }
 
-    // Conexión WebSocket Resiliente con Keep-Alive y Auto-Reconexión
-    function connectWS() {
-      if (ws) {
-        try { ws.close(); } catch(e) {}
-      }
-      if (wsHeartbeatInterval) clearInterval(wsHeartbeatInterval);
-
-      const badge = document.getElementById('ws-badge');
-      const wsUrl = `${WS_BASE}/ws/kds?station=${currentStation}`;
-      console.log(`[WS] Conectando a ${wsUrl}`);
-
-      try {
-        ws = new WebSocket(wsUrl);
-      } catch (err) {
-        console.warn('[WS] Error creando WebSocket:', err);
-        return;
-      }
-
-      ws.onopen = () => {
-        console.log('[WS] Conexión KDS establecida.');
-        if (badge) {
-          badge.className = 'flex items-center gap-2 text-xs bg-emerald-950/60 text-emerald-400 border border-emerald-800/60 px-3.5 py-2 rounded-xl font-mono';
-          badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>En Línea</span>';
-        }
-        reconnectDelay = 1000;
-
-        // Mantener conexión viva enviando ping cada 25s
-        wsHeartbeatInterval = setInterval(() => {
-          if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send("ping");
-          }
-        }, 25000);
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const payload = JSON.parse(event.data);
-          if (payload.type === 'pong' || payload.type === 'ack') return;
-
-          console.log('[WS] Evento recibido en KDS:', payload);
-
-          if (payload.event === 'NEW_ORDER') {
-            playChimeSound();
-            const incoming = payload.order;
-            if (incoming) {
-              if (currentStation !== 'ALL') {
-                const matching = (incoming.items || []).filter(it => it.destination_kds === currentStation);
-                if (matching.length > 0) {
-                  incoming.items = matching;
-                  if (!ordersList.some(o => o.id === incoming.id)) {
-                    ordersList.push(incoming);
-                  }
-                  renderOrders();
-                }
-              } else {
-                if (!ordersList.some(o => o.id === incoming.id)) {
-                  ordersList.push(incoming);
-                }
-                renderOrders();
-              }
-            }
-          } else if (payload.event === 'STATUS_UPDATE') {
-            if (payload.status === 'DELIVERED') {
-              ordersList = ordersList.filter(o => o.id !== payload.order_id);
-            } else {
-              const idx = ordersList.findIndex(o => o.id === payload.order_id);
-              if (idx !== -1) {
-                ordersList[idx].status = payload.status;
-              } else if (payload.order) {
-                ordersList.push(payload.order);
-              }
-            }
-            renderOrders();
-          } else if (payload.event === 'ORDER_CANCELLED') {
-            ordersList = ordersList.filter(o => o.id !== payload.order_id);
-            renderOrders();
-          }
-        } catch (err) {
-          console.warn('[WS] Error parseando mensaje:', err);
-        }
-      };
-
-      ws.onclose = () => {
-        console.log('[WS] Conexión cerrada. Reconectando...');
-        if (wsHeartbeatInterval) clearInterval(wsHeartbeatInterval);
-        if (badge) {
-          badge.className = 'flex items-center gap-2 text-xs bg-red-950/60 text-red-400 border border-red-800/60 px-3.5 py-2 rounded-xl font-mono';
-          badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span><span>Reconectando...</span>';
-        }
-
-        clearTimeout(reconnectTimeout);
-        reconnectTimeout = setTimeout(connectWS, reconnectDelay);
-        reconnectDelay = Math.min(reconnectDelay * 2, 20000);
-      };
-
-      ws.onerror = (err) => {
-        console.error('[WS] Error:', err);
-        try { ws.close(); } catch(e) {}
-      };
+    function finishOrder(id) {
+      orders = orders.filter(o => o.id !== id);
+      playBeep();
+      saveOrders();
+      renderOrders();
     }
 
+    function injectDemoOrder() {
+      const randomTables = ['MESA 01', 'MESA 05', 'TERRAZA 04', 'BARRA 02'];
+      const randomProducts = [
+        { qty: 1, name: 'Bacon Cheese Burger Clásica', notes: 'Papas bien doradas' },
+        { qty: 2, name: 'Tacos de Rib Eye con Tuétano', notes: 'Con limón extra' },
+        { qty: 1, name: 'Cóctel Gin Tonic Frutos Rojos', notes: 'Copa fría' }
+      ];
 
-    // =========================================================================
-    // MODAL HISTORIAL DE DESPACHADOS
-    // =========================================================================
+      const newId = `ORD-${Math.floor(100 + Math.random() * 900)}`;
+      orders.unshift({
+        id: newId,
+        table: randomTables[Math.floor(Math.random() * randomTables.length)],
+        waiter: 'Mariana V.',
+        station: 'KITCHEN',
+        status: 'PENDING',
+        createdAt: Date.now(),
+        items: [randomProducts[Math.floor(Math.random() * randomProducts.length)]]
+      });
 
-    async function openHistoryModal() {
-      document.getElementById('history-modal').classList.remove('hidden');
-      document.getElementById('history-subtitle').innerText = `Estación actual: ${currentStation}`;
-      document.getElementById('history-list').innerHTML = `
-        <div class="text-center py-10 text-gray-500">
-          <i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-2 text-gold-500"></i>
-          Cargando historial de producción...
-        </div>
-      `;
-      lucide.createIcons();
-      await loadKDSHistory();
-    }
-
-    function closeHistoryModal() {
-      document.getElementById('history-modal').classList.add('hidden');
-    }
-
-    async function loadKDSHistory() {
-      try {
-        const stationParam = currentStation !== 'ALL' ? `?station=${currentStation}` : '';
-        const res = await fetch(`${API_BASE}/api/v1/kds/history${stationParam}`);
-        if (!res.ok) throw new Error('Error al obtener histórico');
-        const data = await res.json();
-
-        document.getElementById('hist-avg-time').innerText = `${data.avg_prep_time_minutes} min`;
-        document.getElementById('hist-total-count').innerText = data.count;
-
-        const container = document.getElementById('history-list');
-        container.innerHTML = '';
-
-        if (!data.orders || data.orders.length === 0) {
-          container.innerHTML = '<div class="text-center py-10 text-xs text-gray-500 italic">No hay comandas despachadas en el historial reciente</div>';
-          return;
-        }
-
-        data.orders.forEach(o => {
-          let itemsHtml = '';
-          (o.items || []).forEach(it => {
-            itemsHtml += `
-              <div class="flex justify-between text-[11px] text-gray-300 py-0.5">
-                <span>${it.quantity}x ${it.product_name}</span>
-                <span class="font-mono text-gray-500">$${it.subtotal.toFixed(2)}</span>
-              </div>
-            `;
-          });
-
-          const createdDate = o.created_at ? new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--';
-          const deliveredDate = o.delivered_at ? new Date(o.delivered_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--';
-
-          container.innerHTML += `
-            <div class="bg-obsidian p-4 rounded-2xl border border-obsidian-border flex flex-col gap-2">
-              <div class="flex justify-between items-start">
-                <div class="flex items-center gap-2">
-                  <span class="font-mono font-bold text-xs text-gold-400 px-2 py-0.5 rounded bg-gold-500/10 border border-gold-500/20">${o.order_number}</span>
-                  <span class="font-mono text-xs font-bold text-white">Máquina ${o.machine_code}</span>
-                </div>
-                <div class="flex items-center gap-1.5 font-mono text-[11px] text-emerald-400 bg-emerald-950/60 px-2.5 py-0.5 rounded-lg border border-emerald-800/60">
-                  <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
-                  <span>${o.prep_time_minutes} min prep</span>
-                </div>
-              </div>
-
-              <div class="bg-obsidian-deep/80 p-2.5 rounded-xl border border-obsidian-border/50 my-1">
-                ${itemsHtml}
-              </div>
-
-              <div class="flex justify-between items-center text-[10px] font-mono text-gray-500 pt-1 border-t border-obsidian-border/40">
-                <span>Pedido: ${createdDate} ➔ Despachado: ${deliveredDate}</span>
-                <span>Total: $${o.total_amount.toFixed(2)}</span>
-              </div>
-            </div>
-          `;
-        });
-        lucide.createIcons();
-      } catch (err) {
-        console.error(err);
-        document.getElementById('history-list').innerHTML = '<div class="text-center py-6 text-xs text-red-400">Error al consultar el historial</div>';
-      }
+      playBeep();
+      saveOrders();
+      renderOrders();
     }
   </script>
 </body>
 </html>
-

@@ -1,46 +1,58 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Casino Prestige - Hub de Control Modular</title>
+  <title>GastroFlow OS • Catálogo de Soluciones y Tecnología para Restaurantes</title>
+  <meta name="description" content="Ecosistema tecnológico modular para restaurantes, bares y dark kitchens. Menú QR autoservicio, comanderos móviles, KDS en cocina, POS caja y control de costos.">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#060608">
-  
-  <!-- Google Fonts -->
+  <meta name="theme-color" content="#ffffff">
+
+  <!-- Google Fonts: Plus Jakarta Sans & Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <!-- Tailwind CSS -->
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           colors: {
-            obsidian: {
-              DEFAULT: '#0e0e11',
-              deep: '#060608',
-              card: '#16161b',
-              light: '#22222b',
-              border: '#2a2a36'
+            brand: {
+              50: '#fff7ed',
+              100: '#ffedd5',
+              200: '#fed7aa',
+              500: '#f97316', // Vibrant culinary orange
+              600: '#ea580c',
+              700: '#c2410c'
             },
-            gold: {
-              400: '#e1b77c',
-              500: '#d49b4b',
-              600: '#c5843a',
-              goldish: '#d4af37'
+            accent: {
+              50: '#ecfdf5',
+              500: '#10b981', // Fresh emerald
+              600: '#059669',
+            },
+            slate: {
+              850: '#151f32',
+              900: '#0f172a',
             }
           },
           fontFamily: {
-            sans: ['Inter', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
             outfit: ['Outfit', 'sans-serif'],
             mono: ['JetBrains Mono', 'monospace']
+          },
+          boxShadow: {
+            'subtle': '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05)',
+            'clean': '0 10px 30px -5px rgba(15, 23, 42, 0.06), 0 4px 6px -2px rgba(15, 23, 42, 0.02)',
+            'clean-lg': '0 20px 40px -10px rgba(15, 23, 42, 0.08), 0 8px 12px -3px rgba(15, 23, 42, 0.03)',
+            'glow-orange': '0 12px 30px -6px rgba(249, 115, 22, 0.25)',
           }
         }
       }
@@ -49,185 +61,956 @@
 
   <style>
     body {
-      background-color: #060608;
-      color: #e2e8f0;
-      font-family: 'Inter', sans-serif;
-      background-image: 
-        radial-gradient(circle at 15% 15%, rgba(212, 175, 55, 0.06) 0%, transparent 45%),
-        radial-gradient(circle at 85% 85%, rgba(197, 132, 58, 0.05) 0%, transparent 45%);
-      background-attachment: fixed;
+      background-color: #f8fafc;
+      color: #1e293b;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    .bg-grid-pattern {
+      background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+      background-size: 28px 28px;
     }
 
-    .glass-card {
-      background: rgba(22, 22, 27, 0.85);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    .service-card {
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
-
-    .glass-card:hover {
+    .service-card:hover {
       transform: translateY(-4px);
-      border-color: rgba(212, 175, 55, 0.4);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.15);
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between select-none p-4 md:p-8">
+<body class="min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
 
-  <!-- HEADER -->
-  <header class="max-w-6xl w-full mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 py-4 border-b border-obsidian-border/70">
-    <div class="flex items-center gap-3.5">
-      <div class="w-12 h-12 rounded-2xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center shadow-lg shadow-gold-500/10">
-        <i data-lucide="crown" class="w-6 h-6 text-gold-400"></i>
-      </div>
-      <div>
-        <h1 class="font-outfit text-2xl font-extrabold text-white tracking-wide">
-          CASINO <span class="text-gold-400">PRESTIGE</span>
-        </h1>
-        <p class="text-xs text-gray-400 font-mono flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          Intelligent Hub • ERP Modular v1.0
-        </p>
-      </div>
+  <!-- TOP BAR / BANNER -->
+  <div class="bg-slate-900 text-white text-xs font-medium py-2.5 px-4 text-center">
+    <div class="max-w-7xl mx-auto flex items-center justify-center gap-2 flex-wrap">
+      <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-200 text-[11px] font-semibold">
+        <span class="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse"></span>
+        Nueva Arquitectura 2026
+      </span>
+      <span>Plataforma modular para Restaurantes, Bares, Cafeterías y Cadenas Gastronómicas.</span>
+      <a href="#soluciones" class="underline hover:text-brand-200 font-semibold ml-1">Ver Módulos & Demos &rarr;</a>
     </div>
+  </div>
 
-    <!-- API Status & Docs -->
-    <div class="flex items-center gap-2">
-      <a href="/docs" target="_blank" class="px-3.5 py-2 rounded-xl bg-obsidian border border-obsidian-border hover:border-gold-500/40 text-xs font-mono text-gray-300 hover:text-gold-400 flex items-center gap-2 transition">
-        <i data-lucide="file-code-2" class="w-4 h-4 text-gold-400"></i>
-        <span>Swagger API Docs</span>
+  <!-- NAVIGATION -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <a href="index.html" class="flex items-center gap-3 group">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-brand-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20 group-hover:scale-105 transition">
+          <i data-lucide="utensils" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <span class="font-outfit text-2xl font-black text-slate-900 tracking-tight flex items-center gap-1.5">
+            Gastro<span class="text-brand-500">Flow</span>
+            <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">OS</span>
+          </span>
+          <p class="text-[11px] text-slate-500 font-medium">Tecnología Inteligente para Restaurantes</p>
+        </div>
       </a>
+
+      <!-- Desktop Nav -->
+      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+        <a href="#soluciones" class="hover:text-brand-600 transition">Soluciones</a>
+        <a href="alerts.html" class="flex items-center gap-1.5 text-brand-600 font-bold hover:text-brand-700 transition">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>Alertas en Vivo (notify.sh)</span>
+        </a>
+        <a href="#beneficios" class="hover:text-brand-600 transition">Ventajas</a>
+        <a href="#simulador" class="hover:text-brand-600 transition">Cotizador de Paquete</a>
+        <a href="#arquitectura" class="hover:text-brand-600 transition">Tecnología</a>
+      </nav>
+
+      <!-- CTA Action -->
+      <div class="flex items-center gap-3">
+        <a href="#simulador" class="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition">
+          <i data-lucide="calculator" class="w-4 h-4 text-slate-500"></i>
+          <span>Calcular Plan</span>
+        </a>
+        <a href="#soluciones" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-brand-500 hover:bg-brand-600 shadow-glow-orange transition">
+          <span>Explorar Demos</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+      </div>
     </div>
   </header>
 
-  <!-- MAIN MODULES GRID -->
-  <main class="max-w-6xl w-full mx-auto my-8 flex-1 flex flex-col justify-center">
-    <div class="mb-8 text-center sm:text-left">
-      <h2 class="font-outfit text-xl font-bold text-white">Lanzador de Módulos Operativos</h2>
-      <p class="text-xs text-gray-400 mt-1">Selecciona el módulo correspondiente a tu estación de trabajo o dispositivo</p>
-    </div>
+  <!-- HERO SECTION -->
+  <section class="relative pt-16 pb-20 overflow-hidden bg-white border-b border-slate-200/60 bg-grid-pattern">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      
+      <div class="max-w-3xl mx-auto text-center">
+        <!-- Badge -->
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 border border-orange-200/80 text-brand-700 text-xs font-bold tracking-wide uppercase mb-6">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-brand-500"></i>
+          Ecosistema Operativo Integral para Alimentos & Bebidas
+        </div>
 
-      <!-- 0. MENÚ DIGITAL CLIENTES (AUTOSERVICIO QR) -->
-      <a href="/menu" class="glass-card rounded-3xl p-6 flex flex-col justify-between group border-gold-500/20">
-        <div>
-          <div class="flex justify-between items-start mb-4">
-            <div class="w-12 h-12 rounded-2xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center group-hover:bg-gold-500 group-hover:text-black text-gold-400 transition-all duration-300">
-              <i data-lucide="qr-code" class="w-6 h-6"></i>
+        <!-- Headline -->
+        <h1 class="font-outfit text-4xl sm:text-5xl lg:text-6xl font-black text-slate-950 tracking-tight leading-[1.15]">
+          Todo tu restaurante conectado: <br>
+          <span class="bg-gradient-to-r from-brand-600 via-amber-600 to-brand-500 bg-clip-text text-transparent">del Menú QR a la Cocina y Caja</span>
+        </h1>
+
+        <!-- Subheadline -->
+        <p class="mt-6 text-lg sm:text-xl text-slate-600 leading-relaxed font-normal">
+          Diseñado para eliminar pedidos perdidos, reducir tiempos de espera hasta en un 40% y tener control estricto de recetas, costeo de ingredientes y flujo de caja en tiempo real.
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a href="#soluciones" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-base shadow-glow-orange flex items-center justify-center gap-2.5 transition">
+            <i data-lucide="play-circle" class="w-5 h-5"></i>
+            <span>Ver Catálogo de Módulos</span>
+          </a>
+          <a href="#simulador" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-bold text-base border border-slate-300 shadow-subtle flex items-center justify-center gap-2 transition">
+            <i data-lucide="layers" class="w-5 h-5 text-slate-500"></i>
+            <span>Personalizar Mi Paquete</span>
+          </a>
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="mt-12 pt-8 border-t border-slate-200/60 grid grid-cols-2 md:grid-cols-4 gap-6 text-left">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-emerald-50 text-accent-600 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="zap" class="w-5 h-5"></i>
             </div>
-            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">CLIENTES EN SALA</span>
-          </div>
-          <h3 class="font-outfit text-lg font-bold text-white group-hover:text-gold-400 transition">Menú Digital & Pedidos QR</h3>
-          <p class="text-xs text-gray-400 mt-2 leading-relaxed">Portal público para jugadores. Acceso anónimo por slot (?machine_id), Sticky Cart Footer verde esmeralda y botones de asistencia (pedir saldo / mesero).</p>
-        </div>
-        <div class="mt-6 pt-4 border-t border-obsidian-border/50 flex justify-between items-center text-xs font-mono text-gold-400 font-bold">
-          <span>Abrir Menú Clientes</span>
-          <i data-lucide="arrow-right" class="w-4 h-4 transform group-hover:translate-x-1 transition"></i>
-        </div>
-      </a>
-
-      <!-- 1. PWA MESEROS & PISO -->
-      <a href="/pos" class="glass-card rounded-3xl p-6 flex flex-col justify-between group">
-        <div>
-          <div class="flex justify-between items-start mb-4">
-            <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-black text-amber-400 transition-all duration-300">
-              <i data-lucide="smartphone" class="w-6 h-6"></i>
+            <div>
+              <p class="text-xs text-slate-500 font-medium">Sincronización</p>
+              <p class="text-sm font-bold text-slate-900">WebSocket &lt; 50ms</p>
             </div>
-            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-obsidian text-amber-300 border border-amber-500/30">MÓVIL / PWA</span>
           </div>
-          <h3 class="font-outfit text-lg font-bold text-white group-hover:text-gold-400 transition">Comandero Meseros (POS)</h3>
-          <p class="text-xs text-gray-400 mt-2 leading-relaxed">Toma de pedidos en sala por QR o slot, selector lateral de Venta vs Cortesía VIP, botones de pánico (recarga/falla) y alertas sonoras de orden lista.</p>
-        </div>
-        <div class="mt-6 pt-4 border-t border-obsidian-border/50 flex justify-between items-center text-xs font-mono text-gold-400 font-bold">
-          <span>Abrir Comandero</span>
-          <i data-lucide="arrow-right" class="w-4 h-4 transform group-hover:translate-x-1 transition"></i>
-        </div>
-      </a>
-
-
-      <!-- 2. KDS PANTALLA DE PRODUCCIÓN -->
-      <a href="/kds" class="glass-card rounded-3xl p-6 flex flex-col justify-between group">
-        <div>
-          <div class="flex justify-between items-start mb-4">
-            <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-black text-emerald-400 transition-all duration-300">
-              <i data-lucide="monitor" class="w-6 h-6"></i>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="smartphone" class="w-5 h-5"></i>
             </div>
-            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-obsidian text-emerald-300 border border-emerald-500/30">TIEMPO REAL</span>
-          </div>
-          <h3 class="font-outfit text-lg font-bold text-white group-hover:text-gold-400 transition">KDS Cocina & Barra</h3>
-          <p class="text-xs text-gray-400 mt-2 leading-relaxed">Pantalla de comandas en tiempo real vía WebSockets. Cola FIFO, semáforo visual de tiempos de preparación y timbre acústico Web Audio API.</p>
-        </div>
-        <div class="mt-6 pt-4 border-t border-obsidian-border/50 flex justify-between items-center text-xs font-mono text-gold-400 font-bold">
-          <span>Abrir KDS Screen</span>
-          <i data-lucide="arrow-right" class="w-4 h-4 transform group-hover:translate-x-1 transition"></i>
-        </div>
-      </a>
-
-      <!-- 3. CAJA & BARRA POS -->
-      <a href="/caja" class="glass-card rounded-3xl p-6 flex flex-col justify-between group">
-        <div>
-          <div class="flex justify-between items-start mb-4">
-            <div class="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center group-hover:bg-blue-500 group-hover:text-black text-blue-400 transition-all duration-300">
-              <i data-lucide="credit-card" class="w-6 h-6"></i>
+            <div>
+              <p class="text-xs text-slate-500 font-medium">Sin Apps Pesadas</p>
+              <p class="text-sm font-bold text-slate-900">100% Web / PWA</p>
             </div>
-            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-obsidian text-blue-300 border border-blue-500/30">TERMINAL</span>
           </div>
-          <h3 class="font-outfit text-lg font-bold text-white group-hover:text-gold-400 transition">POS Caja & Barra</h3>
-          <p class="text-xs text-gray-400 mt-2 leading-relaxed">Liquidación de cuentas pendientes (Efectivo/Tarjeta), control Poka-Yoke de PIN para cortesías VIP, venta directa y arqueo de stock de barra.</p>
-        </div>
-        <div class="mt-6 pt-4 border-t border-obsidian-border/50 flex justify-between items-center text-xs font-mono text-gold-400 font-bold">
-          <span>Abrir Terminal Caja</span>
-          <i data-lucide="arrow-right" class="w-4 h-4 transform group-hover:translate-x-1 transition"></i>
-        </div>
-      </a>
-
-      <!-- 4. CATÁLOGO & FICHAS TÉCNICAS -->
-      <a href="/catalogo" class="glass-card rounded-3xl p-6 flex flex-col justify-between group">
-        <div>
-          <div class="flex justify-between items-start mb-4">
-            <div class="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center group-hover:bg-purple-500 group-hover:text-black text-purple-400 transition-all duration-300">
-              <i data-lucide="chef-hat" class="w-6 h-6"></i>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="shield-check" class="w-5 h-5"></i>
             </div>
-            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-obsidian text-purple-300 border border-purple-500/30">ADMINISTRACIÓN</span>
-          </div>
-          <h3 class="font-outfit text-lg font-bold text-white group-hover:text-gold-400 transition">Catálogo & Cocina</h3>
-          <p class="text-xs text-gray-400 mt-2 leading-relaxed">Fichas técnicas con costeo y margen en tiempo real, subida de fotos, catálogo de insumos, stock de cocina, mermas y tabulador VIP.</p>
-        </div>
-        <div class="mt-6 pt-4 border-t border-obsidian-border/50 flex justify-between items-center text-xs font-mono text-gold-400 font-bold">
-          <span>Abrir Catálogo y Recetas</span>
-          <i data-lucide="arrow-right" class="w-4 h-4 transform group-hover:translate-x-1 transition"></i>
-        </div>
-      </a>
-
-      <!-- 5. PANEL DE STAFF & OPERACIONES -->
-      <a href="/staff" class="glass-card rounded-3xl p-6 flex flex-col justify-between group">
-        <div>
-          <div class="flex justify-between items-start mb-4">
-            <div class="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center group-hover:bg-red-500 group-hover:text-black text-red-400 transition-all duration-300">
-              <i data-lucide="users" class="w-6 h-6"></i>
+            <div>
+              <p class="text-xs text-slate-500 font-medium">Seguridad Operativa</p>
+              <p class="text-sm font-bold text-slate-900">Auditoría con PIN</p>
             </div>
-            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-obsidian text-red-300 border border-red-500/30">SUPERVISIÓN</span>
           </div>
-          <h3 class="font-outfit text-lg font-bold text-white group-hover:text-gold-400 transition">Staff & Soporte Técnico</h3>
-          <p class="text-xs text-gray-400 mt-2 leading-relaxed">Gestión de usuarios y PINs de supervisores, inventario general, tickets de fallas técnicas y bitácora de auditoría.</p>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="pie-chart" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <p class="text-xs text-slate-500 font-medium">Rentabilidad</p>
+              <p class="text-sm font-bold text-slate-900">Escandallos en Vivo</p>
+            </div>
+          </div>
         </div>
-        <div class="mt-6 pt-4 border-t border-obsidian-border/50 flex justify-between items-center text-xs font-mono text-gold-400 font-bold">
-          <span>Abrir Panel Staff</span>
-          <i data-lucide="arrow-right" class="w-4 h-4 transform group-hover:translate-x-1 transition"></i>
-        </div>
-      </a>
+
+      </div>
 
     </div>
-  </main>
+  </section>
+
+  <!-- SOLUCIONES / CATÁLOGO DE SERVICIOS -->
+  <section id="soluciones" class="py-20 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Header -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-6">
+        <div>
+          <span class="text-xs font-bold font-mono tracking-wider text-brand-600 uppercase bg-brand-50 px-3 py-1 rounded-full border border-brand-200">
+            Catálogo Comercial de Módulos
+          </span>
+          <h2 class="font-outfit text-3xl sm:text-4xl font-extrabold text-slate-900 mt-3">
+            Soluciones listas para implantar en tu negocio
+          </h2>
+          <p class="text-slate-600 mt-2 max-w-2xl text-base">
+            Cada módulo funciona de manera autónoma o sincronizada entre sí. Puedes contratar la suite completa o activar únicamente los componentes que tu restaurante necesita.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-subtle self-start md:self-auto">
+          <button onclick="filterCategory('todos')" class="cat-btn px-4 py-2 rounded-lg text-xs font-bold bg-slate-900 text-white transition" data-category="todos">Todos (5)</button>
+          <button onclick="filterCategory('sala')" class="cat-btn px-4 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition" data-category="sala">Sala & Clientes</button>
+          <button onclick="filterCategory('cocina')" class="cat-btn px-4 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition" data-category="cocina">Cocina & Stock</button>
+          <button onclick="filterCategory('admin')" class="cat-btn px-4 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition" data-category="admin">Caja & Gestión</button>
+        </div>
+      </div>
+
+      <!-- GRID DE SERVICIOS -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="services-grid">
+
+        <!-- 1. MENÚ DIGITAL QR & AUTOPEDIDOS -->
+        <div class="service-card bg-white rounded-2xl border border-slate-200/90 shadow-clean flex flex-col justify-between overflow-hidden" data-category="sala">
+          <div class="p-7">
+            <!-- Header Card -->
+            <div class="flex items-center justify-between mb-5">
+              <div class="w-12 h-12 rounded-xl bg-orange-50 text-brand-500 border border-orange-100 flex items-center justify-center">
+                <i data-lucide="qr-code" class="w-6 h-6"></i>
+              </div>
+              <span class="text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                AUTOSERVICIO
+              </span>
+            </div>
+
+            <h3 class="font-outfit text-xl font-bold text-slate-900">Menú Digital & Pedidos QR</h3>
+            <p class="text-xs font-semibold text-brand-600 mb-3">Carta interactiva sin contacto para mesas y terrazas</p>
+            <p class="text-sm text-slate-600 leading-relaxed mb-5">
+              Permite a los comensales escanear el código QR en mesa, navegar por platillos con fotos en alta definición, filtrar por alérgenos y enviar su comanda directamente a cocina sin esperar al mesero.
+            </p>
+
+            <!-- Feature Checklist -->
+            <div class="space-y-2.5 pt-4 border-t border-slate-100 text-xs text-slate-700 font-medium">
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Cero descargas: abre directo en Safari/Chrome</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Carrito inteligente con notas de preparación</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Botón de llamado de mesero y solicitud de cuenta</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Actualización instantánea de precios y disponibilidad</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Footer Action -->
+          <div class="px-7 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs text-slate-500 font-mono">Demo Interactiva</span>
+            <a href="cliente.html" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-brand-600 hover:text-brand-700 hover:underline">
+              <span>Probar Menú QR</span>
+              <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- 2. COMANDERO MÓVIL POS MESEROS -->
+        <div class="service-card bg-white rounded-2xl border border-slate-200/90 shadow-clean flex flex-col justify-between overflow-hidden" data-category="sala">
+          <div class="p-7">
+            <div class="flex items-center justify-between mb-5">
+              <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center">
+                <i data-lucide="smartphone" class="w-6 h-6"></i>
+              </div>
+              <span class="text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                PWA MESEROS
+              </span>
+            </div>
+
+            <h3 class="font-outfit text-xl font-bold text-slate-900">Comandero Móvil para Sala</h3>
+            <p class="text-xs font-semibold text-blue-600 mb-3">Toma de comandas ágil para smartphones o tablets</p>
+            <p class="text-sm text-slate-600 leading-relaxed mb-5">
+              Dota a tus meseros de una herramienta ligera y rápida para levantar pedidos a pie de mesa, asignar comandas por número de mesa o área, y enviar órdenes a barra o cocina al instante.
+            </p>
+
+            <div class="space-y-2.5 pt-4 border-t border-slate-100 text-xs text-slate-700 font-medium">
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Compatible con cualquier móvil iOS / Android</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Alertas sonoras y visuales cuando el plato está listo</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Gestión de modificadores (término de carne, salsas, etc.)</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Asignación de comanda por zona (Terraza, Salón, Barra)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-7 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs text-slate-500 font-mono">Demo Interactiva</span>
+            <a href="pos.html" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline">
+              <span>Abrir Comandero</span>
+              <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- 3. KDS - MONITOR DE COCINA Y BARRA -->
+        <div class="service-card bg-white rounded-2xl border border-slate-200/90 shadow-clean flex flex-col justify-between overflow-hidden" data-category="cocina">
+          <div class="p-7">
+            <div class="flex items-center justify-between mb-5">
+              <div class="w-12 h-12 rounded-xl bg-emerald-50 text-accent-600 border border-emerald-100 flex items-center justify-center">
+                <i data-lucide="chef-hat" class="w-6 h-6"></i>
+              </div>
+              <span class="text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-accent-600 border border-emerald-200">
+                TIEMPO REAL
+              </span>
+            </div>
+
+            <h3 class="font-outfit text-xl font-bold text-slate-900">KDS Cocina & Barra Digital</h3>
+            <p class="text-xs font-semibold text-accent-600 mb-3">Reemplaza los tickets de papel por pantallas inteligentes</p>
+            <p class="text-sm text-slate-600 leading-relaxed mb-5">
+              Sistema de visualización de comandas en tiempo real vía WebSockets. Organiza las comandas en orden de llegada (FIFO), con semáforo de tiempos para evitar demoras y timbre acústico.
+            </p>
+
+            <div class="space-y-2.5 pt-4 border-t border-slate-100 text-xs text-slate-700 font-medium">
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Semáforo de tiempos: Verde (OK), Ámbar (Alerta), Rojo (+15 min)</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Filtro inteligente por estación: Calientes, Fríos o Bar</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Notificación automática al mesero al pulsar "Listo"</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Ahorro total en impresoras y rollos térmicos</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-7 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs text-slate-500 font-mono">Demo Interactiva</span>
+            <a href="kds.html" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-accent-600 hover:text-emerald-700 hover:underline">
+              <span>Abrir Monitor KDS</span>
+              <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- 4. POS CAJA, COBROS & CIERRES -->
+        <div class="service-card bg-white rounded-2xl border border-slate-200/90 shadow-clean flex flex-col justify-between overflow-hidden" data-category="admin">
+          <div class="p-7">
+            <div class="flex items-center justify-between mb-5">
+              <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center">
+                <i data-lucide="credit-card" class="w-6 h-6"></i>
+              </div>
+              <span class="text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                PUNTO DE VENTA
+              </span>
+            </div>
+
+            <h3 class="font-outfit text-xl font-bold text-slate-900">Terminal de Caja & Cobros</h3>
+            <p class="text-xs font-semibold text-indigo-600 mb-3">Facturación, división de cuentas y arqueos sin descuadre</p>
+            <p class="text-sm text-slate-600 leading-relaxed mb-5">
+              Liquidación rápida de cuentas en efectivo, tarjetas o transferencias. Manejo de propinas, cuentas separadas, cortesías autorizadas con PIN de supervisor y arqueo de turnos ciego.
+            </p>
+
+            <div class="space-y-2.5 pt-4 border-t border-slate-100 text-xs text-slate-700 font-medium">
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Cobro multiformato: Efectivo, Tarjeta, Transferencia</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>División de cuentas entre comensales por ítems</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Seguridad Poka-Yoke: descuentos y anulaciones protegidas por PIN</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Cierre X y Z con resumen de venta y cálculo de propinas</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-7 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs text-slate-500 font-mono">Demo Interactiva</span>
+            <a href="cashier.html" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-700 hover:underline">
+              <span>Abrir Terminal Caja</span>
+              <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- 5. ESCANDALLOS, COSTOS & INVENTARIOS -->
+        <div class="service-card bg-white rounded-2xl border border-slate-200/90 shadow-clean flex flex-col justify-between overflow-hidden" data-category="cocina">
+          <div class="p-7">
+            <div class="flex items-center justify-between mb-5">
+              <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center">
+                <i data-lucide="scale" class="w-6 h-6"></i>
+              </div>
+              <span class="text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                RENTABILIDAD
+              </span>
+            </div>
+
+            <h3 class="font-outfit text-xl font-bold text-slate-900">Escandallos & Fichas Técnicas</h3>
+            <p class="text-xs font-semibold text-purple-600 mb-3">Control de costos de materia prima, recetas y mermas</p>
+            <p class="text-sm text-slate-600 leading-relaxed mb-5">
+              Digitaliza las recetas maestras de tu chef. Calcula el costo unitario de cada platillo, su margen de contribución real y deduce automáticamente ingredientes del inventario con cada venta.
+            </p>
+
+            <div class="space-y-2.5 pt-4 border-t border-slate-100 text-xs text-slate-700 font-medium">
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Cálculo automático de costo y margen bruto por platillo</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Registro y bitácora de mermas de cocina</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Catálogo fotográfico y especificaciones de emplatado</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Control de existencias mínimas con alertas de reposición</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-7 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs text-slate-500 font-mono">Demo Interactiva</span>
+            <a href="catalogo.html" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-purple-600 hover:text-purple-700 hover:underline">
+              <span>Abrir Fichas y Recetas</span>
+              <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- 6. CONTROL DE PERSONAL Y TURNOS -->
+        <div class="service-card bg-white rounded-2xl border border-slate-200/90 shadow-clean flex flex-col justify-between overflow-hidden" data-category="admin">
+          <div class="p-7">
+            <div class="flex items-center justify-between mb-5">
+              <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center">
+                <i data-lucide="users" class="w-6 h-6"></i>
+              </div>
+              <span class="text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+                GESTIÓN OPERATIVA
+              </span>
+            </div>
+
+            <h3 class="font-outfit text-xl font-bold text-slate-900">Control de Staff & Turnos</h3>
+            <p class="text-xs font-semibold text-rose-600 mb-3">Roles, permisos de acceso y trazabilidad por usuario</p>
+            <p class="text-sm text-slate-600 leading-relaxed mb-5">
+              Administración de perfiles (Administrador, Capitán, Mesero, Cocinero, Cajero). Configuración de PINs rápidos para inicio de turno y auditoría completa de acciones realizadas.
+            </p>
+
+            <div class="space-y-2.5 pt-4 border-t border-slate-100 text-xs text-slate-700 font-medium">
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Control de roles con permisos granulares</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Acceso rápido mediante PIN de 4 dígitos para agilizar turnos</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Historial de auditoría para prevenir fugas internas</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Métricas de productividad y ventas por colaborador</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-7 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs text-slate-500 font-mono">Demo Interactiva</span>
+            <a href="staff.html" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-rose-600 hover:text-rose-700 hover:underline">
+              <span>Abrir Panel Staff</span>
+              <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- 7. ALERTAS OPERATIVAS AL PERSONAL -->
+        <div class="service-card bg-white rounded-2xl border-2 border-brand-500/80 shadow-clean flex flex-col justify-between overflow-hidden" data-category="sala">
+          <div class="p-7">
+            <div class="flex items-center justify-between mb-5">
+              <div class="w-12 h-12 rounded-xl bg-orange-50 text-brand-600 border border-orange-200 flex items-center justify-center">
+                <i data-lucide="bell-ring" class="w-6 h-6 animate-pulse"></i>
+              </div>
+              <span class="text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                COMUNICACIÓN EN VIVO
+              </span>
+            </div>
+
+            <h3 class="font-outfit text-xl font-bold text-slate-900">Avisos Inmediatos al Personal</h3>
+            <p class="text-xs font-semibold text-brand-600 mb-3">Notificaciones al instante en los teléfonos de meseros y cocina</p>
+            <p class="text-sm text-slate-600 leading-relaxed mb-5">
+              Mantiene conectado a todo el equipo de servicio. Cada vez que un comensal pide atención desde su mesa, un platillo sale de cocina o un ingrediente se está agotando, el responsable recibe una notificación al instante sin gritos ni timbres molestos.
+            </p>
+
+            <div class="space-y-2.5 pt-4 border-t border-slate-100 text-xs text-slate-700 font-medium">
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Canales separados por área: Meseros, Cocina, Barra y Almacén</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Notificación con vibración y sonido al celular del mesero</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Reduce tiempos muertos entre que el plato sale y se entrega</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                <span>Panel en vivo para ver el flujo de llamados y respuestas</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-7 py-4 bg-orange-50/60 border-t border-orange-100 flex items-center justify-between">
+            <span class="text-xs text-brand-700 font-mono font-bold">Monitor en Vivo</span>
+            <a href="alerts.html" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-black text-brand-600 hover:text-brand-700 hover:underline">
+              <span>Ver Monitor de Alertas</span>
+              <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- BENEFICIOS CLAVE PARA NEGOCIOS GASTRONÓMICOS -->
+  <section id="beneficios" class="py-20 bg-white border-y border-slate-200/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-xs font-bold font-mono tracking-wider text-brand-600 uppercase bg-brand-50 px-3 py-1 rounded-full border border-brand-200">
+          Impacto en Rentabilidad
+        </span>
+        <h2 class="font-outfit text-3xl sm:text-4xl font-extrabold text-slate-900 mt-3">
+          ¿Por qué los restaurantes eligen esta solución?
+        </h2>
+        <p class="text-slate-600 mt-3 text-base">
+          Desarrollado resolviendo los cuellos de botella reales que sufren los gerentes y chefs día a día en el servicio.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <div class="p-8 rounded-2xl bg-slate-50 border border-slate-200/80">
+          <div class="w-12 h-12 rounded-xl bg-orange-100 text-brand-600 flex items-center justify-center mb-6">
+            <i data-lucide="timer" class="w-6 h-6"></i>
+          </div>
+          <h3 class="font-outfit text-xl font-bold text-slate-900 mb-2">Rotación 30% más rápida</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Los comensales piden y pagan en segundos desde el QR o el mesero ingresa la orden sin desplazarse a un punto fijo. Menos pasos innecesarios = mesas libres más rápido.
+          </p>
+        </div>
+
+        <div class="p-8 rounded-2xl bg-slate-50 border border-slate-200/80">
+          <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-6">
+            <i data-lucide="ban" class="w-6 h-6"></i>
+          </div>
+          <h3 class="font-outfit text-xl font-bold text-slate-900 mb-2">Cero errores de comanda</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Elimina la letra ilegible, comandas extraviadas y el ruido de comanderas ruidosas. Todo aparece claramente en la pantalla KDS con especificaciones exactas.
+          </p>
+        </div>
+
+        <div class="p-8 rounded-2xl bg-slate-50 border border-slate-200/80">
+          <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mb-6">
+            <i data-lucide="trending-up" class="w-6 h-6"></i>
+          </div>
+          <h3 class="font-outfit text-xl font-bold text-slate-900 mb-2">Control de Merma y Margen</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Conoce el costo exacto de cada plato hasta el último gramo de ingrediente. Detecta incrementos de insumos y mermas sospechosas antes de que afecten tus ganancias.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- COTIZADOR / SIMULADOR INTERACTIVO DE SERVICIOS & EQUIPAMIENTO -->
+  <section id="simulador" class="py-20 bg-slate-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="bg-white rounded-3xl border border-slate-200/90 shadow-clean-lg p-6 sm:p-12">
+        <div class="text-center max-w-3xl mx-auto mb-10">
+          <span class="text-xs font-bold font-mono tracking-wider text-brand-600 uppercase bg-brand-50 px-3.5 py-1 rounded-full border border-brand-200">
+            Cotizador Rápido para Restaurantes y Bares
+          </span>
+          <h2 class="font-outfit text-2xl sm:text-4xl font-extrabold text-slate-900 mt-3">
+            Arma tu solución en minutos: Sistema + Estaciones y Equipos
+          </h2>
+          <p class="text-slate-600 text-sm sm:text-base mt-2">
+            Selecciona los módulos de software que necesitas y el equipamiento físico que te gustaría incluir para tu restaurante.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          <!-- Selector de Software y Hardware (8 cols) -->
+          <div class="lg:col-span-7 space-y-6">
+            
+            <!-- Bloque 1: Módulos de Software -->
+            <div>
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-7 h-7 rounded-lg bg-orange-100 text-brand-600 flex items-center justify-center font-bold text-xs">1</div>
+                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-800 font-outfit">Sistemas y Módulos Digitales</h3>
+              </div>
+              <div class="space-y-2.5">
+                
+                <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-brand-500/50 bg-slate-50/60 cursor-pointer transition">
+                  <div class="flex items-center gap-3">
+                    <input type="checkbox" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 border-slate-300 module-check" checked data-type="soft" data-setup="120" data-month="25" data-name="Menú Digital en Mesa (Código QR)">
+                    <div>
+                      <p class="text-sm font-bold text-slate-900">Menú Digital en Mesa (Código QR)</p>
+                      <p class="text-xs text-slate-500">Carta con fotos, botones para pedir y llamar mesero</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-mono font-bold text-slate-700">$25/mes</span>
+                </label>
+
+                <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-brand-500/50 bg-slate-50/60 cursor-pointer transition">
+                  <div class="flex items-center gap-3">
+                    <input type="checkbox" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 border-slate-300 module-check" checked data-type="soft" data-setup="150" data-month="30" data-name="Comandero para Celulares de Meseros">
+                    <div>
+                      <p class="text-sm font-bold text-slate-900">Comandero para Meseros (Móvil)</p>
+                      <p class="text-xs text-slate-500">Toma de pedidos en mesa y aviso instantáneo a cocina</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-mono font-bold text-slate-700">$30/mes</span>
+                </label>
+
+                <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-brand-500/50 bg-slate-50/60 cursor-pointer transition">
+                  <div class="flex items-center gap-3">
+                    <input type="checkbox" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 border-slate-300 module-check" checked data-type="soft" data-setup="180" data-month="35" data-name="Pantalla Digital para Cocina y Barra">
+                    <div>
+                      <p class="text-sm font-bold text-slate-900">Pantalla para Cocina y Barra (KDS)</p>
+                      <p class="text-xs text-slate-500">Reemplaza el papel: semáforo de tiempo y timbre acústico</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-mono font-bold text-slate-700">$35/mes</span>
+                </label>
+
+                <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-brand-500/50 bg-slate-50/60 cursor-pointer transition">
+                  <div class="flex items-center gap-3">
+                    <input type="checkbox" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 border-slate-300 module-check" checked data-type="soft" data-setup="150" data-month="30" data-name="Punto de Cobro y Caja">
+                    <div>
+                      <p class="text-sm font-bold text-slate-900">Punto de Cobro, Caja y Arqueos</p>
+                      <p class="text-xs text-slate-500">División de cuentas, propinas, corte de turno seguro con PIN</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-mono font-bold text-slate-700">$30/mes</span>
+                </label>
+
+                <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-brand-500/50 bg-slate-50/60 cursor-pointer transition">
+                  <div class="flex items-center gap-3">
+                    <input type="checkbox" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 border-slate-300 module-check" data-type="soft" data-setup="200" data-month="35" data-name="Control de Costos de Platillos y Almacén">
+                    <div>
+                      <p class="text-sm font-bold text-slate-900">Control de Recetas, Costos y Almacén</p>
+                      <p class="text-xs text-slate-500">Sabe cuánto ganas por platillo y descuenta insumos al vender</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-mono font-bold text-slate-700">$35/mes</span>
+                </label>
+
+                <label class="flex items-center justify-between p-3.5 rounded-xl border border-brand-500/40 bg-orange-50/40 hover:border-brand-500 cursor-pointer transition">
+                  <div class="flex items-center gap-3">
+                    <input type="checkbox" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 border-slate-300 module-check" checked data-type="soft" data-setup="100" data-month="20" data-name="Avisos Inmediatos a WhatsApp / Celular">
+                    <div>
+                      <p class="text-sm font-bold text-slate-900">Avisos Inmediatos al Celular del Equipo</p>
+                      <p class="text-xs text-slate-500">Alertas cuando un plato está listo o el cliente llama al mesero</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-mono font-bold text-brand-600">$20/mes</span>
+                </label>
+
+              </div>
+            </div>
+
+            <!-- Bloque 2: Equipos Físicos y Estaciones Sugeridas -->
+            <div class="pt-2">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">2</div>
+                  <h3 class="text-sm font-bold uppercase tracking-wider text-slate-800 font-outfit">Equipos Físicos y Estaciones Opcionales</h3>
+                </div>
+                <span class="text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">Pago único de equipo</span>
+              </div>
+              <div class="space-y-2.5">
+                
+                <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-indigo-400 bg-white cursor-pointer transition">
+                  <div class="flex items-center gap-3">
+                    <input type="checkbox" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 hw-check" data-price="290" data-name="Estación Pantalla Cocina (Tablet 10'' + Base metálica)">
+                    <div>
+                      <p class="text-sm font-bold text-slate-900">Estación Pantalla de Cocina / KDS</p>
+                      <p class="text-xs text-slate-500">Tablet uso rudo 10" + soporte articulado + cargador continuo</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-mono font-bold text-slate-800">+$290 c/u</span>
+                </label>
+
+                <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-indigo-400 bg-white cursor-pointer transition">
+                  <div class="flex items-center gap-3">
+                    <input type="checkbox" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 hw-check" checked data-price="180" data-name="Impresora Térmica 80mm (Tickets de caja / comanda)">
+                    <div>
+                      <p class="text-sm font-bold text-slate-900">Impresora Térmica Rápida 80mm</p>
+                      <p class="text-xs text-slate-500">Conexión WiFi/Red para imprimir cuentas y pre-cuentas</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-mono font-bold text-slate-800">+$180 c/u</span>
+                </label>
+
+                <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-indigo-400 bg-white cursor-pointer transition">
+                  <div class="flex items-center gap-3">
+                    <input type="checkbox" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 hw-check" data-price="140" data-name="Comandero Móvil Portátil (Terminal compacta)">
+                    <div>
+                      <p class="text-sm font-bold text-slate-900">Comandero Portátil para Mesero</p>
+                      <p class="text-xs text-slate-500">Dispositivo ergonómico de alta batería resistente a caídas</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-mono font-bold text-slate-800">+$140 c/u</span>
+                </label>
+
+                <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-indigo-400 bg-white cursor-pointer transition">
+                  <div class="flex items-center gap-3">
+                    <input type="checkbox" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 hw-check" checked data-price="95" data-name="Cajón de Dinero Automático con Llave">
+                    <div>
+                      <p class="text-sm font-bold text-slate-900">Cajón de Dinero Automático</p>
+                      <p class="text-xs text-slate-500">Apertura electrónica al imprimir el ticket de cobro</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-mono font-bold text-slate-800">+$95 c/u</span>
+                </label>
+
+                <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-indigo-400 bg-white cursor-pointer transition">
+                  <div class="flex items-center gap-3">
+                    <input type="checkbox" class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 hw-check" data-price="75" data-name="Lote de 30 Tokens / Displays Acrílicos QR para Mesa">
+                    <div>
+                      <p class="text-sm font-bold text-slate-900">Displays Acrílicos QR para Mesas (Kit de 30)</p>
+                      <p class="text-xs text-slate-500">Diseño elegante con tu logotipo y número de mesa grabado</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-mono font-bold text-slate-800">+$75 kit</span>
+                </label>
+
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Resumen de Cotización (5 cols) -->
+          <div class="lg:col-span-5 p-7 rounded-2xl bg-slate-900 text-white flex flex-col justify-between shadow-xl sticky top-28">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-mono uppercase tracking-wider text-brand-400 font-bold">Tu Presupuesto Estimado</span>
+                <span class="text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded">Personalizado</span>
+              </div>
+              <h3 class="font-outfit text-xl font-bold mt-1 text-white">Resumen de Propuesta</h3>
+              
+              <div class="mt-5 space-y-2.5 text-xs border-b border-slate-800 pb-5 max-h-60 overflow-y-auto pr-1" id="quote-items">
+                <!-- Se llena con JS -->
+              </div>
+
+              <div class="mt-5 space-y-3">
+                <div class="flex justify-between items-center text-xs text-slate-400">
+                  <span>Equipos físicos seleccionados:</span>
+                  <span class="font-mono font-bold text-slate-200 text-sm" id="hw-price">$275</span>
+                </div>
+                <div class="flex justify-between items-center text-xs text-slate-400">
+                  <span>Puesta en marcha y capacitación:</span>
+                  <span class="font-mono font-bold text-slate-200 text-sm" id="setup-price">$700</span>
+                </div>
+                <div class="pt-3 border-t border-slate-800 flex justify-between items-baseline">
+                  <div>
+                    <span class="text-sm font-semibold text-slate-300 block">Mensualidad por servicio:</span>
+                    <span class="text-[11px] text-slate-400">Soporte, actualizaciones y hosting</span>
+                  </div>
+                  <span class="font-outfit font-black text-3xl text-brand-400" id="monthly-price">$123<span class="text-xs font-normal text-slate-400">/mes</span></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-8 space-y-2.5">
+              <button onclick="requestProposal()" class="w-full py-4 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs uppercase tracking-wider shadow-glow-orange transition flex items-center justify-center gap-2">
+                <i data-lucide="message-circle" class="w-4 h-4"></i>
+                <span>Pedir Cotización Formal por WhatsApp</span>
+              </button>
+              <p class="text-[11px] text-center text-slate-400">
+                Respuesta en menos de 15 minutos • Asesoría personalizada para tu local
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ARQUITECTURA TÉCNICA / INFRAESTRUCTURA -->
+  <section id="arquitectura" class="py-16 bg-white border-t border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-8">
+        <div>
+          <span class="text-xs font-bold font-mono text-slate-500 uppercase tracking-wider">Tranquilidad Operativa</span>
+          <h3 class="font-outfit text-2xl font-bold text-slate-900 mt-1">Garantía de Servicio Continuo y Sin Caídas</h3>
+          <p class="text-sm text-slate-600 mt-1">Tu negocio no se detiene si se corta el internet: el sistema puede funcionar de forma local en tu restaurante.</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <span class="px-3.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 text-xs font-semibold border border-emerald-200 flex items-center gap-1.5">
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i> Funciona sin internet externo
+          </span>
+          <span class="px-3.5 py-1.5 rounded-lg bg-blue-50 text-blue-800 text-xs font-semibold border border-blue-200 flex items-center gap-1.5">
+            <i data-lucide="smartphone" class="w-4 h-4 text-blue-600"></i> Usa cualquier celular o tablet
+          </span>
+          <span class="px-3.5 py-1.5 rounded-lg bg-amber-50 text-amber-800 text-xs font-semibold border border-amber-200 flex items-center gap-1.5">
+            <i data-lucide="printer" class="w-4 h-4 text-amber-600"></i> Compatible con impresoras térmicas
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- FOOTER -->
-  <footer class="max-w-6xl w-full mx-auto pt-6 border-t border-obsidian-border/50 flex flex-col sm:flex-row justify-between items-center text-xs text-gray-500 font-mono gap-2">
-    <span>Casino Intelligent Hub &copy; 2026 • High Availability Architecture</span>
-    <span>PostgreSQL • FastAPI • WebSockets • Obsidian & Gold</span>
+  <footer class="bg-slate-900 text-slate-400 text-xs py-12 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-brand-500 text-white flex items-center justify-center font-bold">
+          <i data-lucide="utensils" class="w-4 h-4"></i>
+        </div>
+        <div>
+          <span class="text-white font-outfit font-bold text-base">GastroFlow OS</span>
+          <p class="text-[11px] text-slate-500">Solución Integral de Software y Equipamiento para Restaurantes</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-6 font-medium">
+        <a href="cliente.html" class="hover:text-white transition">Menú QR</a>
+        <a href="pos.html" class="hover:text-white transition">Comandero</a>
+        <a href="kds.html" class="hover:text-white transition">Cocina KDS</a>
+        <a href="cashier.html" class="hover:text-white transition">Caja</a>
+        <a href="catalogo.html" class="hover:text-white transition">Fichas Técnicas</a>
+      </div>
+      <div>
+        <span class="font-mono text-slate-500">&copy; 2026 GastroFlow OS. Todos los derechos reservados.</span>
+      </div>
+    </div>
   </footer>
 
+  <!-- SCRIPT LÓGICA INTERACTIVA -->
   <script>
+    // Filtrado de Categorías
+    function filterCategory(category) {
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        if (btn.dataset.category === category) {
+          btn.className = 'cat-btn px-4 py-2 rounded-lg text-xs font-bold bg-slate-900 text-white transition';
+        } else {
+          btn.className = 'cat-btn px-4 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition';
+        }
+      });
+
+      const cards = document.querySelectorAll('.service-card');
+      cards.forEach(card => {
+        if (category === 'todos' || card.dataset.category === category) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    // Calculadora del Simulador de Precios (Software + Hardware)
+    function updateQuote() {
+      const softCheckboxes = document.querySelectorAll('.module-check');
+      const hwCheckboxes = document.querySelectorAll('.hw-check');
+      const listContainer = document.getElementById('quote-items');
+      
+      let totalSetup = 0;
+      let totalMonthly = 0;
+      let totalHardware = 0;
+      listContainer.innerHTML = '';
+
+      let softCount = 0;
+      softCheckboxes.forEach(cb => {
+        if (cb.checked) {
+          softCount++;
+          const setup = parseFloat(cb.dataset.setup || 0);
+          const month = parseFloat(cb.dataset.month || 0);
+          const name = cb.dataset.name;
+
+          totalSetup += setup;
+          totalMonthly += month;
+
+          const row = document.createElement('div');
+          row.className = 'flex justify-between items-center text-slate-300';
+          row.innerHTML = `<span>• ${name}</span><span class="font-mono text-slate-400">$${month}/m</span>`;
+          listContainer.appendChild(row);
+        }
+      });
+
+      let hwCount = 0;
+      hwCheckboxes.forEach(cb => {
+        if (cb.checked) {
+          hwCount++;
+          const price = parseFloat(cb.dataset.price || 0);
+          const name = cb.dataset.name;
+
+          totalHardware += price;
+
+          const row = document.createElement('div');
+          row.className = 'flex justify-between items-center text-amber-300/90';
+          row.innerHTML = `<span>[Equipo] ${name}</span><span class="font-mono text-amber-200">+$${price}</span>`;
+          listContainer.appendChild(row);
+        }
+      });
+
+      if (softCount === 0 && hwCount === 0) {
+        listContainer.innerHTML = '<span class="text-slate-500 italic">Selecciona al menos un módulo o equipo</span>';
+      }
+
+      // Descuento por paquete de software completo (si selecciona 4 o más módulos)
+      if (softCount >= 4) {
+        totalMonthly = Math.round(totalMonthly * 0.88); // 12% de descuento en suscripción
+      }
+
+      document.getElementById('hw-price').textContent = `$${totalHardware}`;
+      document.getElementById('setup-price').textContent = `$${totalSetup}`;
+      document.getElementById('monthly-price').innerHTML = `$${totalMonthly}<span class="text-xs font-normal text-slate-400">/mes</span>`;
+    }
+
+    document.querySelectorAll('.module-check, .hw-check').forEach(cb => {
+      cb.addEventListener('change', updateQuote);
+    });
+
+    function requestProposal() {
+      // Extraer selección para generar mensaje amigable
+      const selectedItems = [];
+      document.querySelectorAll('.module-check:checked, .hw-check:checked').forEach(cb => {
+        selectedItems.push(cb.dataset.name);
+      });
+
+      const message = encodeURIComponent(
+        "¡Hola! Me interesa solicitar una cotización y demostración de GastroFlow para mi restaurante.\n\n" +
+        "Módulos y equipos de interés:\n" + selectedItems.map(item => "- " + item).join("\n") +
+        "\n\n¿Cuándo podríamos agendar una demo?"
+      );
+
+      // Abrir WhatsApp con el mensaje pre-cargado
+      window.open(`https://wa.me/?text=${message}`, '_blank');
+    }
+
+    // Inicializar iconos y cotización
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
+      updateQuote();
     });
   </script>
 </body>

@@ -3,20 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Casino Prestige - Comandero Móvil POS</title>
+  <title>GastroFlow • Comandero Móvil POS para Meseros</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#060608">
-  
+  <meta name="theme-color" content="#ffffff">
+
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-
-  <!-- HTML5 QR Code Scanner CDN -->
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -26,24 +23,20 @@
       theme: {
         extend: {
           colors: {
-            obsidian: {
-              DEFAULT: '#0e0e11',
-              deep: '#060608',
-              card: '#16161b',
-              light: '#22222b',
-              border: '#2a2a36'
-            },
-            gold: {
-              400: '#e1b77c',
-              500: '#d49b4b',
-              600: '#c5843a',
-              goldish: '#d4af37'
+            brand: {
+              50: '#fff7ed',
+              500: '#f97316',
+              600: '#ea580c',
             }
           },
           fontFamily: {
-            sans: ['Inter', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
             outfit: ['Outfit', 'sans-serif'],
             mono: ['JetBrains Mono', 'monospace']
+          },
+          boxShadow: {
+            'card': '0 2px 10px -1px rgba(15, 23, 42, 0.05), 0 1px 3px -1px rgba(15, 23, 42, 0.03)',
+            'float': '0 15px 30px -5px rgba(249, 115, 22, 0.3)',
           }
         }
       }
@@ -52,459 +45,276 @@
 
   <style>
     body {
-      background-color: #060608;
-      color: #e2e8f0;
-      font-family: 'Inter', sans-serif;
-      background-image: 
-        radial-gradient(circle at 10% 10%, rgba(212, 175, 55, 0.04) 0%, transparent 40%),
-        radial-gradient(circle at 90% 90%, rgba(197, 132, 58, 0.03) 0%, transparent 40%);
-      background-attachment: fixed;
+      background-color: #f8fafc;
+      color: #0f172a;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .scrollbar-none::-webkit-scrollbar {
+      display: none;
     }
 
-    .glass-card {
-      background: rgba(22, 22, 27, 0.88);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .btn-gold {
-      background: linear-gradient(135deg, #d49b4b 0%, #c5843a 100%);
-      color: #060608;
-      font-weight: 700;
-      transition: all 0.2s ease;
-    }
-
-    .btn-gold:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.35);
-    }
-
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar {
-      width: 4px;
-      height: 4px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #060608;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #22222b;
-      border-radius: 2px;
-    }
-
-    .drawer-open {
-      transform: translateX(0) !important;
+    /* ESTILOS EXACTOS PARA IMPRESORAS TÉRMICAS (80mm / 58mm) */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #thermal-ticket-container, #thermal-ticket-container * {
+        visibility: visible;
+      }
+      #thermal-ticket-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 80mm;
+        margin: 0;
+        padding: 5mm;
+        font-family: 'JetBrains Mono', monospace, Courier, sans-serif;
+        color: #000;
+        background: #fff;
+        display: block !important;
+      }
+      @page {
+        size: 80mm auto;
+        margin: 0;
+      }
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col select-none pb-24 overflow-x-hidden">
+<body class="min-h-screen flex flex-col select-none pb-24">
 
-  <!-- HEADER AUDITORÍA Y SESIÓN -->
-  <header class="bg-obsidian-deep/95 border-b border-obsidian-border px-4 py-3 sticky top-0 z-30 backdrop-blur-md flex justify-between items-center">
+  <!-- TOP HEADER -->
+  <header class="bg-white border-b border-slate-200 px-4 py-3 sticky top-0 z-30 flex justify-between items-center shadow-xs">
     <div class="flex items-center gap-3">
-      <div class="w-9 h-9 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center">
-        <i data-lucide="crown" class="w-5 h-5 text-gold-400"></i>
-      </div>
+      <a href="index.html" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      </a>
       <div>
-        <h1 class="font-outfit text-base font-bold text-white tracking-wider">PRESTIGE <span class="text-gold-400">POS</span></h1>
-        <div class="text-[10px] text-gray-400 font-mono flex items-center gap-1.5">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-          <span id="waiter-name-display">Mesero / Runner</span>
-        </div>
+        <h1 class="font-outfit text-base font-extrabold text-slate-900 leading-tight flex items-center gap-1.5">
+          Gastro<span class="text-brand-500">POS</span>
+          <span class="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-blue-100 text-blue-700">MESEROS</span>
+        </h1>
+        <p class="text-[10px] text-slate-500">Mesero: Carlos M. • Zona: Salón Principal</p>
       </div>
     </div>
 
-    <!-- Machine Badge & Scanner Action -->
+    <!-- Selector de Mesa Rápido -->
     <div class="flex items-center gap-2">
-      <button onclick="openScannerModal()" class="px-3 py-1.5 rounded-xl bg-obsidian border border-gold-500/30 hover:border-gold-500 text-xs font-mono font-bold text-gold-400 flex items-center gap-1.5 transition">
-        <i data-lucide="qr-code" class="w-3.5 h-3.5"></i>
-        <span id="selected-slot-badge">SLOT: 000</span>
-      </button>
-
-      <!-- Cart Trigger (Mobile) -->
-      <button onclick="toggleCartModal()" class="relative p-2 rounded-xl bg-obsidian border border-obsidian-border text-gray-300">
-        <i data-lucide="shopping-bag" class="w-4 h-4"></i>
-        <span id="cart-counter-badge" class="absolute -top-1 -right-1 bg-gold-500 text-black text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center">0</span>
-      </button>
+      <select id="select-table" onchange="changeActiveTable()" class="bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-brand-500">
+        <option value="MESA 01">Mesa 01</option>
+        <option value="MESA 02">Mesa 02</option>
+        <option value="MESA 03">Mesa 03</option>
+        <option value="MESA 04" selected>Mesa 04</option>
+        <option value="TERRAZA 01">Terraza 01</option>
+        <option value="TERRAZA 02">Terraza 02</option>
+        <option value="BARRA 01">Barra 01</option>
+      </select>
     </div>
   </header>
 
-  <!-- MAIN WORKSPACE -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 grid grid-cols-1 lg:grid-cols-12 gap-5">
+  <!-- QUICK STATS / NOTIFICACIÓN ORDEN LISTA -->
+  <div class="max-w-4xl w-full mx-auto px-4 pt-3">
+    <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex items-center justify-between text-xs text-emerald-800">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+        <span class="font-bold">¡Platillo listo en Cocina!</span>
+        <span class="hidden sm:inline text-emerald-700">• Mesa 09: Pizza Margherita Napolitana</span>
+      </div>
+      <button onclick="dismissAlert(this)" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-bold text-[11px] hover:bg-emerald-700">
+        Recoger
+      </button>
+    </div>
+  </div>
+
+  <!-- SEARCH & CATEGORIES -->
+  <main class="max-w-4xl w-full mx-auto p-4 flex-1 flex flex-col gap-4">
     
-    <!-- LEFT: MENU & VIP SELECTOR (8 COLS) -->
-    <section class="lg:col-span-8 flex flex-col gap-4">
-      
-      <!-- VIP Membership & Search Filter Bar -->
-      <div class="glass-card p-3.5 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-lg">
-        <!-- VIP Tier Dropdown -->
-        <div class="flex items-center gap-2">
-          <span class="text-[11px] font-mono text-gray-400">Socio VIP:</span>
-          <select id="vip-tier-select" onchange="onVIPTierChanged()" class="bg-obsidian border border-obsidian-border rounded-xl px-2.5 py-1.5 text-xs font-mono font-bold text-amber-300 focus:outline-none focus:border-gold-500">
-            <option value="GENERAL">General / Sin Membresía</option>
-            <option value="PLATA">Plata (Classic)</option>
-            <option value="ORO">Oro (Gold)</option>
-            <option value="PLATINO">Platino (Platinum)</option>
-            <option value="PRESTIGE">Prestige (VIP 100%)</option>
-          </select>
-        </div>
+    <!-- Barra de búsqueda rápida -->
+    <div class="relative">
+      <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400"></i>
+      <input type="text" id="pos-search" oninput="renderPosCatalog()" placeholder="Buscar por platillo, ingrediente o código..." class="w-full bg-white border border-slate-200 rounded-2xl py-3 pl-10 pr-4 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-brand-500 shadow-xs">
+    </div>
 
-        <!-- Search Input -->
-        <div class="relative flex-1 min-w-[180px]">
-          <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-2.5 text-gray-500"></i>
-          <input type="text" id="pos-search" oninput="renderPOSMenu()" placeholder="Buscar producto o bebida..." class="w-full bg-obsidian border border-obsidian-border rounded-xl py-1.5 pl-8 pr-3 text-xs text-white focus:outline-none focus:border-gold-500">
-        </div>
-      </div>
+    <!-- Category Pills -->
+    <div id="pos-categories" class="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
+      <!-- Dynamic categories -->
+    </div>
 
-      <!-- Categories Pills -->
-      <div id="category-pills" class="flex gap-2 overflow-x-auto pb-1">
-        <!-- Loaded dynamically -->
-      </div>
+    <!-- Product Grid for Quick Touch -->
+    <div id="pos-products-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+      <!-- Dynamic products -->
+    </div>
 
-      <!-- Product Cards Grid with Photographs -->
-      <div id="pos-menu-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5">
-        <!-- Loaded dynamically -->
-      </div>
-    </section>
-
-    <!-- RIGHT: CART DESKTOP (4 COLS) -->
-    <section id="cart-panel" class="lg:col-span-4 glass-card rounded-2xl p-5 flex flex-col justify-between shadow-xl hidden lg:flex">
-      <div>
-        <div class="flex justify-between items-center border-b border-obsidian-border pb-3">
-          <h2 class="font-outfit text-base font-bold text-white flex items-center gap-2">
-            <i data-lucide="receipt" class="w-4 h-4 text-gold-400"></i> Comanda de Máquina
-          </h2>
-          <span class="text-xs font-mono font-bold text-gold-400" id="cart-slot-label">Slot: 000</span>
-        </div>
-
-        <!-- Cart Items -->
-        <div id="pos-cart-items" class="space-y-2.5 my-4 max-h-[380px] overflow-y-auto pr-1">
-          <div class="text-center py-12 text-xs text-gray-500 italic">No hay productos en la bandeja</div>
-        </div>
-      </div>
-
-      <!-- Notes, Subtotals & Submit -->
-      <div class="border-t border-obsidian-border pt-4 space-y-3">
-        <input type="text" id="pos-order-notes" placeholder="Notas generales de comanda..." class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-gold-500">
-
-        <div class="flex justify-between items-center">
-          <span class="text-xs font-mono text-gray-400">Total a Pagar:</span>
-          <span class="text-xl font-mono font-extrabold text-gold-400" id="pos-cart-total">$0.00</span>
-        </div>
-
-        <button onclick="submitPOSOrder()" class="w-full btn-gold py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2">
-          <i data-lucide="send" class="w-4 h-4"></i> Enviar a Cocina / Barra
-        </button>
-      </div>
-    </section>
   </main>
 
-  <!-- LATERAL PRODUCT SELECTION DRAWER (MENÚ LATERAL DE ELECCIÓN: VENTA VS CORTESÍA) -->
-  <div id="product-action-drawer-overlay" onclick="closeProductDrawer()" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 transition-opacity opacity-0 pointer-events-none"></div>
-  
-  <aside id="product-action-drawer" class="fixed top-0 right-0 bottom-0 w-full max-w-md bg-obsidian-card border-l border-obsidian-border z-50 flex flex-col justify-between shadow-2xl transform translate-x-full transition-transform duration-300 ease-out">
-    
-    <!-- Drawer Header with Product Photograph -->
-    <div class="relative overflow-hidden">
-      <!-- Product Image Banner -->
-      <div class="w-full h-48 bg-obsidian-deep relative flex items-center justify-center border-b border-obsidian-border overflow-hidden">
-        <img id="drawer-product-img" src="" alt="Producto" class="w-full h-full object-cover hidden">
-        <div id="drawer-product-placeholder" class="flex flex-col items-center gap-2 text-gray-600">
-          <i data-lucide="utensils" class="w-12 h-12 text-gold-500/40"></i>
-          <span class="text-[10px] font-mono uppercase tracking-widest text-gray-500">Sin Fotografía</span>
+  <!-- STICKY FOOTER COMANDERO -->
+  <footer id="pos-sticky-footer" class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 border-t border-slate-200 p-3.5 backdrop-blur-xl shadow-2xl transition-transform duration-200 transform translate-y-full">
+    <div class="max-w-4xl mx-auto flex items-center justify-between gap-4">
+      
+      <!-- Counter & Total -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-orange-50 border border-orange-200 text-brand-600 font-mono font-black text-sm flex items-center justify-center" id="pos-cart-badge">
+          0
         </div>
-
-        <!-- Badges on image -->
-        <div class="absolute top-3 left-3 flex items-center gap-1.5">
-          <span id="drawer-product-kds" class="text-[10px] font-mono font-bold bg-black/75 backdrop-blur-md px-2 py-0.5 rounded-lg border border-white/10 text-gold-400 uppercase">COCINA</span>
-          <span id="drawer-product-sku" class="text-[10px] font-mono text-gray-300 bg-black/75 backdrop-blur-md px-2 py-0.5 rounded-lg border border-white/10">SKU-001</span>
+        <div>
+          <div class="text-[10px] text-slate-500 font-mono font-bold uppercase" id="pos-active-table-display">Comanda • MESA 04</div>
+          <div class="text-base sm:text-lg font-mono font-black text-slate-900 leading-tight" id="pos-cart-total">$0.00</div>
         </div>
+      </div>
 
-        <!-- Close Button -->
-        <button onclick="closeProductDrawer()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/75 backdrop-blur-md border border-white/10 text-gray-300 hover:text-white flex items-center justify-center transition">
-          <i data-lucide="x" class="w-4 h-4"></i>
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-2">
+        <button onclick="clearPosCart()" class="p-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 text-xs font-bold transition">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+        </button>
+        <button onclick="openPosOrderModal()" class="py-3 px-5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-extrabold text-xs uppercase tracking-wider shadow-float flex items-center gap-2 transition active:scale-95">
+          <i data-lucide="send" class="w-4 h-4"></i>
+          <span>Mandar a Cocina</span>
         </button>
       </div>
 
-      <!-- Product Meta -->
-      <div class="p-5 border-b border-obsidian-border/60">
-        <h3 id="drawer-product-name" class="font-outfit text-xl font-bold text-white leading-tight">Nombre del Platillo</h3>
-        <p id="drawer-product-desc" class="text-xs text-gray-400 mt-1 line-clamp-2">Descripción del platillo o coctel...</p>
-      </div>
     </div>
+  </footer>
 
-    <!-- Drawer Body: Venta vs Cortesía & Quantity -->
-    <div class="p-5 flex-1 overflow-y-auto space-y-5">
-      
-      <!-- Option Selector: Venta Normal vs Cortesía -->
-      <div>
-        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Modalidad de Despacho</label>
-        <div class="grid grid-cols-2 gap-3">
-          
-          <!-- Botón Venta -->
-          <button type="button" onclick="setDrawerMode('SALE')" id="drawer-opt-sale" class="p-3.5 rounded-2xl border flex flex-col items-center gap-1 transition bg-gold-500 text-black border-gold-500 font-bold shadow-lg shadow-gold-500/20">
-            <i data-lucide="shopping-cart" class="w-5 h-5"></i>
-            <span class="text-xs font-bold">Venta Normal</span>
-            <span id="drawer-sale-price-tag" class="text-xs font-mono font-extrabold">$0.00</span>
-          </button>
-
-          <!-- Botón Cortesía -->
-          <button type="button" onclick="setDrawerMode('COURTESY')" id="drawer-opt-courtesy" class="p-3.5 rounded-2xl border flex flex-col items-center gap-1 transition bg-obsidian border-obsidian-border text-gray-400 hover:text-amber-300 font-bold">
-            <i data-lucide="crown" class="w-5 h-5 text-amber-400"></i>
-            <span class="text-xs font-bold">Cortesía VIP</span>
-            <span class="text-xs font-mono font-extrabold text-emerald-400">$0.00</span>
-          </button>
+  <!-- MODAL REVISIÓN DE COMANDA MESERO -->
+  <div id="pos-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl w-full max-w-md p-6 border border-slate-200 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <div>
+          <h3 class="font-outfit text-lg font-bold text-slate-900 flex items-center gap-2">
+            <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500"></i> Enviar Comanda
+          </h3>
+          <p class="text-xs text-slate-500 font-mono font-semibold" id="pos-modal-table-label">Mesa: MESA 04</p>
         </div>
-
-        <!-- VIP Courtesy Status Indicator -->
-        <div id="drawer-courtesy-status" class="mt-2.5 p-2.5 rounded-xl text-xs font-mono flex items-center gap-2 hidden">
-          <!-- Dynamic text -->
-        </div>
+        <button onclick="closePosModal()" class="text-slate-400 hover:text-slate-700 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
-      <!-- Quantity Selector -->
-      <div>
-        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Cantidad de Porciones</label>
-        <div class="flex items-center justify-between bg-obsidian p-2 rounded-2xl border border-obsidian-border max-w-xs mx-auto">
-          <button type="button" onclick="adjustDrawerQty(-1)" class="w-11 h-11 rounded-xl bg-obsidian-light hover:bg-obsidian-border text-white text-lg font-bold flex items-center justify-center transition active:scale-95">-</button>
-          <span id="drawer-qty-display" class="font-mono text-xl font-extrabold text-gold-400 px-4">1</span>
-          <button type="button" onclick="adjustDrawerQty(1)" class="w-11 h-11 rounded-xl bg-obsidian-light hover:bg-obsidian-border text-white text-lg font-bold flex items-center justify-center transition active:scale-95">+</button>
-        </div>
+      <div id="pos-modal-items" class="divide-y divide-slate-100 my-4 max-h-60 overflow-y-auto">
+        <!-- Inyectado con JS -->
       </div>
 
-      <!-- Item Specific Notes -->
-      <div>
-        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Instrucciones Especiales</label>
-        <input type="text" id="drawer-item-notes" placeholder="Ej. Bien frío, sin azúcar, término medio..." class="w-full bg-obsidian border border-obsidian-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-gold-500">
-      </div>
-    </div>
-
-    <!-- Drawer Footer: Add Button -->
-    <div class="p-5 border-t border-obsidian-border bg-obsidian-deep/80 backdrop-blur-md">
-      <button type="button" onclick="confirmAddFromDrawer()" class="w-full btn-gold py-4 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl">
-        <i data-lucide="plus-circle" class="w-4 h-4"></i>
-        <span id="drawer-add-btn-text">Agregar a la Comanda • $0.00</span>
-      </button>
-    </div>
-  </aside>
-
-  <!-- FIXED BOTTOM DOCK (PANIC / ASSISTANCE BUTTONS) -->
-  <div class="fixed bottom-0 left-0 right-0 bg-obsidian-deep/95 border-t border-obsidian-border p-3 z-40 backdrop-blur-md">
-    <div class="max-w-7xl mx-auto grid grid-cols-2 gap-3">
-      <!-- Solicitar Recarga Runner -->
-      <button onclick="requestRunnerRecharge()" class="py-3 px-4 rounded-xl bg-amber-950/50 hover:bg-amber-900/70 border border-amber-500/50 text-amber-300 text-xs font-bold flex items-center justify-center gap-2 transition active:scale-95">
-        <i data-lucide="dollar-sign" class="w-4 h-4 text-amber-400"></i>
-        <span>Solicitar Recarga</span>
-      </button>
-
-      <!-- Reportar Falla Sistemas -->
-      <button onclick="openFaultModal()" class="py-3 px-4 rounded-xl bg-red-950/50 hover:bg-red-900/70 border border-red-500/50 text-red-300 text-xs font-bold flex items-center justify-center gap-2 transition active:scale-95">
-        <i data-lucide="alert-triangle" class="w-4 h-4 text-red-400"></i>
-        <span>Reportar Falla</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- QR SCANNER / SLOT SELECTOR MODAL -->
-  <div id="scanner-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-    <div class="glass-card bg-obsidian-card p-6 rounded-3xl w-full max-w-sm flex flex-col gap-4 border border-obsidian-border shadow-2xl">
-      <div class="flex justify-between items-center border-b border-obsidian-border pb-2">
-        <h3 class="font-outfit text-base font-bold text-white">Escanear QR de Máquina</h3>
-        <button onclick="closeScannerModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      <div class="pt-3 border-t border-slate-100 flex justify-between items-baseline mb-4">
+        <span class="text-xs font-bold text-slate-600">Total a Comandar:</span>
+        <span class="text-lg font-mono font-black text-slate-900" id="pos-modal-total">$0.00</span>
       </div>
 
-      <!-- Camera Preview Box -->
-      <div id="qr-reader" class="w-full bg-obsidian rounded-2xl overflow-hidden min-h-[220px] flex items-center justify-center text-xs text-gray-500 border border-obsidian-border">
-        <span>Iniciando cámara...</span>
-      </div>
-
-      <!-- Manual Code Fallback -->
+      <!-- Opciones de Comanda e Impresión Térmica -->
       <div class="space-y-2">
-        <label class="block text-[11px] text-gray-400 font-mono">O ingrese código manual:</label>
         <div class="flex gap-2">
-          <input type="text" id="manual-slot-input" placeholder="SLOT-101 o 000" class="flex-1 bg-obsidian border border-obsidian-border rounded-xl p-2 text-xs font-mono text-center text-gold-400 focus:outline-none focus:border-gold-500">
-          <button onclick="applyManualSlot()" class="btn-gold px-4 py-2 rounded-xl text-xs font-bold">Fijar</button>
+          <button onclick="confirmSendToKitchen(true)" class="flex-1 py-3 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition active:scale-95">
+            <i data-lucide="printer" class="w-4 h-4 text-brand-400"></i>
+            <span>Comandar e Imprimir Térmica</span>
+          </button>
+          <button onclick="confirmSendToKitchen(false)" class="flex-1 py-3 px-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs uppercase tracking-wider shadow-float flex items-center justify-center gap-1.5 transition active:scale-95">
+            <i data-lucide="chef-hat" class="w-4 h-4"></i>
+            <span>Solo Cocina (KDS)</span>
+          </button>
         </div>
+        <button onclick="closePosModal()" class="w-full py-2 rounded-xl bg-slate-100 text-slate-600 hover:text-slate-800 font-bold text-xs">Volver</button>
       </div>
     </div>
   </div>
 
-  <!-- FAULT REPORT MODAL -->
-  <div id="fault-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-    <div class="glass-card bg-obsidian-card p-6 rounded-3xl w-full max-w-sm flex flex-col gap-4 border border-obsidian-border shadow-2xl">
-      <div class="flex justify-between items-center border-b border-obsidian-border pb-2">
-        <h3 class="font-outfit text-base font-bold text-red-400 flex items-center gap-2">
-          <i data-lucide="wrench" class="w-4 h-4"></i> Reportar Falla Técnica
-        </h3>
-        <button onclick="closeFaultModal()" class="text-gray-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
+  <!-- PLANTILLA OCULTA DE COMANDA TÉRMICA (SE ACTIVA EN IMPRESIÓN) -->
+  <div id="thermal-ticket-container" class="hidden text-black font-mono">
+    <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 8px;">
+      <h2 style="font-size: 18px; font-weight: 900; margin: 0; text-transform: uppercase;">GASTROFLOW OS</h2>
+      <p style="font-size: 11px; margin: 2px 0;">*** TICKET DE COMANDA COCINA ***</p>
+      <div style="font-size: 16px; font-weight: 900; margin: 6px 0;" id="print-ticket-table">MESA: 04</div>
+      <p style="font-size: 10px; margin: 0;" id="print-ticket-meta">Mesero: Carlos M. • Fecha: 19/10/2026 18:00</p>
+    </div>
 
-      <div class="space-y-3 text-xs">
-        <div>
-          <label class="block text-gray-400 mb-1">Máquina Afectada:</label>
-          <input type="text" id="fault-machine-code" class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2 text-white font-mono text-xs">
-        </div>
-        <div>
-          <label class="block text-gray-400 mb-1">Tipo de Falla / Descripción:</label>
-          <textarea id="fault-description" rows="3" placeholder="Billetero trabado, pantalla congelada, error de botón..." class="w-full bg-obsidian border border-obsidian-border rounded-xl p-2 text-white text-xs focus:outline-none focus:border-red-500"></textarea>
-        </div>
-      </div>
+    <!-- Lista de Platillos para Cocina -->
+    <div id="print-ticket-items" style="font-size: 13px; line-height: 1.4; margin-bottom: 10px;">
+      <!-- Se inyecta con JS -->
+    </div>
 
-      <div class="flex justify-end gap-2 pt-2 border-t border-obsidian-border">
-        <button onclick="closeFaultModal()" class="px-4 py-2 rounded-xl bg-obsidian text-gray-400 font-bold text-xs">Cancelar</button>
-        <button onclick="submitFaultTicket()" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs">Emitir Ticket</button>
-      </div>
+    <div style="border-top: 1px dashed #000; padding-top: 6px; font-size: 12px; font-weight: bold; display: flex; justify-content: space-between;">
+      <span>TOTAL ITEMS:</span>
+      <span id="print-ticket-count">3</span>
+    </div>
+
+    <div style="text-align: center; margin-top: 15px; font-size: 10px; border-top: 1px dotted #888; padding-top: 8px;">
+      <p style="margin: 0;">-- COLA AUTOMÁTICA DE PRODUCCIÓN --</p>
+      <p style="margin: 2px 0;">Impreso en Terminal Térmica 80mm</p>
     </div>
   </div>
 
-  <!-- ORDER READY FLOATING NOTIFICATION TOAST -->
-  <div id="ready-toast" class="fixed top-16 left-4 right-4 max-w-md mx-auto bg-emerald-950/95 border-2 border-emerald-500 p-4 rounded-2xl shadow-2xl z-50 flex items-center gap-3 transform -translate-y-32 transition-transform duration-300 ease-out hidden">
-    <div class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-      <i data-lucide="bell-ring" class="w-6 h-6 text-emerald-400 animate-bounce"></i>
-    </div>
-    <div class="flex-1">
-      <h4 class="font-outfit text-sm font-bold text-white">¡Comanda Lista en Barra/Cocina!</h4>
-      <p class="text-xs text-emerald-200 font-mono" id="ready-toast-text">Orden #COM-00000 para SLOT-000</p>
-    </div>
-    <button onclick="dismissToast()" class="text-emerald-400 hover:text-white p-1"><i data-lucide="x" class="w-4 h-4"></i></button>
-  </div>
-
-  <!-- JAVASCRIPT LOGIC -->
   <script>
-    const proto = window.location.protocol === 'https:' ? 'https:' : 'http:';
-    const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const API_BASE = window.location.port === '8001' || window.location.port === '8000' ? '' : `${proto}//${window.location.host}`;
-    const WS_BASE = `${wsProto}//${window.location.host}`;
+    const POS_ITEMS = [
+      { id: '1', sku: 'HAM-01', name: 'Hamburguesa Smash Trufada', category: 'Hamburguesas', price: 185, destination: 'KITCHEN' },
+      { id: '2', sku: 'HAM-02', name: 'Bacon Cheese Burger', category: 'Hamburguesas', price: 160, destination: 'KITCHEN' },
+      { id: '3', sku: 'PIZ-01', name: 'Pizza Margherita Napolitana', category: 'Pizzas', price: 210, destination: 'KITCHEN' },
+      { id: '4', sku: 'ENT-01', name: 'Papas Rústicas con Parmesano', category: 'Entradas', price: 95, destination: 'KITCHEN' },
+      { id: '5', sku: 'ENT-02', name: 'Tacos de Rib Eye con Tuétano', category: 'Entradas', price: 175, destination: 'KITCHEN' },
+      { id: '6', sku: 'BEB-01', name: 'Cóctel Gin Tonic Frutos Rojos', category: 'Barra', price: 140, destination: 'BAR' },
+      { id: '7', sku: 'BEB-02', name: 'Cerveza Artesanal IPA', category: 'Barra', price: 85, destination: 'BAR' },
+      { id: '8', sku: 'CAF-01', name: 'Café Espresso Doble', category: 'Café', price: 55, destination: 'BAR' }
+    ];
 
-    let currentSlot = localStorage.getItem('pos_slot') || '000';
-    let selectedTier = 'GENERAL';
-    let menuProducts = [];
-    let selectedCategory = 'ALL';
+    let currentCategory = 'ALL';
     let posCart = [];
-    let qrScanner = null;
-    let ws = null;
-
-    // Estado del Drawer Lateral de Producto
-    let activeDrawerProduct = null;
-    let drawerMode = 'SALE'; // 'SALE' o 'COURTESY'
-    let drawerQty = 1;
-
-    const TIER_RANKS = {
-      "GENERAL": 0, "CLASSIC": 0, "PLATA": 0,
-      "GOLD": 1, "ORO": 1,
-      "PLATINUM": 2, "PLATINO": 2,
-      "VIP": 3, "PRESTIGE": 3
-    };
+    let currentTable = 'MESA 04';
 
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
-      applySlot(currentSlot);
-      loadMenu();
-      connectWaitersWS();
+      renderPosCategories();
+      renderPosCatalog();
     });
 
-    function applySlot(code) {
-      currentSlot = code;
-      localStorage.setItem('pos_slot', code);
-      document.getElementById('selected-slot-badge').innerText = `SLOT: ${code}`;
-      document.getElementById('cart-slot-label').innerText = `Slot: ${code}`;
+    function changeActiveTable() {
+      currentTable = document.getElementById('select-table').value;
+      document.getElementById('pos-active-table-display').innerText = `Comanda • ${currentTable}`;
+      document.getElementById('pos-modal-table-label').innerText = `Mesa: ${currentTable}`;
     }
 
-    async function loadMenu() {
-      try {
-        const res = await fetch(`${API_BASE}/api/v1/products`);
-        if (!res.ok) throw new Error('Error al cargar menú');
-        menuProducts = await res.json();
-        
-        // Render Categories
-        const categories = ['ALL', ...new Set(menuProducts.map(p => p.category))];
-        const catContainer = document.getElementById('category-pills');
-        catContainer.innerHTML = '';
-        categories.forEach(c => {
-          catContainer.innerHTML += `
-            <button onclick="selectCategory('${c}')" id="cat-btn-${c}" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition ${c === 'ALL' ? 'bg-gold-500 text-black font-bold' : 'bg-obsidian text-gray-400 hover:text-white border border-obsidian-border'}">
-              ${c === 'ALL' ? 'Todos' : c}
-            </button>
-          `;
-        });
-
-        renderPOSMenu();
-      } catch (err) {
-        console.error(err);
-      }
+    function renderPosCategories() {
+      const cats = ['ALL', ...new Set(POS_ITEMS.map(i => i.category))];
+      const container = document.getElementById('pos-categories');
+      container.innerHTML = '';
+      cats.forEach(c => {
+        container.innerHTML += `
+          <button onclick="setPosCat('${c}')" id="pos-cat-${c}" class="px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${c === 'ALL' ? 'bg-slate-900 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:text-slate-900'}">
+            ${c === 'ALL' ? 'Todo' : c}
+          </button>
+        `;
+      });
     }
 
-    function selectCategory(cat) {
-      selectedCategory = cat;
-      const categories = ['ALL', ...new Set(menuProducts.map(p => p.category))];
-      categories.forEach(c => {
-        const btn = document.getElementById(`cat-btn-${c}`);
-        if (btn) {
-          if (c === cat) {
-            btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-gold-500 text-black whitespace-nowrap transition';
-          } else {
-            btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-obsidian text-gray-400 hover:text-white border border-obsidian-border whitespace-nowrap transition';
-          }
+    function setPosCat(c) {
+      currentCategory = c;
+      const cats = ['ALL', ...new Set(POS_ITEMS.map(i => i.category))];
+      cats.forEach(cat => {
+        const btn = document.getElementById(`pos-cat-${cat}`);
+        if (cat === c) {
+          btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white whitespace-nowrap transition';
+        } else {
+          btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-600 hover:text-slate-900 whitespace-nowrap transition';
         }
       });
-      renderPOSMenu();
+      renderPosCatalog();
     }
 
-    function onVIPTierChanged() {
-      selectedTier = document.getElementById('vip-tier-select').value;
-      renderPOSMenu();
-      renderPOSCart();
-    }
+    function renderPosCatalog() {
+      const q = document.getElementById('pos-search').value.toLowerCase().trim();
+      const grid = document.getElementById('pos-products-grid');
+      grid.innerHTML = '';
 
-    function isProductCourtesy(prod) {
-      if (!prod.courtesy_tier_min) return false;
-      const reqRank = TIER_RANKS[prod.courtesy_tier_min.toUpperCase()] || 99;
-      const curRank = TIER_RANKS[selectedTier.toUpperCase()] || 0;
-      return curRank >= reqRank;
-    }
-
-    function renderPOSMenu() {
-      const query = document.getElementById('pos-search').value.toLowerCase().trim();
-      const container = document.getElementById('pos-menu-grid');
-      container.innerHTML = '';
-
-      const filtered = menuProducts.filter(p => {
-        const matchCat = selectedCategory === 'ALL' || p.category === selectedCategory;
-        const matchQuery = p.name.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query);
-        return matchCat && matchQuery && p.is_active;
+      const filtered = POS_ITEMS.filter(item => {
+        const matchCat = currentCategory === 'ALL' || item.category === currentCategory;
+        const matchQ = item.name.toLowerCase().includes(q) || item.sku.toLowerCase().includes(q);
+        return matchCat && matchQ;
       });
 
-      if (filtered.length === 0) {
-        container.innerHTML = '<div class="col-span-4 text-center py-10 text-xs text-gray-500">Sin platillos disponibles</div>';
-        return;
-      }
-
       filtered.forEach(p => {
-        const isFree = isProductCourtesy(p);
-        const price = parseFloat(p.price || 0);
-
-        const imgTag = p.image_url 
-          ? `<img src="${p.image_url}" alt="${p.name}" class="w-full h-24 object-cover rounded-xl mb-2 border border-obsidian-border">` 
-          : `<div class="w-full h-24 bg-obsidian-deep rounded-xl mb-2 flex items-center justify-center border border-obsidian-border text-gray-600 group-hover:text-gold-400 transition"><i data-lucide="${p.destination_kds === 'BAR' ? 'wine' : 'utensils'}" class="w-8 h-8"></i></div>`;
-
-        container.innerHTML += `
-          <button type="button" onclick="openProductDrawer('${p.id}')" class="bg-obsidian hover:bg-obsidian-light p-3 rounded-2xl border border-obsidian-border hover:border-gold-500/50 text-left flex flex-col justify-between transition group shadow-md active:scale-98">
+        grid.innerHTML += `
+          <button onclick="addToPosCart('${p.id}')" class="bg-white hover:bg-slate-50 border border-slate-200 p-3 rounded-2xl text-left flex flex-col justify-between shadow-xs active:scale-95 transition group">
             <div>
-              ${imgTag}
-              <div class="flex justify-between items-start gap-1">
-                <span class="text-[9px] font-mono text-gold-400 font-bold">${p.destination_kds}</span>
-                ${isFree ? '<span class="text-[8px] font-bold font-mono px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">VIP $0</span>' : ''}
-              </div>
-              <div class="text-xs font-bold text-white group-hover:text-gold-400 transition mt-1 line-clamp-1">${p.name}</div>
+              <div class="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-wider">${p.category}</div>
+              <h4 class="text-xs font-bold text-slate-900 group-hover:text-brand-600 transition line-clamp-2 mt-0.5 leading-snug">${p.name}</h4>
             </div>
-
-            <div class="mt-2.5 flex justify-between items-center">
-              <span class="text-xs font-mono font-extrabold text-gold-400">
-                $${price.toFixed(2)}
-              </span>
-              <div class="w-6 h-6 rounded-lg bg-gold-500/10 border border-gold-500/30 flex items-center justify-center group-hover:bg-gold-500 group-hover:text-black transition text-gold-400">
-                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-              </div>
+            <div class="mt-3 pt-2 border-t border-slate-100 flex justify-between items-center">
+              <span class="font-mono text-xs font-black text-slate-900">$${p.price}</span>
+              <span class="w-6 h-6 rounded-lg bg-orange-50 border border-orange-200 text-brand-600 flex items-center justify-center text-xs font-bold group-hover:bg-brand-500 group-hover:text-white transition">+</span>
             </div>
           </button>
         `;
@@ -512,362 +322,137 @@
       lucide.createIcons();
     }
 
-    // =========================================================================
-    // MENÚ LATERAL DE ELECCIÓN (VENTA VS CORTESÍA)
-    // =========================================================================
+    function addToPosCart(id) {
+      const product = POS_ITEMS.find(p => p.id === id);
+      if (!product) return;
 
-    function openProductDrawer(productId) {
-      const prod = menuProducts.find(p => p.id === productId);
-      if (!prod) return;
-
-      activeDrawerProduct = prod;
-      drawerQty = 1;
-      
-      // Auto-seleccionar cortesía si el cliente VIP califica
-      const qualifies = isProductCourtesy(prod);
-      drawerMode = qualifies ? 'COURTESY' : 'SALE';
-
-      // Actualizar datos del producto en el Drawer
-      document.getElementById('drawer-product-name').innerText = prod.name;
-      document.getElementById('drawer-product-desc').innerText = prod.description || 'Alimento o bebida preparado en tiempo real.';
-      document.getElementById('drawer-product-kds').innerText = prod.destination_kds;
-      document.getElementById('drawer-product-sku').innerText = prod.sku;
-      document.getElementById('drawer-sale-price-tag').innerText = `$${parseFloat(prod.price).toFixed(2)}`;
-
-      // Imagen
-      const imgEl = document.getElementById('drawer-product-img');
-      const placeholderEl = document.getElementById('drawer-product-placeholder');
-      if (prod.image_url) {
-        imgEl.src = prod.image_url;
-        imgEl.classList.remove('hidden');
-        placeholderEl.classList.add('hidden');
-      } else {
-        imgEl.classList.add('hidden');
-        placeholderEl.classList.remove('hidden');
-      }
-
-      document.getElementById('drawer-item-notes').value = '';
-      document.getElementById('drawer-qty-display').innerText = drawerQty;
-
-      updateDrawerUI();
-
-      // Abrir lateral
-      const overlay = document.getElementById('product-action-drawer-overlay');
-      const drawer = document.getElementById('product-action-drawer');
-      overlay.classList.remove('pointer-events-none');
-      overlay.classList.add('opacity-100');
-      drawer.classList.add('drawer-open');
-    }
-
-    function closeProductDrawer() {
-      const overlay = document.getElementById('product-action-drawer-overlay');
-      const drawer = document.getElementById('product-action-drawer');
-      overlay.classList.remove('opacity-100');
-      overlay.classList.add('pointer-events-none');
-      drawer.classList.remove('drawer-open');
-      activeDrawerProduct = null;
-    }
-
-    function setDrawerMode(mode) {
-      drawerMode = mode;
-      updateDrawerUI();
-    }
-
-    function adjustDrawerQty(delta) {
-      drawerQty = Math.max(1, drawerQty + delta);
-      document.getElementById('drawer-qty-display').innerText = drawerQty;
-      updateDrawerUI();
-    }
-
-    function updateDrawerUI() {
-      if (!activeDrawerProduct) return;
-
-      const saleBtn = document.getElementById('drawer-opt-sale');
-      const courtesyBtn = document.getElementById('drawer-opt-courtesy');
-      const statusBox = document.getElementById('drawer-courtesy-status');
-      const addBtnText = document.getElementById('drawer-add-btn-text');
-
-      const qualifies = isProductCourtesy(activeDrawerProduct);
-      const price = parseFloat(activeDrawerProduct.price);
-
-      if (drawerMode === 'SALE') {
-        saleBtn.className = 'p-3.5 rounded-2xl border flex flex-col items-center gap-1 transition bg-gold-500 text-black border-gold-500 font-bold shadow-lg shadow-gold-500/20';
-        courtesyBtn.className = 'p-3.5 rounded-2xl border flex flex-col items-center gap-1 transition bg-obsidian border-obsidian-border text-gray-400 hover:text-amber-300 font-bold';
-        statusBox.classList.add('hidden');
-        
-        const total = price * drawerQty;
-        addBtnText.innerText = `Agregar Venta Normal • $${total.toFixed(2)}`;
-      } else {
-        saleBtn.className = 'p-3.5 rounded-2xl border flex flex-col items-center gap-1 transition bg-obsidian border-obsidian-border text-gray-400 hover:text-white font-bold';
-        courtesyBtn.className = 'p-3.5 rounded-2xl border flex flex-col items-center gap-1 transition bg-amber-950/80 text-amber-300 border-amber-500/80 font-bold shadow-lg shadow-amber-950/40';
-        
-        statusBox.classList.remove('hidden');
-        if (qualifies) {
-          statusBox.className = 'mt-2.5 p-2.5 rounded-xl text-xs font-mono flex items-center gap-2 bg-emerald-950/60 border border-emerald-800 text-emerald-300';
-          statusBox.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i><span>Cortesía autorizada por nivel VIP ${selectedTier} ($0.00)</span>`;
-        } else {
-          statusBox.className = 'mt-2.5 p-2.5 rounded-xl text-xs font-mono flex items-center gap-2 bg-amber-950/60 border border-amber-800 text-amber-300';
-          statusBox.innerHTML = `<i data-lucide="shield-alert" class="w-4 h-4 text-amber-400"></i><span>Requiere PIN de supervisor al liquidar comanda</span>`;
-        }
-
-        addBtnText.innerText = `Agregar como Cortesía • $0.00`;
-      }
-      lucide.createIcons();
-    }
-
-    function confirmAddFromDrawer() {
-      if (!activeDrawerProduct) return;
-
-      const isCourtesy = drawerMode === 'COURTESY';
-      const notes = document.getElementById('drawer-item-notes').value.trim();
-
-      const existing = posCart.find(i => i.product_id === activeDrawerProduct.id && i.is_courtesy === isCourtesy && i.notes === notes);
-
+      const existing = posCart.find(i => i.product.id === id);
       if (existing) {
-        existing.quantity += drawerQty;
+        existing.qty++;
       } else {
-        posCart.push({
-          product_id: activeDrawerProduct.id,
-          name: activeDrawerProduct.name,
-          base_price: parseFloat(activeDrawerProduct.price || 0),
-          is_courtesy: isCourtesy,
-          quantity: drawerQty,
-          notes: notes
-        });
+        posCart.push({ product, qty: 1, notes: '' });
       }
-
-      closeProductDrawer();
-      renderPOSCart();
+      updatePosCartUI();
     }
 
-    // =========================================================================
-    // CART & ORDER DISPATCH
-    // =========================================================================
+    function updatePosCartUI() {
+      const totalQty = posCart.reduce((sum, i) => sum + i.qty, 0);
+      const totalSum = posCart.reduce((sum, i) => sum + (i.product.price * i.qty), 0);
 
-    function changePOSCartQty(index, delta) {
-      posCart[index].quantity += delta;
-      if (posCart[index].quantity <= 0) {
-        posCart.splice(index, 1);
+      document.getElementById('pos-cart-badge').innerText = totalQty;
+      document.getElementById('pos-cart-total').innerText = `$${totalSum.toFixed(2)}`;
+
+      const footer = document.getElementById('pos-sticky-footer');
+      if (totalQty > 0) {
+        footer.classList.remove('translate-y-full');
+      } else {
+        footer.classList.add('translate-y-full');
       }
-      renderPOSCart();
     }
 
-    function renderPOSCart() {
-      const container = document.getElementById('pos-cart-items');
+    function clearPosCart() {
+      posCart = [];
+      updatePosCartUI();
+    }
+
+    function openPosOrderModal() {
+      const container = document.getElementById('pos-modal-items');
       container.innerHTML = '';
-
       let total = 0;
-      let count = 0;
-
-      if (posCart.length === 0) {
-        container.innerHTML = '<div class="text-center py-12 text-xs text-gray-500 italic">No hay productos en la bandeja</div>';
-        document.getElementById('pos-cart-total').innerText = '$0.00';
-        document.getElementById('cart-counter-badge').innerText = '0';
-        return;
-      }
 
       posCart.forEach((item, idx) => {
-        const effectivePrice = item.is_courtesy ? 0 : item.base_price;
-        const subtotal = effectivePrice * item.quantity;
-        total += subtotal;
-        count += item.quantity;
-
+        const sub = item.product.price * item.qty;
+        total += sub;
         container.innerHTML += `
-          <div class="flex justify-between items-center bg-obsidian p-2.5 rounded-xl border border-obsidian-border text-xs">
-            <div class="flex flex-col">
-              <div class="font-bold text-white">${item.name}</div>
-              <div class="flex items-center gap-1.5 mt-0.5">
-                <span class="text-[10px] font-mono ${item.is_courtesy ? 'text-emerald-400 font-bold' : 'text-gray-400'}">
-                  ${item.is_courtesy ? 'Cortesía VIP ($0.00)' : `$${effectivePrice.toFixed(2)} c/u`}
-                </span>
-                ${item.notes ? `<span class="text-[9px] text-amber-300 italic">("${item.notes}")</span>` : ''}
-              </div>
+          <div class="py-2.5 flex justify-between items-center text-xs">
+            <div>
+              <span class="font-bold text-slate-900">${item.qty}x ${item.product.name}</span>
+              <input type="text" placeholder="Nota de preparación (ej. sin sal)..." value="${item.notes}" oninput="updateItemNote(${idx}, this.value)" class="block text-[11px] text-slate-600 bg-slate-50 border border-slate-200 rounded px-2 py-0.5 mt-1 w-full focus:outline-none focus:border-brand-500">
             </div>
-
-            <div class="flex items-center gap-2">
-              <button onclick="changePOSCartQty(${idx}, -1)" class="w-6 h-6 rounded bg-obsidian-light text-gray-300 font-bold flex items-center justify-center">-</button>
-              <span class="font-mono font-bold text-gold-400 w-4 text-center">${item.quantity}</span>
-              <button onclick="changePOSCartQty(${idx}, 1)" class="w-6 h-6 rounded bg-obsidian-light text-gray-300 font-bold flex items-center justify-center">+</button>
-              <span class="font-mono font-bold text-white w-12 text-right">$${subtotal.toFixed(2)}</span>
-            </div>
+            <span class="font-mono font-bold text-slate-800 ml-3">$${sub}</span>
           </div>
         `;
       });
 
-      document.getElementById('pos-cart-total').innerText = `$${total.toFixed(2)}`;
-      document.getElementById('cart-counter-badge').innerText = count;
-      lucide.createIcons();
+      document.getElementById('pos-modal-total').innerText = `$${total.toFixed(2)}`;
+      document.getElementById('pos-modal').classList.remove('hidden');
     }
 
-    async function submitPOSOrder() {
-      if (posCart.length === 0) {
-        alert('Agregue al menos un producto a la comanda.');
-        return;
+    function updateItemNote(index, text) {
+      if (posCart[index]) {
+        posCart[index].notes = text;
+      }
+    }
+
+    function closePosModal() {
+      document.getElementById('pos-modal').classList.add('hidden');
+    }
+
+    function confirmSendToKitchen(shouldPrint = false) {
+      if (posCart.length === 0) return;
+
+      if (shouldPrint) {
+        // 1. Preparar el contenido del Ticket Térmico 80mm
+        document.getElementById('print-ticket-table').innerText = `MESA: ${currentTable}`;
+        const now = new Date();
+        document.getElementById('print-ticket-meta').innerText = `Mesero: Carlos M. • ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+
+        const ticketItemsContainer = document.getElementById('print-ticket-items');
+        ticketItemsContainer.innerHTML = '';
+
+        posCart.forEach(item => {
+          ticketItemsContainer.innerHTML += `
+            <div style="margin-bottom: 6px;">
+              <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                <span>[${item.qty}] ${item.product.name}</span>
+                <span>${item.product.destination}</span>
+              </div>
+              ${item.notes ? `<div style="font-size: 11px; background: #eee; padding: 2px 4px; margin-top: 2px; border-left: 2px solid #000;">>> NOTA: ${item.notes}</div>` : ''}
+            </div>
+          `;
+        });
+
+        const totalItemsCount = posCart.reduce((s, i) => s + i.qty, 0);
+        document.getElementById('print-ticket-count').innerText = totalItemsCount;
+
+        // Disparar ventana de impresión térmica
+        setTimeout(() => {
+          window.print();
+        }, 150);
       }
 
-      const notes = document.getElementById('pos-order-notes').value.trim();
-      const clientOrderId = 'POS-' + currentSlot + '-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7);
-      const payload = {
-        client_order_id: clientOrderId,
-        machine_code: currentSlot,
-        notes: notes,
+      const newOrderId = `ORD-${Math.floor(100 + Math.random() * 900)}`;
+      const orderData = {
+        id: newOrderId,
+        table: currentTable,
+        waiter: 'Carlos M.',
+        station: posCart.some(i => i.product.destination === 'BAR') ? 'BAR' : 'KITCHEN',
+        status: 'PENDING',
+        createdAt: Date.now(),
         items: posCart.map(i => ({
-          product_id: i.product_id,
-          quantity: i.quantity,
-          is_courtesy: i.is_courtesy
+          qty: i.qty,
+          name: i.product.name,
+          price: i.product.price,
+          notes: i.notes || ''
         }))
       };
 
-
+      // Guardar y sincronizar con KDS y Caja en vivo
       try {
-        const res = await fetch(`${API_BASE}/api/v1/cashier/orders`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+        const stored = JSON.parse(localStorage.getItem('gastro_orders') || '[]');
+        stored.unshift(orderData);
+        localStorage.setItem('gastro_orders', JSON.stringify(stored));
+        localStorage.setItem('gastro_new_order_event', JSON.stringify(orderData));
+      } catch (e) {}
 
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.detail || 'Error creando comanda');
-        }
-
-        alert(`¡Comanda enviada a KDS para Slot ${currentSlot}!`);
-        posCart = [];
-        renderPOSCart();
-        document.getElementById('pos-order-notes').value = '';
-      } catch (err) {
-        alert(err.message);
-      }
+      alert(`✅ ¡Comanda ${newOrderId} despachada a Cocina & Barra para ${currentTable}!${shouldPrint ? ' (Ticket térmico enviado a impresión).' : ''}`);
+      posCart = [];
+      updatePosCartUI();
+      closePosModal();
     }
 
-    // Modal Scanner QR
-    function openScannerModal() {
-      document.getElementById('scanner-modal').classList.remove('hidden');
-      if (!qrScanner) {
-        qrScanner = new Html5Qrcode("qr-reader");
-      }
-      qrScanner.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: 200 },
-        (decodedText) => {
-          applySlot(decodedText.trim());
-          closeScannerModal();
-        },
-        (error) => {}
-      ).catch(e => {
-        document.getElementById('qr-reader').innerHTML = '<span class="p-4 text-center">Cámara no accesible. Use código manual abajo.</span>';
-      });
-    }
-
-    function closeScannerModal() {
-      if (qrScanner) {
-        try { qrScanner.stop(); } catch(e) {}
-      }
-      document.getElementById('scanner-modal').classList.add('hidden');
-    }
-
-    function applyManualSlot() {
-      const code = document.getElementById('manual-slot-input').value.trim();
-      if (code) {
-        applySlot(code);
-        closeScannerModal();
-      }
-    }
-
-    // Botones de Asistencia (Runners y Sistemas)
-    async function requestRunnerRecharge() {
-      try {
-        await fetch(`${API_BASE}/api/v1/tickets`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title: `[SOLICITUD DE RECARGA] Máquina ${currentSlot}`,
-            description: `[SOLICITUD DE RECARGA] Cliente solicita saldo en terminal ${currentSlot}`,
-            machine_id: null
-          })
-        });
-        alert(`¡Alerta de recarga despachada a Runners para Slot ${currentSlot}!`);
-      } catch (e) {
-        alert('Alerta enviada.');
-      }
-    }
-
-    function openFaultModal() {
-      document.getElementById('fault-machine-code').value = currentSlot;
-      document.getElementById('fault-modal').classList.remove('hidden');
-    }
-    function closeFaultModal() {
-      document.getElementById('fault-modal').classList.add('hidden');
-    }
-
-    async function submitFaultTicket() {
-      const desc = document.getElementById('fault-description').value.trim();
-      if (!desc) {
-        alert('Ingrese la descripción de la falla.');
-        return;
-      }
-
-      try {
-        await fetch(`${API_BASE}/api/v1/tickets`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title: `[FALLA TÉCNICA] Slot ${currentSlot}`,
-            description: `[FALLA TÉCNICA] Reporte en máquina ${currentSlot}: ${desc}`,
-            machine_id: null
-          })
-        });
-        alert('¡Ticket de soporte generado y alerta enviada a Sistemas!');
-        closeFaultModal();
-        document.getElementById('fault-description').value = '';
-      } catch (e) {
-        alert('Ticket emitido.');
-        closeFaultModal();
-      }
-    }
-
-    // WebSocket Listener para ORDER_READY
-    function connectWaitersWS() {
-      ws = new WebSocket(`${WS_BASE}/ws/kds?station=WAITERS`);
-      ws.onmessage = (event) => {
-        try {
-          const payload = JSON.parse(event.data);
-          if (payload.event === 'ORDER_READY') {
-            showReadyToast(payload.order_number, payload.machine_code || 'SALA');
-            if (navigator.vibrate) {
-              navigator.vibrate([200, 100, 200]);
-            }
-          }
-        } catch (e) {}
-      };
-      ws.onclose = () => {
-        setTimeout(connectWaitersWS, 5000);
-      };
-    }
-
-    function showReadyToast(orderNum, slot) {
-      const toast = document.getElementById('ready-toast');
-      document.getElementById('ready-toast-text').innerText = `Orden #${orderNum} para ${slot}`;
-      toast.classList.remove('hidden');
-      setTimeout(() => {
-        toast.classList.remove('-translate-y-32');
-      }, 50);
-      lucide.createIcons();
-
-      setTimeout(dismissToast, 8000);
-    }
-
-    function dismissToast() {
-      const toast = document.getElementById('ready-toast');
-      toast.classList.add('-translate-y-32');
-      setTimeout(() => {
-        toast.classList.add('hidden');
-      }, 300);
-    }
-
-    function toggleCartModal() {
-      const panel = document.getElementById('cart-panel');
-      panel.classList.toggle('hidden');
+    function dismissAlert(btn) {
+      btn.parentElement.parentElement.remove();
     }
   </script>
 </body>
