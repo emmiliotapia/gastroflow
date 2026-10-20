@@ -113,37 +113,54 @@ def read_root(request: Request):
 
 
 @app.get("/cliente", tags=["Frontend Layouts"])
+@app.get("/cliente.html", tags=["Frontend Layouts"])
 @app.get("/menu", tags=["Frontend Layouts"])
 def get_client_menu_page():
     """Sirve el Menú Digital y Portal de Pedidos para Clientes en Sala."""
     return _get_html_file("cliente.html")
 
 @app.get("/pos", tags=["Frontend Layouts"])
+@app.get("/pos.html", tags=["Frontend Layouts"])
 def get_pos_page():
     """Redirige directamente al Comandero Móvil POS."""
     return _get_html_file("pos.html")
 
 @app.get("/kds", tags=["Frontend Layouts"])
+@app.get("/kds.html", tags=["Frontend Layouts"])
 def get_kds_page():
     """Redirige directamente a la pantalla KDS de Cocina y Barra."""
     return _get_html_file("kds.html")
 
 @app.get("/cashier", tags=["Frontend Layouts"])
+@app.get("/cashier.html", tags=["Frontend Layouts"])
 @app.get("/caja", tags=["Frontend Layouts"])
 def get_cashier_page():
     """Redirige directamente al POS de Caja y Barra."""
     return _get_html_file("cashier.html")
 
 @app.get("/catalogo", tags=["Frontend Layouts"])
+@app.get("/catalogo.html", tags=["Frontend Layouts"])
 @app.get("/cocina", tags=["Frontend Layouts"])
 def get_catalogo_page():
     """Redirige directamente al Centro de Catálogo y Fichas Técnicas de Cocina."""
     return _get_html_file("catalogo.html")
 
 @app.get("/staff", tags=["Frontend Layouts"])
+@app.get("/staff.html", tags=["Frontend Layouts"])
 def get_staff_page():
     """Redirige directamente al Panel de Staff y Supervisión."""
     return _get_html_file("staff.html")
+
+@app.get("/alerts", tags=["Frontend Layouts"])
+@app.get("/alerts.html", tags=["Frontend Layouts"])
+def get_alerts_page():
+    """Redirige directamente al Panel de Alertas y Notificaciones."""
+    return _get_html_file("alerts.html")
+
+@app.get("/index.html", tags=["Frontend Layouts"])
+def get_index_page():
+    """Sirve el Launchpad principal directamente."""
+    return _get_html_file("index.html")
 
 
 

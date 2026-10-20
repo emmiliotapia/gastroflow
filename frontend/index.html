@@ -81,59 +81,118 @@
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
 
-  <!-- TOP BAR / BANNER -->
-  <div class="bg-slate-900 text-white text-xs font-medium py-2.5 px-4 text-center">
-    <div class="max-w-7xl mx-auto flex items-center justify-center gap-2 flex-wrap">
-      <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-200 text-[11px] font-semibold">
-        <span class="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse"></span>
-        Nueva Arquitectura 2026
-      </span>
-      <span>Plataforma modular para Restaurantes, Bares, Cafeterías y Cadenas Gastronómicas.</span>
-      <a href="#soluciones" class="underline hover:text-brand-200 font-semibold ml-1">Ver Módulos & Demos &rarr;</a>
+  <!-- TOP NOTIFICATION BAR (Sleek, Minimalist & Elegant) -->
+  <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-slate-300 text-xs border-b border-slate-800/80 py-2 px-4 shadow-sm">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-500/15 border border-brand-500/30 text-brand-400 text-[11px] font-semibold">
+          <span class="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse"></span>
+          GastroFlow OS 2026
+        </span>
+        <span class="hidden sm:inline text-slate-300 font-medium">Tecnología Inteligente para Restaurantes, Bares y Cadenas.</span>
+      </div>
+      <div class="flex items-center gap-4 text-xs font-semibold">
+        <a href="#soluciones" class="text-brand-400 hover:text-brand-300 transition flex items-center gap-1">
+          <span>Ver Demos Interactivas</span>
+          <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+        </a>
+      </div>
     </div>
   </div>
 
-  <!-- NAVIGATION -->
-  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+  <!-- NAVIGATION BAR (Modern, Premium & Ultra-Clean) -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-lg border-b border-slate-200/80 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
       
       <!-- Brand Logo -->
-      <a href="index.html" class="flex items-center gap-3 group">
-        <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-brand-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20 group-hover:scale-105 transition">
-          <i data-lucide="utensils" class="w-6 h-6"></i>
+      <a href="/" class="flex items-center gap-3 group flex-shrink-0">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-600 via-brand-500 to-amber-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20 group-hover:scale-105 group-hover:shadow-glow-orange transition duration-200">
+          <i data-lucide="utensils" class="w-5 h-5"></i>
         </div>
         <div>
-          <span class="font-outfit text-2xl font-black text-slate-900 tracking-tight flex items-center gap-1.5">
+          <span class="font-outfit text-2xl font-black text-slate-900 tracking-tight flex items-center gap-1.5 leading-none">
             Gastro<span class="text-brand-500">Flow</span>
             <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">OS</span>
           </span>
-          <p class="text-[11px] text-slate-500 font-medium">Tecnología Inteligente para Restaurantes</p>
+          <p class="text-[11px] text-slate-500 font-medium mt-1">Ecosistema Operativo de Restaurante</p>
         </div>
       </a>
 
-      <!-- Desktop Nav -->
-      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
-        <a href="#soluciones" class="hover:text-brand-600 transition">Soluciones</a>
-        <a href="alerts.html" class="flex items-center gap-1.5 text-brand-600 font-bold hover:text-brand-700 transition">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>Alertas en Vivo (notify.sh)</span>
-        </a>
-        <a href="#beneficios" class="hover:text-brand-600 transition">Ventajas</a>
-        <a href="#simulador" class="hover:text-brand-600 transition">Cotizador de Paquete</a>
-        <a href="#arquitectura" class="hover:text-brand-600 transition">Tecnología</a>
+      <!-- Desktop Navigation Menu -->
+      <nav class="hidden lg:flex items-center gap-7 text-sm font-semibold text-slate-600">
+        <a href="#soluciones" class="hover:text-brand-600 transition py-1">Soluciones</a>
+        
+        <!-- Dropdown Demos Directas -->
+        <div class="relative group">
+          <button class="flex items-center gap-1 hover:text-brand-600 transition py-1">
+            <span>Módulos Demo</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 group-hover:text-brand-600 group-hover:rotate-180 transition duration-200"></i>
+          </button>
+          <div class="absolute left-0 top-full pt-2 w-64 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition duration-200">
+            <div class="bg-white rounded-2xl border border-slate-200/90 shadow-clean-lg p-2.5 space-y-1">
+              <a href="/cliente" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-brand-600 transition">
+                <i data-lucide="qr-code" class="w-4 h-4 text-brand-500"></i>
+                <div>
+                  <span class="block text-slate-900 font-bold">Menú QR Digital</span>
+                  <span class="text-[10px] text-slate-500 font-normal">Autoservicio para mesas</span>
+                </div>
+              </a>
+              <a href="/pos" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition">
+                <i data-lucide="smartphone" class="w-4 h-4 text-blue-500"></i>
+                <div>
+                  <span class="block text-slate-900 font-bold">Comandero Meseros</span>
+                  <span class="text-[10px] text-slate-500 font-normal">Toma de órdenes en sala</span>
+                </div>
+              </a>
+              <a href="/kds" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 transition">
+                <i data-lucide="chef-hat" class="w-4 h-4 text-emerald-500"></i>
+                <div>
+                  <span class="block text-slate-900 font-bold">Pantalla Cocina (KDS)</span>
+                  <span class="text-[10px] text-slate-500 font-normal">Comandas en vivo con audio</span>
+                </div>
+              </a>
+              <a href="/cashier" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition">
+                <i data-lucide="credit-card" class="w-4 h-4 text-indigo-500"></i>
+                <div>
+                  <span class="block text-slate-900 font-bold">Terminal de Caja</span>
+                  <span class="text-[10px] text-slate-500 font-normal">Cobros, propinas y arqueos</span>
+                </div>
+              </a>
+              <a href="/catalogo" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-purple-600 transition">
+                <i data-lucide="scale" class="w-4 h-4 text-purple-500"></i>
+                <div>
+                  <span class="block text-slate-900 font-bold">Escandallos y Recetas</span>
+                  <span class="text-[10px] text-slate-500 font-normal">Costeo de insumos y mermas</span>
+                </div>
+              </a>
+              <a href="/alerts" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-amber-50 hover:text-amber-600 transition">
+                <i data-lucide="bell" class="w-4 h-4 text-amber-500"></i>
+                <div>
+                  <span class="block text-slate-900 font-bold">Monitor de Alertas</span>
+                  <span class="text-[10px] text-slate-500 font-normal">Llamados y platos listos</span>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <a href="#beneficios" class="hover:text-brand-600 transition py-1">Ventajas</a>
+        <a href="#simulador" class="hover:text-brand-600 transition py-1">Cotizador</a>
+        <a href="#arquitectura" class="hover:text-brand-600 transition py-1">Equipamiento</a>
       </nav>
 
-      <!-- CTA Action -->
+      <!-- Action Buttons -->
       <div class="flex items-center gap-3">
-        <a href="#simulador" class="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition">
+        <a href="#simulador" class="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/80 transition">
           <i data-lucide="calculator" class="w-4 h-4 text-slate-500"></i>
-          <span>Calcular Plan</span>
+          <span>Calcular Paquete</span>
         </a>
-        <a href="#soluciones" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-brand-500 hover:bg-brand-600 shadow-glow-orange transition">
+        <a href="#soluciones" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 shadow-glow-orange transition">
           <span>Explorar Demos</span>
           <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </a>
       </div>
+
     </div>
   </header>
 
@@ -288,7 +347,7 @@
           <!-- Card Footer Action -->
           <div class="px-7 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
             <span class="text-xs text-slate-500 font-mono">Demo Interactiva</span>
-            <a href="cliente.html" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-brand-600 hover:text-brand-700 hover:underline">
+            <a href="/cliente" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-brand-600 hover:text-brand-700 hover:underline">
               <span>Probar Menú QR</span>
               <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
             </a>
@@ -335,7 +394,7 @@
 
           <div class="px-7 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
             <span class="text-xs text-slate-500 font-mono">Demo Interactiva</span>
-            <a href="pos.html" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline">
+            <a href="/pos" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline">
               <span>Abrir Comandero</span>
               <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
             </a>
@@ -382,7 +441,7 @@
 
           <div class="px-7 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
             <span class="text-xs text-slate-500 font-mono">Demo Interactiva</span>
-            <a href="kds.html" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-accent-600 hover:text-emerald-700 hover:underline">
+            <a href="/kds" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-accent-600 hover:text-emerald-700 hover:underline">
               <span>Abrir Monitor KDS</span>
               <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
             </a>
@@ -429,7 +488,7 @@
 
           <div class="px-7 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
             <span class="text-xs text-slate-500 font-mono">Demo Interactiva</span>
-            <a href="cashier.html" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-700 hover:underline">
+            <a href="/cashier" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-700 hover:underline">
               <span>Abrir Terminal Caja</span>
               <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
             </a>
@@ -476,7 +535,7 @@
 
           <div class="px-7 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
             <span class="text-xs text-slate-500 font-mono">Demo Interactiva</span>
-            <a href="catalogo.html" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-purple-600 hover:text-purple-700 hover:underline">
+            <a href="/catalogo" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-purple-600 hover:text-purple-700 hover:underline">
               <span>Abrir Fichas y Recetas</span>
               <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
             </a>
@@ -523,7 +582,7 @@
 
           <div class="px-7 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
             <span class="text-xs text-slate-500 font-mono">Demo Interactiva</span>
-            <a href="staff.html" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-rose-600 hover:text-rose-700 hover:underline">
+            <a href="/staff" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold text-rose-600 hover:text-rose-700 hover:underline">
               <span>Abrir Panel Staff</span>
               <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
             </a>
@@ -571,7 +630,7 @@
 
           <div class="px-7 py-4 bg-orange-50/60 border-t border-orange-100 flex items-center justify-between">
             <span class="text-xs text-brand-700 font-mono font-bold">Monitor en Vivo</span>
-            <a href="alerts.html" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-black text-brand-600 hover:text-brand-700 hover:underline">
+            <a href="/alerts" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-black text-brand-600 hover:text-brand-700 hover:underline">
               <span>Ver Monitor de Alertas</span>
               <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
             </a>
@@ -893,11 +952,11 @@
         </div>
       </div>
       <div class="flex items-center gap-6 font-medium">
-        <a href="cliente.html" class="hover:text-white transition">Menú QR</a>
-        <a href="pos.html" class="hover:text-white transition">Comandero</a>
-        <a href="kds.html" class="hover:text-white transition">Cocina KDS</a>
-        <a href="cashier.html" class="hover:text-white transition">Caja</a>
-        <a href="catalogo.html" class="hover:text-white transition">Fichas Técnicas</a>
+        <a href="/cliente" class="hover:text-white transition">Menú QR</a>
+        <a href="/pos" class="hover:text-white transition">Comandero</a>
+        <a href="/kds" class="hover:text-white transition">Cocina KDS</a>
+        <a href="/cashier" class="hover:text-white transition">Caja</a>
+        <a href="/catalogo" class="hover:text-white transition">Fichas Técnicas</a>
       </div>
       <div>
         <span class="font-mono text-slate-500">&copy; 2026 GastroFlow OS. Todos los derechos reservados.</span>
