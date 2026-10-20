@@ -8,7 +8,11 @@
 set -euo pipefail
 
 PROJECT_DIR="${1:-/opt/smartops/gastroflow}"
-COMPOSE="docker compose -f docker-compose.gastroflow.yml"
+if docker compose version > /dev/null 2>&1; then
+    COMPOSE="docker compose -f docker-compose.gastroflow.yml"
+else
+    COMPOSE="docker-compose -f docker-compose.gastroflow.yml"
+fi
 
 echo "[INFO] Iniciando despliegue de GastroFlow en $PROJECT_DIR..."
 cd "$PROJECT_DIR"
