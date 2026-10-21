@@ -15,6 +15,9 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Modern GastroNotify Library -->
+  <script src="notifications.js"></script>
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -299,12 +302,17 @@
       document.getElementById('confirm-modal-table').innerText = `Entrega en: MESA ${clientTable}`;
     }
 
-    function promptChangeTable() {
-      const nuevo = prompt("Ingresa el número de tu mesa o terraza:", clientTable);
+    async function promptChangeTable() {
+      const nuevo = await GastroNotify.prompt("Ingresa el número de tu mesa o terraza:", clientTable, "Cambiar Mesa");
       if (nuevo && nuevo.trim()) {
         clientTable = nuevo.trim().toUpperCase();
         localStorage.setItem('restaurant_client_table', clientTable);
         updateTableBadge();
+        GastroNotify.show({
+          title: "Mesa Actualizada",
+          message: `Tus próximos pedidos se entregarán en MESA ${clientTable}.`,
+          type: "success"
+        });
       }
     }
 
@@ -600,7 +608,22 @@
         }).catch(() => null);
       } catch (e) {}
 
-      alert(`✅ ¡Comanda ${newOrderId} enviada con éxito! Aparecerá de inmediato en la pantalla de Cocina (KDS) y Caja.`);
+      // 4. Notificación visual moderna en pantalla
+      GastroNotify.modal({
+        title: "¡Comanda Enviada a Cocina!",
+        message: `Orden #${newOrderId} registrada con éxito.\nSe está preparando para entrega en MESA ${clientTable}.`,
+        type: "order",
+        icon: "chef-hat",
+        confirmText: "Ver Estado"
+      });
+
+      GastroNotify.show({
+        title: `Comanda #${newOrderId}`,
+        message: "Enviada en tiempo real a Cocina y Barra (KDS)",
+        type: "order",
+        duration: 5000
+      });
+
       clientCart = [];
       updateCartUI();
       closeOrderModal();
@@ -622,10 +645,17 @@
           body: `El comensal en Mesa ${clientTable} solicita un mesero en sala.`
         }).catch(() => null);
       } catch (e) {}
-      alert(`🛎️ ¡Mesero notificado! Un compañero de sala se acercará de inmediato a la Mesa ${clientTable}.`);
+
+      GastroNotify.modal({
+        title: "¡Mesero Notificado!",
+        message: `Hemos enviado una alerta prioritaria a los meseros de sala.\nUn compañero se acercará de inmediato a la Mesa ${clientTable}.`,
+        type: "bell",
+        icon: "bell-ring",
+        confirmText: "Gracias"
+      });
     }
 
-    function requestBill() {
+    async function requestBill() {
       try {
         fetch(`https://ntfy.smartopsia.com/prestige-meseros`, {
           method: 'POST',
@@ -637,7 +667,23 @@
           body: `El comensal en Mesa ${clientTable} ha solicitado su cuenta final.`
         }).catch(() => null);
       } catch (e) {}
-      alert(`🧾 ¡Solicitud de cuenta recibida! El mesero llevará la cuenta a la Mesa ${clientTable}. ¿Deseas pagar en efectivo o tarjeta?`);
+
+      const method = await GastroNotify.modal({
+        title: "¿Cómo deseas pagar?",
+        message: `Solicitud de cuenta generada para la Mesa ${clientTable}.\nEl mesero llevará la cuenta a tu mesa en unos momentos.`,
+        type: "order",
+        icon: "credit-card",
+        confirmText: "Efectivo / Tarjeta",
+        cancelText: "Cerrar"
+      });
+
+      if (method) {
+        GastroNotify.show({
+          title: "Cuenta Solicitada",
+          message: `El mesero se dirige a la Mesa ${clientTable}.`,
+          type: "success"
+        });
+      }
     }
   </script>
 </body>

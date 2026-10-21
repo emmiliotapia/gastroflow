@@ -15,6 +15,9 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Modern GastroNotify Library -->
+  <script src="notifications.js"></script>
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -510,7 +513,14 @@
         }).catch(() => null);
       } catch (e) {}
 
-      alert(`✅ ¡Comanda ${newOrderId} despachada a Cocina & Barra para ${currentTable}!${shouldPrint ? ' (Ticket térmico enviado a impresión).' : ''}`);
+      // Notificación moderna de despacho
+      GastroNotify.show({
+        title: `Comanda ${newOrderId} Despachada`,
+        message: `Enviada a Cocina & Barra para ${currentTable}.${shouldPrint ? ' Ticket impreso.' : ''}`,
+        type: 'order',
+        duration: 4500
+      });
+
       posCart = [];
       updatePosCartUI();
       closePosModal();

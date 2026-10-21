@@ -13,6 +13,9 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Modern GastroNotify Library -->
+  <script src="notifications.js"></script>
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -1093,12 +1096,16 @@
       const ing = allIngredients.find(i => i.id === ingId);
       if (!ing) return;
 
-      const nuevo = prompt(`Ajustar existencia actual de "${ing.name}" (${ing.unit_of_measure}):`, ing.current_stock);
+      const nuevo = await GastroNotify.prompt(`Ajustar existencia actual de "${ing.name}" (${ing.unit_of_measure}):`, ing.current_stock, "Ajuste de Stock");
       if (nuevo === null) return;
 
       const num = parseFloat(nuevo);
       if (isNaN(num) || num < 0) {
-        alert("Ingresa un número válido de existencia.");
+        GastroNotify.show({
+          title: "Valor Inválido",
+          message: "Ingresa un número válido de existencia mayor o igual a cero.",
+          type: "warning"
+        });
         return;
       }
 
@@ -1110,12 +1117,25 @@
         });
 
         if (res.ok) {
+          GastroNotify.show({
+            title: "Stock Actualizado",
+            message: `Insumo "${ing.name}" actualizado a ${num} ${ing.unit_of_measure}.`,
+            type: "success"
+          });
           await fetchAllData();
         } else {
-          alert("Error al actualizar existencia.");
+          GastroNotify.show({
+            title: "Error al Guardar",
+            message: "No se pudo actualizar la existencia en la base de datos.",
+            type: "error"
+          });
         }
       } catch (err) {
-        alert("Error de conexión: " + err.message);
+        GastroNotify.show({
+          title: "Error de Conexión",
+          message: err.message,
+          type: "error"
+        });
       }
     }
   </script>

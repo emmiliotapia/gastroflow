@@ -13,6 +13,9 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Modern GastroNotify Library -->
+  <script src="notifications.js"></script>
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -311,7 +314,11 @@
       const message = document.getElementById('alert-msg').value.trim();
 
       if (!title || !message) {
-        alert("Ingresa un título y mensaje para emitir la alerta.");
+        GastroNotify.show({
+          title: "Campos Requeridos",
+          message: "Ingresa un título y mensaje para emitir la alerta al canal.",
+          type: "warning"
+        });
         return;
       }
 
@@ -357,10 +364,15 @@
           headers: { 'Title': title, 'Priority': 'high' },
           mode: 'no-cors',
           body: message
-        }).catch(() => null);
+         }).catch(() => null);
       } catch (e) {}
 
-      alert(`✅ [notify.sh] Alerta disparada al canal '${channel}'. Señal retransmitida por n8n y ntfy.`);
+      GastroNotify.show({
+        title: `Alerta Despachada • ${channel.toUpperCase()}`,
+        message: `Transmitida por notify.sh vía n8n webhook y ntfy push.`,
+        type: 'bell',
+        duration: 4000
+      });
     }
 
     function clearLogs() {

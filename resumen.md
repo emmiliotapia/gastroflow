@@ -44,6 +44,7 @@ Para entender el proyecto en orden recomendado, sigue esta secuencia:
 * **[`frontend/kds.html`](frontend/kds.html):** Pantalla KDS con conexión triple en vivo: polling continuo de respaldo cada 4s, WebSocket `/api/v1/ws/kds` y Server-Sent Events a `https://ntfy.smartopsia.com/prestige-kds/sse`.
 * **[`frontend/cliente.html`](frontend/cliente.html):** Menú cliente que envía pedidos a `/api/v1/pos/order`, emite eventos locales y envía push directo a `prestige-kds` y `prestige-meseros`.
 * **[`frontend/pos.html`](frontend/pos.html):** Comandero táctil que envía pedidos al backend y emite alerta a `prestige-kds`.
+* **[`frontend/notifications.js`](frontend/notifications.js):** Librería UI moderna de notificaciones `GastroNotify` (reemplazo estético de `alert`, `prompt` y `confirm` con toasts flotantes, modales glassmorphism, Web Audio sintetizado e iconos Lucide).
 
 ---
 

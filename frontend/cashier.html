@@ -13,6 +13,9 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Modern GastroNotify Library -->
+  <script src="notifications.js"></script>
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -337,19 +340,37 @@
         window.print();
       }, 150);
 
-      alert(`✅ ¡Cobro exitoso de ${activeTable}! Monto recibido: $${(activeTotal * 1.1).toFixed(2)} mediante ${selectedPay}. Ticket fiscal enviado a la impresora térmica.`);
+      GastroNotify.modal({
+        title: "¡Cobro Exitoso!",
+        message: `Monto recibido: $${(activeTotal * 1.1).toFixed(2)}\nMétodo: ${selectedPay.toUpperCase()} • ${activeTable}\nTicket fiscal enviado a impresión térmica.`,
+        type: "success",
+        icon: "receipt",
+        confirmText: "Imprimir y Cerrar"
+      });
     }
 
-    function splitBillPrompt() {
-      const parts = prompt("¿Entre cuántas personas deseas dividir la cuenta?", "2");
+    async function splitBillPrompt() {
+      const parts = await GastroNotify.prompt("¿Entre cuántas personas deseas dividir la cuenta?", "2", "Dividir Cuenta");
       if (parts && parseInt(parts) > 0) {
         const perPerson = ((activeTotal * 1.1) / parseInt(parts)).toFixed(2);
-        alert(`Cuenta dividida en ${parts} partes iguales:\nCada persona paga: $${perPerson}`);
+        GastroNotify.modal({
+          title: "División de Cuenta Calculada",
+          message: `Total dividido en ${parts} partes iguales.\n\nCada persona paga: $${perPerson}`,
+          type: "order",
+          icon: "calculator",
+          confirmText: "Cobrar por Separado"
+        });
       }
     }
 
     function promptCashClose() {
-      alert("🔒 Generando Corte Z de Caja: Ventas totales del turno: $8,420.00 • Efectivo: $3,210.00 • Tarjetas: $5,210.00. Turno cuadrado con éxito.");
+      GastroNotify.modal({
+        title: "Corte Z de Caja (Turno Cuadrado)",
+        message: "Ventas Totales: $8,420.00\n• Efectivo en Cajón: $3,210.00\n• Terminales Tarjetas: $5,210.00\n\nDiferencia: $0.00 (Cierre exitoso verificado).",
+        type: "order",
+        icon: "shield-check",
+        confirmText: "Descargar Reporte Z"
+      });
     }
   </script>
 

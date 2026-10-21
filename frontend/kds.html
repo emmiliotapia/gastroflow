@@ -13,6 +13,9 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Modern GastroNotify Library -->
+  <script src="notifications.js"></script>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -270,6 +273,14 @@
               orders.unshift(mo);
               changed = true;
               playBeep();
+              if (window.GastroNotify) {
+                GastroNotify.show({
+                  title: `🔥 Nueva Comanda #${mo.id}`,
+                  message: `${mo.items.map(i => `${i.qty}x ${i.name}`).join(', ')} • ${mo.table}`,
+                  type: 'order',
+                  duration: 5000
+                });
+              }
             } else {
               // Actualizar estado si cambió
               if (orders[idx].status !== mo.status) {
