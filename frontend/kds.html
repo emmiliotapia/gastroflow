@@ -219,6 +219,10 @@
       }
     ];
 
+    const proto = window.location.protocol === 'https:' ? 'https:' : 'http:';
+    const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const API_BASE = window.location.port === '8001' || window.location.port === '8000' || window.location.port === '8002' ? '' : `${proto}//${window.location.host}`;
+
     // Cargar órdenes persistidas o usar las predeterminadas
     function initOrders() {
       const stored = localStorage.getItem('gastro_orders');
@@ -234,12 +238,108 @@
       localStorage.setItem('gastro_orders', JSON.stringify(orders));
     }
 
+    async function fetchOrdersFromAPI() {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/kds/orders`);
+        if (!res.ok) return;
+        const apiOrders = await res.json();
+        if (Array.isArray(apiOrders) && apiOrders.length > 0) {
+          const mapped = apiOrders.map(o => {
+            const isBar = o.items && o.items.some(i => i.destination_kds === 'BAR');
+            return {
+              id: o.order_number || o.id,
+              db_id: o.id,
+              table: o.machine_code && o.machine_code !== '000' ? (o.machine_code.toUpperCase().includes('MESA') ? o.machine_code : `MESA ${o.machine_code}`) : 'SALA / BARRA',
+              waiter: o.created_by_name || 'Staff Piso',
+              station: isBar ? 'BAR' : 'KITCHEN',
+              status: o.status || 'PENDING',
+              createdAt: o.created_at ? new Date(o.created_at).getTime() : Date.now(),
+              items: (o.items || []).map(it => ({
+                qty: parseInt(it.quantity) || 1,
+                name: it.product_name || 'Platillo',
+                notes: it.notes || o.notes || ''
+              }))
+            };
+          });
+
+          // Mezclar con órdenes locales existentes sin perder las no sincronizadas
+          let changed = false;
+          mapped.forEach(mo => {
+            const idx = orders.findIndex(x => x.id === mo.id || x.db_id === mo.db_id);
+            if (idx === -1) {
+              orders.unshift(mo);
+              changed = true;
+              playBeep();
+            } else {
+              // Actualizar estado si cambió
+              if (orders[idx].status !== mo.status) {
+                orders[idx].status = mo.status;
+                changed = true;
+              }
+            }
+          });
+
+          if (changed) {
+            saveOrders();
+            renderOrders();
+          }
+        }
+      } catch (err) {
+        console.debug('KDS API sync error:', err);
+      }
+    }
+
+    // Suscripción WebSocket a eventos de cocina en tiempo real
+    function connectKDSWebSocket() {
+      try {
+        const wsHost = window.location.host;
+        const wsUrl = `${wsProto}//${wsHost}/api/v1/ws/kds?station=ALL`;
+        const ws = new WebSocket(wsUrl);
+
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.event === 'NEW_ORDER' && data.order) {
+              fetchOrdersFromAPI();
+            } else if (data.event === 'ORDER_STATUS_CHANGED' || data.event === 'ORDER_CANCELLED') {
+              fetchOrdersFromAPI();
+            }
+          } catch (e) {}
+        };
+
+        ws.onclose = () => {
+          setTimeout(connectKDSWebSocket, 4000);
+        };
+      } catch (e) {
+        console.debug('WS error:', e);
+      }
+    }
+
+    // Suscripción SSE directa a ntfy prestige-kds (para sincronización instantánea multicliente)
+    function connectNtfySSE() {
+      try {
+        const evtSource = new EventSource('https://ntfy.smartopsia.com/prestige-kds/sse');
+        evtSource.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.event === 'message') {
+              fetchOrdersFromAPI();
+            }
+          } catch(e) {}
+        };
+      } catch(e) {}
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
       initOrders();
       renderOrders();
+      fetchOrdersFromAPI();
+      connectKDSWebSocket();
+      connectNtfySSE();
       setInterval(updateClock, 1000);
       setInterval(renderOrders, 10000);
+      setInterval(fetchOrdersFromAPI, 4000); // Polling continuo cada 4 segundos
 
       // Escuchar comandas entrantes desde Menú QR o Comandero en vivo
       window.addEventListener('storage', (e) => {
@@ -467,21 +567,43 @@
       lucide.createIcons();
     }
 
-    function advanceOrder(id, nextStatus) {
+    async function advanceOrder(id, nextStatus) {
       const ord = orders.find(o => o.id === id);
       if (ord) {
         ord.status = nextStatus;
         playBeep();
         saveOrders();
         renderOrders();
+
+        if (ord.db_id) {
+          try {
+            await fetch(`${API_BASE}/api/v1/kds/orders/${ord.db_id}/status`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status: nextStatus })
+            });
+          } catch(e) {}
+        }
       }
     }
 
-    function finishOrder(id) {
+    async function finishOrder(id) {
+      const ord = orders.find(o => o.id === id);
+      const dbId = ord ? ord.db_id : null;
       orders = orders.filter(o => o.id !== id);
       playBeep();
       saveOrders();
       renderOrders();
+
+      if (dbId) {
+        try {
+          await fetch(`${API_BASE}/api/v1/kds/orders/${dbId}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'DELIVERED' })
+          });
+        } catch(e) {}
+      }
     }
 
     function injectDemoOrder() {
