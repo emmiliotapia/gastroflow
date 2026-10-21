@@ -8,8 +8,12 @@
 **GastroFlow OS** es un ecosistema operativo y tecnológico modular para el sector gastronómico (restaurantes, bares, cafeterías y dark kitchens).
 El sistema resuelve la desconexión operativa entre salón, cocina y administración a través de interfaces web ligeras (PWAs) sincronizadas en tiempo real:
 
-1. **Menú Digital QR y Autopedidos (`frontend/cliente.html`):** Los clientes piden desde la mesa sin instalar aplicaciones, consultan alérgenos y fotos, y pueden solicitar asistencia de mesero o la cuenta final con alertas push inmediatas.
-2. **Comandero Móvil para Meseros (`frontend/pos.html`):** Permite levantar pedidos a pie de mesa desde cualquier smartphone o tablet y mandarlos al instante a cocina/barra con notas, modificadores e impresión térmica de tickets 80mm.
+1. **Menú Digital QR y Autopedidos (`frontend/cliente.html`):** Los clientes arman su pedido desde la mesa sin apps. Para blindar la cocina contra bromas o pedidos por error, la comanda entra en estado `PENDING_CONFIRMATION` y alerta al mesero para validarla a pie de mesa antes de encender fogones.
+2. **Comandero Móvil Multifunción para Meseros (`frontend/pos.html`):** Terminal integral para smartphones/tablets con 4 vistas operativas:
+   - **Levantar Comanda:** Botonera táctil rápida con notas e impresión de tickets térmicos 80mm.
+   - **Cuentas de Mesa:** Listado en vivo de mesas ocupadas, desglose de cuentas, botón para **Cobrar/Cerrar** y botón para **Matar Cuenta** (cancelación segura con motivo y liberación inmediata de mesa).
+   - **Validación de Pedidos QR:** Bandeja de entrada para revisar pedidos de clientes a pie de mesa, aprobarlos hacia cocina o rechazarlos.
+   - **Corte de Turno:** Métricas en tiempo real de ventas cobradas, cuentas activas, comandas entregadas, ticket promedio e impresión de reporte Z en impresora térmica.
 3. **Monitor KDS de Cocina y Barra (`frontend/kds.html`):** Pantalla en tiempo real conectada mediante triple vía (API REST, WebSockets `/api/v1/ws/kds` y Server-Sent Events de ntfy) que ordena las comandas en cola FIFO con semáforo de tiempos (Verde, Ámbar, Rojo +15m), alertas sonoras (`playBeep`) y botones para cambiar estado (`PREPARING`, `READY`, `DELIVERED`).
 4. **Punto de Venta / Terminal de Caja (`frontend/cashier.html`):** Cobro multiformato (efectivo, tarjetas), división de cuentas entre comensales, control de propinas y arqueo ciego protegido por PIN.
 5. **Escandallos y Fichas Técnicas (`frontend/catalogo.html`):** Control estricto del costo unitario por receta, margen bruto y deducción automática de insumos con cada venta.

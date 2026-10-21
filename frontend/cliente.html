@@ -243,10 +243,11 @@
 
       <div class="space-y-2 pt-2">
         <button onclick="submitOrderToKitchen()" id="btn-submit-order" class="w-full py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider text-white bg-brand-500 hover:bg-brand-600 shadow-float flex items-center justify-center gap-2 transition">
-          <i data-lucide="chef-hat" class="w-4 h-4"></i>
-          <span>Enviar Comanda a Cocina</span>
+          <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+          <span>Confirmar Pedido con Mesero</span>
         </button>
-        <button onclick="closeOrderModal()" class="w-full py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-700 bg-slate-50">
+        <p class="text-[10px] text-slate-400 text-center leading-tight">Un mesero validará tu comanda a pie de mesa antes de encender fogones en cocina.</p>
+        <button onclick="closeOrderModal()" class="w-full py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-700 bg-slate-50">
           Seguir Ordenando
         </button>
       </div>
@@ -556,9 +557,9 @@
       const orderData = {
         id: newOrderId,
         table: `MESA ${clientTable}`,
-        waiter: 'Autopedido QR',
+        waiter: 'Pendiente Validación Mesero',
         station: clientCart.some(i => i.product.destination_kds === 'BAR') ? 'BAR' : 'KITCHEN',
-        status: 'PENDING',
+        status: 'PENDING_CONFIRMATION', // En espera de que el mesero la autorice en el comandero
         createdAt: Date.now(),
         items: clientCart.map(i => ({
           qty: i.quantity,
@@ -568,59 +569,41 @@
         }))
       };
 
-      // 1. Guardar en bus local sincronizado en vivo (localStorage & evento de ventana)
+      // 1. Guardar en bus local de órdenes pendientes de validación
       try {
-        const stored = JSON.parse(localStorage.getItem('gastro_orders') || '[]');
-        stored.unshift(orderData);
-        localStorage.setItem('gastro_orders', JSON.stringify(stored));
-        localStorage.setItem('gastro_new_order_event', JSON.stringify(orderData));
+        const pendingOrders = JSON.parse(localStorage.getItem('gastro_pending_qr_orders') || '[]');
+        pendingOrders.unshift(orderData);
+        localStorage.setItem('gastro_pending_qr_orders', JSON.stringify(pendingOrders));
+        localStorage.setItem('gastro_new_qr_event', JSON.stringify(orderData));
       } catch (e) {}
 
-      // 2. Intentar backend API si está corriendo
+      // 2. Notificar inmediatamente al comandero de meseros por ntfy
       try {
-        const payload = {
-          machine_code: clientTable,
-          notes: clientCart.map(i => i.notes).filter(Boolean).join(" | ") || "Comanda desde Menú QR",
-          items: clientCart.map(item => ({
-            product_id: (item.product.id && item.product.id.length > 20) ? item.product.id : "430bb253-e7a9-429a-9cc7-21e75a188e71",
-            quantity: item.quantity,
-            is_courtesy: false
-          }))
-        };
-        await fetch(`${API_BASE}/api/v1/pos/order`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        }).catch(() => null);
-      } catch (err) {}
-
-      // 3. Respaldo directo a ntfy prestige-kds (para garantizar aviso instantáneo a cocina)
-      try {
-        fetch(`https://ntfy.smartopsia.com/prestige-kds`, {
+        fetch(`https://ntfy.smartopsia.com/prestige-meseros`, {
           method: 'POST',
           headers: {
-            'Title': `🔥 Comanda QR #${newOrderId} (Mesa ${clientTable})`,
+            'Title': `🛎️ Pedido QR pendiente en Mesa ${clientTable}`,
             'Priority': 'urgent',
-            'Tags': 'rotating_light,fire,cooking',
-            'Click': `${window.location.origin}/kds`
+            'Tags': 'bell,plate,waiter',
+            'Click': `${window.location.origin}/pos`
           },
-          body: `${clientCart.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}\nUbicación: Mesa ${clientTable}`
+          body: `El comensal generó el pedido #${newOrderId} (${clientCart.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}).\nPor favor acércate a confirmar a la Mesa ${clientTable}.`
         }).catch(() => null);
       } catch (e) {}
 
-      // 4. Notificación visual moderna en pantalla
+      // 3. Notificación visual moderna en pantalla
       GastroNotify.modal({
-        title: "¡Comanda Enviada a Cocina!",
-        message: `Orden #${newOrderId} registrada con éxito.\nSe está preparando para entrega en MESA ${clientTable}.`,
+        title: "¡Pedido Enviado al Mesero!",
+        message: `Orden #${newOrderId} registrada.\n\nPara evitar errores o cancelaciones, un mesero acudirá de inmediato a la MESA ${clientTable} a validar los platillos antes de encender fogones en cocina.`,
         type: "order",
-        icon: "chef-hat",
-        confirmText: "Ver Estado"
+        icon: "user-check",
+        confirmText: "De acuerdo"
       });
 
       GastroNotify.show({
-        title: `Comanda #${newOrderId}`,
-        message: "Enviada en tiempo real a Cocina y Barra (KDS)",
-        type: "order",
+        title: `Mesa ${clientTable} • Notificación Enviada`,
+        message: "Mesero avisado para confirmar tu comanda.",
+        type: "bell",
         duration: 5000
       });
 
@@ -629,7 +612,7 @@
       closeOrderModal();
 
       btn.disabled = false;
-      btn.innerHTML = `<i data-lucide="chef-hat" class="w-4 h-4"></i><span>Enviar Comanda a Cocina</span>`;
+      btn.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4"></i><span>Confirmar Pedido con Mesero</span>`;
       lucide.createIcons();
     }
 

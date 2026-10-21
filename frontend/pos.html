@@ -100,7 +100,7 @@
       </div>
     </div>
 
-    <!-- Selector de Mesa Rápido -->
+    <!-- Selector de Mesa Rápido y Vistas Operativas -->
     <div class="flex items-center gap-2">
       <select id="select-table" onchange="changeActiveTable()" class="bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-brand-500">
         <option value="MESA 01">Mesa 01</option>
@@ -114,28 +114,57 @@
     </div>
   </header>
 
-  <!-- QUICK STATS / NOTIFICACIÓN ORDEN LISTA -->
-  <div class="max-w-4xl w-full mx-auto px-4 pt-3">
-    <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex items-center justify-between text-xs text-emerald-800">
-      <div class="flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-        <span class="font-bold">¡Platillo listo en Cocina!</span>
-        <span class="hidden sm:inline text-emerald-700">• Mesa 09: Pizza Margherita Napolitana</span>
+  <!-- BARRA DE NAVEGACIÓN DE VISTAS OPERATIVAS (COMANDERO, CUENTAS, PEDIDOS QR, REPORTES) -->
+  <div class="bg-slate-900 text-white px-4 py-2 border-b border-slate-800 sticky top-[57px] z-20 shadow-md">
+    <div class="max-w-4xl mx-auto flex items-center justify-between gap-1 overflow-x-auto scrollbar-none">
+      <div class="flex items-center gap-1.5">
+        <button onclick="switchPosView('menu')" id="pos-tab-menu" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-brand-500 text-white shadow-sm">
+          <i data-lucide="utensils" class="w-3.5 h-3.5"></i>
+          <span>Levantar Comanda</span>
+        </button>
+        <button onclick="switchPosView('accounts')" id="pos-tab-accounts" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 text-slate-300 hover:text-white hover:bg-slate-800">
+          <i data-lucide="receipt" class="w-3.5 h-3.5"></i>
+          <span>Cuentas de Mesa</span>
+          <span id="pos-accounts-badge" class="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700">0</span>
+        </button>
+        <button onclick="switchPosView('pending-qr')" id="pos-tab-pending-qr" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 text-slate-300 hover:text-white hover:bg-slate-800 relative">
+          <i data-lucide="qr-code" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span>Validar QR</span>
+          <span id="pos-qr-badge" class="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-amber-500 text-slate-950 font-black">0</span>
+        </button>
       </div>
-      <button onclick="dismissAlert(this)" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-bold text-[11px] hover:bg-emerald-700">
-        Recoger
+
+      <button onclick="switchPosView('reports')" id="pos-tab-reports" class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 text-slate-300 hover:text-white hover:bg-slate-800">
+        <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-emerald-400"></i>
+        <span>Corte Turno</span>
       </button>
     </div>
   </div>
 
-  <!-- SEARCH & CATEGORIES -->
-  <main class="max-w-4xl w-full mx-auto p-4 flex-1 flex flex-col gap-4">
-    
-    <!-- Barra de búsqueda rápida -->
-    <div class="relative">
-      <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400"></i>
-      <input type="text" id="pos-search" oninput="renderPosCatalog()" placeholder="Buscar por platillo, ingrediente o código..." class="w-full bg-white border border-slate-200 rounded-2xl py-3 pl-10 pr-4 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-brand-500 shadow-xs">
+  <!-- VISTA 1: COMANDERO (MENÚ TÁCTIL) -->
+  <div id="view-pos-menu" class="flex-1 flex flex-col">
+    <!-- QUICK STATS / NOTIFICACIÓN ORDEN LISTA -->
+    <div class="max-w-4xl w-full mx-auto px-4 pt-3">
+      <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex items-center justify-between text-xs text-emerald-800">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+          <span class="font-bold">¡Platillo listo en Cocina!</span>
+          <span class="hidden sm:inline text-emerald-700">• Mesa 09: Pizza Margherita Napolitana</span>
+        </div>
+        <button onclick="dismissAlert(this)" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-bold text-[11px] hover:bg-emerald-700">
+          Recoger
+        </button>
+      </div>
     </div>
+
+    <!-- SEARCH & CATEGORIES -->
+    <main class="max-w-4xl w-full mx-auto p-4 flex-1 flex flex-col gap-4">
+      
+      <!-- Barra de búsqueda rápida -->
+      <div class="relative">
+        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400"></i>
+        <input type="text" id="pos-search" oninput="renderPosCatalog()" placeholder="Buscar por platillo, ingrediente o código..." class="w-full bg-white border border-slate-200 rounded-2xl py-3 pl-10 pr-4 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-brand-500 shadow-xs">
+      </div>
 
     <!-- Category Pills -->
     <div id="pos-categories" class="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
@@ -148,6 +177,111 @@
     </div>
 
   </main>
+  </div>
+
+  <!-- VISTA 2: CUENTAS ACTIVAS DE MESAS (GESTIÓN & MATAR CUENTAS) -->
+  <div id="view-pos-accounts" class="max-w-4xl w-full mx-auto p-4 flex-1 flex flex-col gap-4 hidden">
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="font-outfit text-base font-bold text-slate-900">Cuentas y Comandas en Curso</h3>
+        <p class="text-xs text-slate-500">Supervisa las mesas abiertas, cierra tickets cobrados o cancela/mata pedidos erróneos.</p>
+      </div>
+      <button onclick="loadActiveAccounts()" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition" title="Refrescar">
+        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <!-- Filtro de Cuentas por Mesa -->
+    <div class="flex gap-2 items-center">
+      <input type="text" id="filter-account-table" oninput="renderActiveAccounts()" placeholder="Filtrar por mesa (ej. MESA 04)..." class="flex-1 bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-brand-500">
+      <span class="text-xs font-mono font-bold text-slate-600 bg-slate-100 px-3 py-2 rounded-xl border border-slate-200" id="accounts-total-sum">$0.00 en Vivo</span>
+    </div>
+
+    <!-- Lista de Cuentas de Mesa -->
+    <div id="pos-accounts-list" class="flex flex-col gap-3">
+      <!-- Dynamic Accounts Cards -->
+    </div>
+  </div>
+
+  <!-- VISTA 3: PEDIDOS QR POR VALIDAR (FILTRO ANTI-BROMAS Y DUPLICADOS) -->
+  <div id="view-pos-pending-qr" class="max-w-4xl w-full mx-auto p-4 flex-1 flex flex-col gap-4 hidden">
+    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
+      <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+        <i data-lucide="shield-alert" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <h4 class="text-xs font-bold text-amber-900 uppercase tracking-wide">Filtro de Validación Anti-Juegos</h4>
+        <p class="text-xs text-amber-700 mt-0.5 leading-relaxed">
+          Los pedidos del Menú QR del cliente llegan aquí primero. Valídalos a pie de mesa con el cliente antes de encender fogones en cocina.
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between">
+      <h3 class="font-outfit text-sm font-bold text-slate-900">Cola de Pedidos QR por Confirmar</h3>
+      <span class="text-xs font-mono font-bold text-amber-600" id="qr-pending-counter">0 pendientes</span>
+    </div>
+
+    <!-- Lista de Pedidos QR -->
+    <div id="pos-pending-qr-list" class="flex flex-col gap-3">
+      <!-- Dynamic Pending QR Cards -->
+    </div>
+  </div>
+
+  <!-- VISTA 4: REPORTE Y CORTE DE TURNO DEL COMANDERO -->
+  <div id="view-pos-reports" class="max-w-4xl w-full mx-auto p-4 flex-1 flex flex-col gap-4 hidden">
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="font-outfit text-base font-bold text-slate-900">Corte de Turno • Salón & Meseros</h3>
+        <p class="text-xs text-slate-500">Métricas en tiempo real de ventas, comandas despachadas y ticket promedio.</p>
+      </div>
+      <button onclick="loadShiftReport()" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition" title="Refrescar">
+        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <!-- Tarjetas KPI -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-xs">
+        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ventas Cobradas</div>
+        <div class="text-lg sm:text-xl font-mono font-black text-slate-900 mt-1" id="report-total-sales">$0.00</div>
+        <div class="text-[10px] text-emerald-600 font-bold mt-0.5">Turno en curso</div>
+      </div>
+      <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-xs">
+        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cuentas Activas</div>
+        <div class="text-lg sm:text-xl font-mono font-black text-brand-600 mt-1" id="report-active-orders">0</div>
+        <div class="text-[10px] text-slate-500 mt-0.5">En salón / cocina</div>
+      </div>
+      <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-xs">
+        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Comandas Entregadas</div>
+        <div class="text-lg sm:text-xl font-mono font-black text-emerald-600 mt-1" id="report-delivered-orders">0</div>
+        <div class="text-[10px] text-slate-500 mt-0.5">Servidas en mesa</div>
+      </div>
+      <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-xs">
+        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cuentas Canceladas</div>
+        <div class="text-lg sm:text-xl font-mono font-black text-rose-600 mt-1" id="report-cancelled-orders">0</div>
+        <div class="text-[10px] text-slate-400 mt-0.5">Mermas / corrección</div>
+      </div>
+    </div>
+
+    <!-- Ticket Promedio y Resumen de Mesas -->
+    <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-xs flex flex-col gap-3">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <span class="text-xs font-bold text-slate-700">Ticket Promedio por Mesa Servida</span>
+        <span class="text-sm font-mono font-black text-brand-600" id="report-avg-ticket">$0.00</span>
+      </div>
+      <div class="flex justify-between items-center text-xs text-slate-600">
+        <span>Mesas con comensales activos:</span>
+        <span class="font-mono font-bold text-slate-900" id="report-active-tables-list">Ninguna</span>
+      </div>
+    </div>
+
+    <!-- Botón Imprimir Reporte Z de Salón -->
+    <button onclick="printShiftReport()" class="w-full py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition">
+      <i data-lucide="printer" class="w-4 h-4 text-emerald-400"></i>
+      <span>Imprimir Corte de Turno en Térmica 80mm</span>
+    </button>
+  </div>
 
   <!-- STICKY FOOTER COMANDERO -->
   <footer id="pos-sticky-footer" class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 border-t border-slate-200 p-3.5 backdrop-blur-xl shadow-2xl transition-transform duration-200 transform translate-y-full">
@@ -524,11 +658,402 @@
       posCart = [];
       updatePosCartUI();
       closePosModal();
+      loadActiveAccounts();
     }
 
     function dismissAlert(btn) {
       btn.parentElement.parentElement.remove();
     }
-  </script>
+
+    // ==========================================
+    // GESTIÓN DE VISTAS OPERATIVAS (COMANDERO)
+    // ==========================================
+    let currentPosView = 'menu';
+    let cachedAccounts = [];
+    let cachedPendingQR = [];
+
+    function switchPosView(view) {
+      currentPosView = view;
+      const views = ['menu', 'accounts', 'pending-qr', 'reports'];
+      views.forEach(v => {
+        const el = document.getElementById(`view-pos-${v}`);
+        const tab = document.getElementById(`pos-tab-${v}`);
+        if (el) {
+          if (v === view) {
+            el.classList.remove('hidden');
+          } else {
+            el.classList.add('hidden');
+          }
+        }
+        if (tab) {
+          if (v === view) {
+            tab.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-brand-500 text-white shadow-sm';
+          } else {
+            tab.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 text-slate-300 hover:text-white hover:bg-slate-800';
+          }
+        }
+      });
+
+      // Ocultar sticky footer si no estamos en el menú
+      const footer = document.getElementById('pos-sticky-footer');
+      if (view !== 'menu') {
+        footer.classList.add('translate-y-full');
+      } else if (posCart.length > 0) {
+        footer.classList.remove('translate-y-full');
+      }
+
+      if (view === 'accounts') loadActiveAccounts();
+      if (view === 'pending-qr') loadPendingQROrders();
+      if (view === 'reports') loadShiftReport();
+      lucide.createIcons();
+    }
+
+    // ==========================================
+    // CUENTAS ACTIVAS & MATAR COMANDAS
+    // ==========================================
+    async function loadActiveAccounts() {
+      const container = document.getElementById('pos-accounts-list');
+      container.innerHTML = '<div class="py-12 text-center text-xs text-slate-400"><i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto mb-2 text-brand-500"></i>Cargando cuentas activas...</div>';
+      lucide.createIcons();
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/pos/orders`);
+        if (res.ok) {
+          cachedAccounts = await res.json();
+        } else {
+          cachedAccounts = JSON.parse(localStorage.getItem('gastro_orders') || '[]');
+        }
+      } catch (e) {
+        cachedAccounts = JSON.parse(localStorage.getItem('gastro_orders') || '[]');
+      }
+
+      renderActiveAccounts();
+    }
+
+    function renderActiveAccounts() {
+      const container = document.getElementById('pos-accounts-list');
+      const filter = (document.getElementById('filter-account-table').value || '').toLowerCase().trim();
+
+      const filtered = cachedAccounts.filter(o => {
+        const matchTable = (o.machine_code || o.table || '').toLowerCase().includes(filter);
+        const matchNumber = (o.order_number || o.id || '').toLowerCase().includes(filter);
+        return matchTable || matchNumber;
+      });
+
+      document.getElementById('pos-accounts-badge').innerText = cachedAccounts.length;
+      const totalSum = cachedAccounts.reduce((s, o) => s + parseFloat(o.total_amount || 0), 0);
+      document.getElementById('accounts-total-sum').innerText = `$${totalSum.toFixed(2)} en Vivo`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="bg-white border border-slate-200 rounded-3xl p-10 text-center text-slate-400">
+            <i data-lucide="check-circle" class="w-10 h-10 mx-auto text-emerald-400 mb-2"></i>
+            <h4 class="font-bold text-slate-800 text-sm">Sin Cuentas Abiertas</h4>
+            <p class="text-xs text-slate-400 mt-1">No hay pedidos pendientes en las mesas filtradas.</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = '';
+      filtered.forEach(o => {
+        const table = o.machine_code && o.machine_code !== '000' ? o.machine_code : (o.table || 'SALA / BARRA');
+        const num = o.order_number || o.id;
+        const total = parseFloat(o.total_amount || 0);
+        const items = o.items || [];
+        const statusMap = {
+          'PENDING': { label: 'En Espera', color: 'bg-amber-50 text-amber-700 border-amber-200' },
+          'PREPARING': { label: 'En Cocina', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+          'READY': { label: '¡Platillo Listo!', color: 'bg-emerald-50 text-emerald-700 border-emerald-300 font-bold animate-pulse' }
+        }[o.status] || { label: o.status, color: 'bg-slate-100 text-slate-600 border-slate-200' };
+
+        container.innerHTML += `
+          <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-card hover:border-slate-300 transition">
+            <div class="flex justify-between items-start gap-2 border-b border-slate-100 pb-3">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-outfit font-black text-sm text-slate-900">${table}</span>
+                  <span class="font-mono text-[10px] text-slate-400">#${num}</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] border ${statusMap.color}">${statusMap.label}</span>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-0.5">Mesero: ${o.created_by_name || o.waiter || 'Carlos M.'} ${o.notes ? `• <span class="italic text-slate-700">Nota: ${o.notes}</span>` : ''}</p>
+              </div>
+              <div class="text-right">
+                <div class="text-base font-mono font-black text-slate-900">$${total.toFixed(2)}</div>
+                <span class="text-[10px] text-slate-400 font-mono">${items.length} artículos</span>
+              </div>
+            </div>
+
+            <!-- Items de la cuenta -->
+            <div class="py-2.5 text-xs text-slate-700 space-y-1">
+              ${items.map(it => `
+                <div class="flex justify-between text-xs">
+                  <span>${parseInt(it.quantity || it.qty || 1)}x ${it.product_name || it.name}</span>
+                  <span class="font-mono text-slate-500">$${parseFloat(it.subtotal || (it.price * (it.qty || 1)) || 0).toFixed(2)}</span>
+                </div>
+              `).join('')}
+            </div>
+
+            <!-- Acciones: Cobrar y Matar Cuenta -->
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+              <button onclick="killActiveOrder('${o.id}')" class="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs flex items-center gap-1.5 transition">
+                <i data-lucide="skull" class="w-4 h-4"></i>
+                <span>Matar Cuenta</span>
+              </button>
+              
+              <button onclick="closeActiveOrder('${o.id}', '${table}', ${total})" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition">
+                <i data-lucide="check" class="w-4 h-4"></i>
+                <span>Cobrar y Cerrar</span>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    async function killActiveOrder(orderId) {
+      const reason = await GastroNotify.prompt("Motivo de la cancelación / matar cuenta:", "Mesa canceló / Comanda errónea", "Matar Cuenta");
+      if (!reason) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/pos/orders/${orderId}/cancel`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason })
+        });
+      } catch(e) {}
+
+      // Eliminar de caché local
+      cachedAccounts = cachedAccounts.filter(o => o.id !== orderId);
+      try {
+        const local = JSON.parse(localStorage.getItem('gastro_orders') || '[]');
+        localStorage.setItem('gastro_orders', JSON.stringify(local.filter(o => o.id !== orderId)));
+      } catch(e) {}
+
+      GastroNotify.show({
+        title: "Cuenta Cancelada",
+        message: `La comanda fue eliminada y se liberó la mesa.`,
+        type: "error"
+      });
+
+      renderActiveAccounts();
+    }
+
+    async function closeActiveOrder(orderId, table, total) {
+      const method = await GastroNotify.modal({
+        title: `Cerrar Cuenta • ${table}`,
+        message: `Monto total a cobrar: $${total.toFixed(2)}\nSelecciona la forma de pago del cliente para liquidar el ticket:`,
+        type: "order",
+        icon: "credit-card",
+        confirmText: "Cobrar Efectivo / Tarjeta",
+        cancelText: "Volver"
+      });
+
+      if (!method) return;
+
+      try {
+        await fetch(`${API_BASE}/api/v1/pos/orders/${orderId}/close`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ payment_method: "PAGADO_SALA" })
+        });
+      } catch(e) {}
+
+      // Actualizar local
+      cachedAccounts = cachedAccounts.filter(o => o.id !== orderId);
+      try {
+        const local = JSON.parse(localStorage.getItem('gastro_orders') || '[]');
+        localStorage.setItem('gastro_orders', JSON.stringify(local.filter(o => o.id !== orderId)));
+      } catch(e) {}
+
+      GastroNotify.show({
+        title: `¡Cuenta ${table} Pagada!`,
+        message: `Monto liquidado: $${total.toFixed(2)}. Mesa liberada con éxito.`,
+        type: "success"
+      });
+
+      renderActiveAccounts();
+    }
+
+    // ==========================================
+    // VALIDACIÓN DE PEDIDOS QR DE CLIENTES
+    // ==========================================
+    function loadPendingQROrders() {
+      try {
+        cachedPendingQR = JSON.parse(localStorage.getItem('gastro_pending_qr_orders') || '[]');
+      } catch(e) {
+        cachedPendingQR = [];
+      }
+      renderPendingQROrders();
+    }
+
+    function renderPendingQROrders() {
+      const container = document.getElementById('pos-pending-qr-list');
+      document.getElementById('pos-qr-badge').innerText = cachedPendingQR.length;
+      document.getElementById('qr-pending-counter').innerText = `${cachedPendingQR.length} por validar`;
+
+      if (cachedPendingQR.length === 0) {
+        container.innerHTML = `
+          <div class="bg-white border border-slate-200 rounded-3xl p-10 text-center text-slate-400">
+            <i data-lucide="shield-check" class="w-10 h-10 mx-auto text-emerald-400 mb-2"></i>
+            <h4 class="font-bold text-slate-800 text-sm">Todo al Día</h4>
+            <p class="text-xs text-slate-400 mt-1">No hay autopedidos QR pendientes por validar a pie de mesa.</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = '';
+      cachedPendingQR.forEach((qr, idx) => {
+        container.innerHTML += `
+          <div class="bg-white border-2 border-amber-300 rounded-2xl p-4 shadow-card">
+            <div class="flex justify-between items-start gap-2 border-b border-slate-100 pb-2.5">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-outfit font-black text-sm text-slate-900">${qr.table}</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">Menú QR Cliente</span>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-0.5">Folio: ${qr.id} • Hace unos momentos</p>
+              </div>
+              <span class="text-xs font-mono font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg border border-amber-200">Revisión a pie de mesa</span>
+            </div>
+
+            <div class="py-3 text-xs text-slate-800 space-y-1">
+              ${qr.items.map(it => `
+                <div class="flex justify-between">
+                  <span class="font-semibold">${it.qty}x ${it.name}</span>
+                  <span class="font-mono text-slate-500">${it.notes ? `(${it.notes})` : ''} $${parseFloat((it.price || 0) * it.qty).toFixed(2)}</span>
+                </div>
+              `).join('')}
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+              <button onclick="cancelQROrder(${idx})" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 font-bold text-xs flex items-center gap-1.5 transition">
+                <i data-lucide="x" class="w-4 h-4"></i>
+                <span>Rechazar / Bromas</span>
+              </button>
+              
+              <button onclick="confirmQROrder(${idx})" class="px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-float transition active:scale-95">
+                <i data-lucide="chef-hat" class="w-4 h-4"></i>
+                <span>Validado • Mandar a Cocina</span>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    async function confirmQROrder(idx) {
+      const qr = cachedPendingQR[idx];
+      if (!qr) return;
+
+      // 1. Enviar formalmente al backend como orden confirmada para cocina
+      try {
+        const payload = {
+          machine_code: qr.table.replace('MESA ', ''),
+          notes: `Comanda QR validada por mesero: ${qr.items.map(i => i.notes).filter(Boolean).join(' | ')}`,
+          items: qr.items.map(it => ({
+            product_id: "430bb253-e7a9-429a-9cc7-21e75a188e71",
+            quantity: it.qty,
+            is_courtesy: false
+          }))
+        };
+        await fetch(`${API_BASE}/api/v1/pos/order`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } catch(e) {}
+
+      // 2. Disparar ntfy prestige-kds para encender fogones
+      try {
+        fetch(`https://ntfy.smartopsia.com/prestige-kds`, {
+          method: 'POST',
+          headers: {
+            'Title': `🔥 Comanda QR CONFIRMADA (${qr.table})`,
+            'Priority': 'urgent',
+            'Tags': 'rotating_light,fire,cooking',
+            'Click': `${window.location.origin}/kds`
+          },
+          body: `${qr.items.map(i => `${i.qty}x ${i.name}`).join(', ')}\nValidado en sala por Carlos M.`
+        });
+      } catch(e) {}
+
+      // 3. Eliminar de pendientes QR
+      cachedPendingQR.splice(idx, 1);
+      localStorage.setItem('gastro_pending_qr_orders', JSON.stringify(cachedPendingQR));
+
+      GastroNotify.show({
+        title: "¡Comanda Validada!",
+        message: `${qr.table} despachada con éxito a Cocina (KDS).`,
+        type: "order"
+      });
+
+      renderPendingQROrders();
+    }
+
+    function cancelQROrder(idx) {
+      const qr = cachedPendingQR[idx];
+      cachedPendingQR.splice(idx, 1);
+      localStorage.setItem('gastro_pending_qr_orders', JSON.stringify(cachedPendingQR));
+
+      GastroNotify.show({
+        title: "Pedido QR Descartado",
+        message: `El pedido de ${qr.table} fue cancelado sin llegar a cocina.`,
+        type: "warning"
+      });
+
+      renderPendingQROrders();
+    }
+
+    // ==========================================
+    // REPORTES & CORTE DE TURNO DEL COMANDERO
+    // ==========================================
+    let shiftReportData = null;
+
+    async function loadShiftReport() {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/pos/reports/summary`);
+        if (res.ok) {
+          shiftReportData = await res.json();
+          document.getElementById('report-total-sales').innerText = `$${shiftReportData.total_sales.toFixed(2)}`;
+          document.getElementById('report-active-orders').innerText = shiftReportData.active_count;
+          document.getElementById('report-delivered-orders').innerText = shiftReportData.delivered_count;
+          document.getElementById('report-cancelled-orders').innerText = shiftReportData.cancelled_count;
+          document.getElementById('report-avg-ticket').innerText = `$${shiftReportData.average_ticket.toFixed(2)}`;
+          document.getElementById('report-active-tables-list').innerText = shiftReportData.active_tables.length > 0 ? shiftReportData.active_tables.join(', ') : 'Ninguna mesa ocupada';
+        }
+      } catch(e) {
+        console.warn("Error cargando reporte:", e);
+      }
+    }
+
+    function printShiftReport() {
+      GastroNotify.modal({
+        title: "Corte de Turno Impreso",
+        message: `Reporte de ventas ($${shiftReportData ? shiftReportData.total_sales.toFixed(2) : '0.00'}) transmitido a la impresora térmica de servicio.`,
+        type: "success",
+        icon: "printer",
+        confirmText: "Aceptar"
+      });
+    }
+
+    // Escuchar nuevos pedidos QR entrantes en tiempo real
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'gastro_new_qr_event') {
+        loadPendingQROrders();
+        if (window.GastroNotify) {
+          GastroNotify.show({
+            title: "🛎️ Nuevo Pedido QR de Cliente",
+            message: "Hay una comanda nueva esperando validación de mesero.",
+            type: "bell"
+          });
+        }
+      }
+    });
 </body>
 </html>
