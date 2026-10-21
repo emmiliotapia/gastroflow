@@ -564,6 +564,7 @@
       container.innerHTML = '';
 
       const filtered = allProducts.filter(p => {
+        if (p.is_active === false) return false;
         const matchCat = cat === 'ALL' || p.category === cat;
         const matchQ = p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q);
         return matchCat && matchQ;
@@ -1018,6 +1019,7 @@
       tbody.innerHTML = '';
 
       const filtered = allIngredients.filter(i => {
+        if (i.is_active === false) return false;
         return i.name.toLowerCase().includes(q) || i.code.toLowerCase().includes(q) || (i.category && i.category.toLowerCase().includes(q));
       });
 
