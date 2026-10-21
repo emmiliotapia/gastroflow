@@ -131,39 +131,52 @@ def _execute_notify_script(
 
         json_data = json.dumps(ntfy_payload).encode("utf-8")
 
+        # Lista de topics destinatarios: el configurado con prefijo y compatibilidad con prestige-
+        topics = [f"{NTFY_TOPIC_PREFIX}{channel}"]
+        if NTFY_TOPIC_PREFIX != "prestige-":
+            topics.append(f"prestige-{channel}")
+        if channel == "kds":
+            topics.append("prestige-kds")
+
+        # Eliminar duplicados manteniendo orden
+        unique_topics = list(dict.fromkeys(topics))
+
         # Lista de endpoints con fallback automático
         endpoints = [
             NTFY_SERVER.rstrip("/"),
-            "http://ntfy:80",
-            "https://ntfy.smartopsia.com"
+            "https://ntfy.smartopsia.com",
+            "http://ntfy:80"
         ]
         unique_endpoints = []
         for ep in endpoints:
             if ep and ep not in unique_endpoints:
                 unique_endpoints.append(ep)
 
-        ntfy_sent = False
-        for ep in unique_endpoints:
-            try:
-                headers = {"Content-Type": "application/json", "User-Agent": USER_AGENT}
-                if NTFY_TOKEN:
-                    headers["Authorization"] = f"Bearer {NTFY_TOKEN}"
-                req_ntfy = urllib.request.Request(
-                    ep,
-                    data=json_data,
-                    headers=headers,
-                    method="POST"
-                )
-                with urllib.request.urlopen(req_ntfy, timeout=3) as resp_ntfy:
-                    logger.info(f"[NOTIFY:ntfy] Push enviado al topic '{topic_name}' en {ep} (Prioridad: {priority}). Status: {resp_ntfy.getcode()}")
-                    ntfy_sent = True
-                    break
-            except Exception as ep_err:
-                logger.debug(f"[NOTIFY:ntfy] Intento en {ep} falló: {ep_err}")
-                continue
+        for top in unique_topics:
+            ntfy_payload["topic"] = top
+            json_data = json.dumps(ntfy_payload).encode("utf-8")
+            ntfy_sent = False
+            for ep in unique_endpoints:
+                try:
+                    headers = {"Content-Type": "application/json", "User-Agent": USER_AGENT}
+                    if NTFY_TOKEN:
+                        headers["Authorization"] = f"Bearer {NTFY_TOKEN}"
+                    req_ntfy = urllib.request.Request(
+                        ep,
+                        data=json_data,
+                        headers=headers,
+                        method="POST"
+                    )
+                    with urllib.request.urlopen(req_ntfy, timeout=3) as resp_ntfy:
+                        logger.info(f"[NOTIFY:ntfy] Push enviado al topic '{top}' en {ep} (Prioridad: {priority}). Status: {resp_ntfy.getcode()}")
+                        ntfy_sent = True
+                        break
+                except Exception as ep_err:
+                    logger.debug(f"[NOTIFY:ntfy] Intento en {ep} para '{top}' falló: {ep_err}")
+                    continue
 
-        if not ntfy_sent:
-            logger.warning(f"[NOTIFY:ntfy] No se pudo enviar push a ningún endpoint de ntfy ({unique_endpoints}).")
+            if not ntfy_sent:
+                logger.warning(f"[NOTIFY:ntfy] No se pudo enviar push para '{top}' a ningún endpoint de ntfy ({unique_endpoints}).")
     except Exception as e:
         logger.warning(f"[NOTIFY:ntfy] Error al preparar push ntfy: {str(e)}")
 
@@ -219,6 +232,20 @@ def trigger_order_webhook(order_data: dict):
             kds_url,
             [{"action": "view", "label": "Abrir KDS", "url": kds_url}]
         )
+
+    # Enviar también al canal maestro de KDS ('kds' -> prestige-kds / gastroflow-kds)
+    all_summary = _items_summary(order_data.get("items", []))
+    executor.submit(
+        _execute_notify_script,
+        "kds",
+        f"🔥 Nueva comanda #{order_num}",
+        f"{all_summary}\n{where} · Mesero: {waiter}",
+        order_data,
+        "5",
+        "rotating_light,fire,cooking",
+        kds_url,
+        [{"action": "view", "label": "Abrir KDS", "url": kds_url}]
+    )
 
     try:
         total = float(order_data.get("total_amount", 0))

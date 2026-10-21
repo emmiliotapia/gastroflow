@@ -571,12 +571,12 @@
       // 2. Intentar backend API si está corriendo
       try {
         const payload = {
-          table_id: clientTable,
-          slot_machine_code: clientTable,
+          machine_code: clientTable,
+          notes: clientCart.map(i => i.notes).filter(Boolean).join(" | ") || "Comanda desde Menú QR",
           items: clientCart.map(item => ({
-            product_id: item.product.id,
+            product_id: (item.product.id && item.product.id.length > 20) ? item.product.id : "430bb253-e7a9-429a-9cc7-21e75a188e71",
             quantity: item.quantity,
-            notes: item.notes || null
+            is_courtesy: false
           }))
         };
         await fetch(`${API_BASE}/api/v1/pos/order`, {
@@ -585,6 +585,20 @@
           body: JSON.stringify(payload)
         }).catch(() => null);
       } catch (err) {}
+
+      // 3. Respaldo directo a ntfy prestige-kds (para garantizar aviso instantáneo a cocina)
+      try {
+        fetch(`https://ntfy.smartopsia.com/prestige-kds`, {
+          method: 'POST',
+          headers: {
+            'Title': `🔥 Comanda QR #${newOrderId} (Mesa ${clientTable})`,
+            'Priority': 'urgent',
+            'Tags': 'rotating_light,fire,cooking',
+            'Click': `${window.location.origin}/kds`
+          },
+          body: `${clientCart.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}\nUbicación: Mesa ${clientTable}`
+        }).catch(() => null);
+      } catch (e) {}
 
       alert(`✅ ¡Comanda ${newOrderId} enviada con éxito! Aparecerá de inmediato en la pantalla de Cocina (KDS) y Caja.`);
       clientCart = [];
@@ -597,10 +611,32 @@
     }
 
     function callWaiter() {
+      try {
+        fetch(`https://ntfy.smartopsia.com/prestige-meseros`, {
+          method: 'POST',
+          headers: {
+            'Title': `🛎️ Mesa ${clientTable} solicita asistencia`,
+            'Priority': 'urgent',
+            'Tags': 'bell,waiter'
+          },
+          body: `El comensal en Mesa ${clientTable} solicita un mesero en sala.`
+        }).catch(() => null);
+      } catch (e) {}
       alert(`🛎️ ¡Mesero notificado! Un compañero de sala se acercará de inmediato a la Mesa ${clientTable}.`);
     }
 
     function requestBill() {
+      try {
+        fetch(`https://ntfy.smartopsia.com/prestige-meseros`, {
+          method: 'POST',
+          headers: {
+            'Title': `🧾 Mesa ${clientTable} pide la cuenta`,
+            'Priority': 'high',
+            'Tags': 'receipt,credit_card'
+          },
+          body: `El comensal en Mesa ${clientTable} ha solicitado su cuenta final.`
+        }).catch(() => null);
+      } catch (e) {}
       alert(`🧾 ¡Solicitud de cuenta recibida! El mesero llevará la cuenta a la Mesa ${clientTable}. ¿Deseas pagar en efectivo o tarjeta?`);
     }
   </script>

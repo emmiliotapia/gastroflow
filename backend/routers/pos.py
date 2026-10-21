@@ -135,3 +135,22 @@ def delete_pos_category(
     db.delete(category)
     db.commit()
     return None
+
+
+# --- ALIAS PARA COMPATIBILIDAD CON FRONTENDS DE PEDIDOS ---
+from backend.schemas.order import OrderCreate, OrderRead
+from backend.routers.kds import create_order
+
+@router.post(
+    "/order",
+    response_model=OrderRead,
+    status_code=status.HTTP_201_CREATED,
+    summary="Alias para crear comanda desde POS o Menú Cliente",
+    description="Redirige directamente al procesador atómico de comandas y dispara alertas ntfy/n8n."
+)
+def create_pos_order_alias(
+    payload: OrderCreate,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user)
+) -> OrderRead:
+    return create_order(payload=payload, db=db, current_user=current_user)

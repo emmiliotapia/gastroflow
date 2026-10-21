@@ -478,6 +478,38 @@
         localStorage.setItem('gastro_new_order_event', JSON.stringify(orderData));
       } catch (e) {}
 
+      // Enviar a Backend API si está disponible
+      try {
+        const payload = {
+          machine_code: currentTable,
+          notes: posCart.map(i => i.notes).filter(Boolean).join(" | ") || "Comanda desde Terminal POS",
+          items: posCart.map(i => ({
+            product_id: (i.product.id && i.product.id.length > 20) ? i.product.id : "430bb253-e7a9-429a-9cc7-21e75a188e71",
+            quantity: i.qty,
+            is_courtesy: false
+          }))
+        };
+        fetch(`${API_BASE}/api/v1/pos/order`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).catch(() => null);
+      } catch (e) {}
+
+      // Enviar Push a ntfy prestige-kds
+      try {
+        fetch(`https://ntfy.smartopsia.com/prestige-kds`, {
+          method: 'POST',
+          headers: {
+            'Title': `🔥 Comanda POS #${newOrderId} (${currentTable})`,
+            'Priority': 'urgent',
+            'Tags': 'rotating_light,fire,cooking',
+            'Click': `${window.location.origin}/kds`
+          },
+          body: `${posCart.map(i => `${i.qty}x ${i.product.name}`).join(', ')}\nMesero: Carlos M. • ${currentTable}`
+        }).catch(() => null);
+      } catch (e) {}
+
       alert(`✅ ¡Comanda ${newOrderId} despachada a Cocina & Barra para ${currentTable}!${shouldPrint ? ' (Ticket térmico enviado a impresión).' : ''}`);
       posCart = [];
       updatePosCartUI();
