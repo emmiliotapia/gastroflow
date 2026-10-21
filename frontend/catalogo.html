@@ -371,9 +371,15 @@
         </div>
       </div>
 
-      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
-        <button type="button" onclick="closeRecipeModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200 transition">Cancelar</button>
-        <button type="button" onclick="saveProductRecipe()" class="px-5 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-xs transition active:scale-95">Guardar Ficha Técnica</button>
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-2">
+        <button type="button" onclick="clearProductRecipe()" class="px-3.5 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition border border-rose-200 flex items-center gap-1.5" title="Eliminar todos los insumos de esta ficha técnica">
+          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          <span>Vaciar Ficha</span>
+        </button>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="closeRecipeModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200 transition">Cancelar</button>
+          <button type="button" onclick="saveProductRecipe()" class="px-5 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-xs transition active:scale-95">Guardar Ficha Técnica</button>
+        </div>
       </div>
     </div>
   </div>
@@ -643,8 +649,11 @@
                   <i data-lucide="layers" class="w-3.5 h-3.5 text-brand-400"></i>
                   <span>Ficha Técnica</span>
                 </button>
-                <button onclick="editProduct('${p.id}')" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition" title="Editar datos del producto">
+                <button onclick="editProduct('${p.id}')" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition" title="Editar especificaciones del platillo">
                   <i data-lucide="pencil" class="w-4 h-4"></i>
+                </button>
+                <button onclick="confirmDeleteProduct('${p.id}', '${p.name.replace(/'/g, "\\'")}')" class="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition" title="Dar de baja platillo de la carta">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </button>
               </div>
             </div>
@@ -876,7 +885,56 @@
         closeRecipeModal();
         await fetchAllData();
       } catch (err) {
-        alert("Error de conexión: " + err.message);
+        alert("Fallo de comunicación con el servidor: " + err.message);
+      }
+    }
+
+    async function clearProductRecipe() {
+      if (!activeRecipeProduct) return;
+      if (!confirm(`¿Está seguro de eliminar todos los componentes de la ficha técnica de "${activeRecipeProduct.name}"? Los márgenes se recalcularán a cero.`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/products/${activeRecipeProduct.id}/recipe`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify([])
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          alert("Aviso del sistema: " + (err.detail || "No fue posible vaciar la ficha técnica"));
+          return;
+        }
+
+        draftRecipeItems = [];
+        closeRecipeModal();
+        await fetchAllData();
+      } catch (err) {
+        alert("Fallo de comunicación con el servidor: " + err.message);
+      }
+    }
+
+    async function confirmDeleteProduct(productId, productName) {
+      if (!confirm(`¿Desea dar de baja el producto "${productName}" del catálogo y carta activa?`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/products/${productId}`, {
+          method: 'DELETE'
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          alert("Aviso del sistema: " + (err.detail || "No fue posible dar de baja el producto"));
+          return;
+        }
+
+        await fetchAllData();
+      } catch (err) {
+        alert("Fallo de comunicación con el servidor: " + err.message);
       }
     }
 
@@ -982,9 +1040,12 @@
             <td class="py-3 px-4 font-mono font-bold text-slate-700">${i.unit_of_measure}</td>
             <td class="py-3 px-4 font-mono font-black text-slate-900">$${cost.toFixed(4)}</td>
             <td class="py-3 px-4 font-mono font-bold ${stock <= parseFloat(i.minimum_stock || 0) ? 'text-amber-600' : 'text-slate-800'}">${stock.toFixed(2)}</td>
-            <td class="py-3 px-4 text-right">
-              <button onclick="editIngredient('${i.id}')" class="p-1 rounded-lg hover:bg-slate-200 text-slate-600 mr-1" title="Editar">
+            <td class="py-3 px-4 text-right flex items-center justify-end gap-1">
+              <button onclick="editIngredient('${i.id}')" class="p-1 rounded-lg hover:bg-slate-200 text-slate-600" title="Editar especificaciones del insumo">
                 <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+              </button>
+              <button onclick="confirmDeleteIngredient('${i.id}', '${i.name.replace(/'/g, "\\'")}')" class="p-1 rounded-lg hover:bg-rose-100 text-rose-600" title="Dar de baja insumo">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
               </button>
             </td>
           </tr>
@@ -1053,7 +1114,29 @@
         closeIngredientModal();
         await fetchAllData();
       } catch (err) {
-        alert("Error de conexión: " + err.message);
+        alert("Fallo de comunicación con el servidor: " + err.message);
+      }
+    }
+
+    async function confirmDeleteIngredient(ingId, ingName) {
+      if (!confirm(`¿Desea dar de baja el insumo "${ingName}" del catálogo maestro de materia prima?`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/ingredients/${ingId}`, {
+          method: 'DELETE'
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          alert("Aviso del sistema: " + (err.detail || "No fue posible dar de baja el insumo"));
+          return;
+        }
+
+        await fetchAllData();
+      } catch (err) {
+        alert("Fallo de comunicación con el servidor: " + err.message);
       }
     }
 
